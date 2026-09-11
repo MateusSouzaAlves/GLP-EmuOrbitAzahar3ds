@@ -6,9 +6,11 @@ mesma separação usada pelo pacote público do Nintendo DS e **não contém o
 aplicativo hospedeiro**, ROMs, BIOS, firmware, chaves, saves, telemetria,
 monetização, credenciais ou binários pré-compilados.
 
-O repositório ainda não possui remoto público. Enquanto o endereço público e a
-revisão exata não forem registrados junto ao binário distribuído, a publicação
-do recurso Nintendo 3DS permanece bloqueada.
+O código correspondente está publicado em
+`https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds`. A publicação do
+recurso Nintendo 3DS no EmuOrbit permanece bloqueada até a revisão exata do app
+ser registrada junto ao binário distribuído e todos os gates de release serem
+concluídos.
 
 ## Conteúdo mínimo correspondente
 
@@ -80,6 +82,6 @@ Antes de distribuir uma versão do EmuOrbit que contenha este componente:
 4. mantenha essa fonte disponível enquanto o binário correspondente estiver
    sendo distribuído.
 
-O arquivo `CORRESPONDING_SOURCE.json` permanece com estado `PRE_PUBLICATION`
-até esse vínculo ser fechado. Não inclua neste repositório nenhum artefato
-privado, ROM ou dado de usuário.
+O arquivo `CORRESPONDING_SOURCE.json` permanece com estado
+`PUBLIC_SOURCE_PENDING_APP_REVISION` até esse vínculo ser fechado. Não inclua
+neste repositório nenhum artefato privado, ROM ou dado de usuário.
