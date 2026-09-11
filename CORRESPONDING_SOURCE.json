@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "status": "PUBLIC_SOURCE_PENDING_APP_REVISION",
+  "status": "PUBLIC_SOURCE_MATCHED_TO_N3DS_12D3_RUNTIME",
   "publicRemote": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
-  "correspondingAppRevision": "PENDING_N3DS_12D3_COMMIT",
+  "correspondingAppRevision": "76168397232e7665c6e778406de029b79e10a822",
   "component": "EmuOrbit Nintendo 3DS",
   "combinedLicense": "GPL-3.0-or-later",
   "azahar": {

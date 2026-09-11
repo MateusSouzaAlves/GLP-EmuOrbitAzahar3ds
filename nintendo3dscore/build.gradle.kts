@@ -77,6 +77,9 @@ android {
 
     sourceSets {
         getByName("main") {
+            // The exact on-demand manifest remains in src/main for source
+            // correspondence. The isolated AAR uses this host-free manifest.
+            manifest.srcFile("src/standalone/AndroidManifest.xml")
             jniLibs.directories.add(generatedCoreDirectory.get().asFile.parentFile.absolutePath)
             assets.directories.add(file("compliance").absolutePath)
         }

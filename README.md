@@ -7,18 +7,20 @@ aplicativo hospedeiro**, ROMs, BIOS, firmware, chaves, saves, telemetria,
 monetização, credenciais ou binários pré-compilados.
 
 O código correspondente está publicado em
-`https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds`. A publicação do
-recurso Nintendo 3DS no EmuOrbit permanece bloqueada até a revisão exata do app
-ser registrada junto ao binário distribuído e todos os gates de release serem
-concluídos.
+`https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds`. Esta revisão está
+vinculada ao runtime N3DS-12D3 do EmuOrbit Advance em
+`76168397232e7665c6e778406de029b79e10a822`. A publicação do recurso Nintendo
+3DS no app permanece bloqueada até todos os gates de release serem concluídos.
 
 ## Conteúdo mínimo correspondente
 
 - `third_party/azahar`: upstream Azahar 2126.0 no commit
   `fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a`, com seus submódulos recursivos;
 - `nintendo3dscore/patches`: as quatro modificações aplicadas ao upstream;
-- `nintendo3dscore/src/main`: frontend Android/JNI/Vulkan e scripts CMake do
-  componente distribuído;
+- `nintendo3dscore/src/main`: frontend Android/JNI/Vulkan, manifesto de feature
+  sob demanda e scripts CMake idênticos aos do componente distribuído;
+- `nintendo3dscore/src/standalone/AndroidManifest.xml`: substituição mínima do
+  manifesto usada apenas para reconstruir o AAR sem o aplicativo hospedeiro;
 - `scripts`: aquisição, build reproduzível e auditorias de licença/binário;
 - `config/nintendo3ds-source-scope.json`: versões, dependências, licenças,
   opções de build e hashes que identificam o componente;
@@ -82,6 +84,6 @@ Antes de distribuir uma versão do EmuOrbit que contenha este componente:
 4. mantenha essa fonte disponível enquanto o binário correspondente estiver
    sendo distribuído.
 
-O arquivo `CORRESPONDING_SOURCE.json` permanece com estado
-`PUBLIC_SOURCE_PENDING_APP_REVISION` até esse vínculo ser fechado. Não inclua
-neste repositório nenhum artefato privado, ROM ou dado de usuário.
+O arquivo `CORRESPONDING_SOURCE.json` registra a revisão do runtime do app que
+esta fonte reproduz. Não inclua neste repositório nenhum artefato privado, ROM
+ou dado de usuário.

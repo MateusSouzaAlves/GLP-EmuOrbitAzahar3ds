@@ -1,10 +1,9 @@
 # Nintendo 3DS third-party notice index
 
 Generated from `config/nintendo3ds-source-scope.json`. This is the pinned
-notice and license-evidence index for the private implementation baseline; it
-does not authorize distribution. Before release, the complete corresponding
-source and required license texts/notices must be published and matched to the
-distributed artifact.
+notice and license-evidence index for the Nintendo 3DS component. Complete
+corresponding source is published at:
+https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds
 
 ## Combined component
 
