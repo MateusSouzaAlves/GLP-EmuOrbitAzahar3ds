@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS unavailable</string>
+    <string name="n3ds_readiness_warning_title">Before playing Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">The Nintendo 3DS component is not installed on this device.</string>
+    <string name="n3ds_readiness_core_invalid">The installed Nintendo 3DS component is incompatible or corrupted.</string>
+    <string name="n3ds_readiness_arm64_required">This device does not provide the ARM64 environment required by the emulator.</string>
+    <string name="n3ds_readiness_vulkan_required">This device does not provide the Vulkan version required by the emulator.</string>
+    <string name="n3ds_readiness_content_unavailable">The game file is no longer available or cannot be read.</string>
+    <string name="n3ds_readiness_content_requires_extraction">Extract the game before playing. Nintendo 3DS images inside ZIP or RAR files are not opened directly.</string>
+    <string name="n3ds_readiness_content_encrypted">This game is encrypted. Use only a legally obtained decrypted copy; the app does not provide keys.</string>
+    <string name="n3ds_readiness_storage_low">There is not enough private storage to prepare and run this game.</string>
+    <string name="n3ds_readiness_mii_required">This game needs Mii data that belongs to you. Import a CFL_DB.dat with the file picker.</string>
+    <string name="n3ds_readiness_mii_optional">Mii data that belongs to you can be imported to enable additional features in this game.</string>
+    <string name="n3ds_readiness_device_unqualified">This device has not completed Nintendo 3DS performance qualification. The game may be slow or unstable.</string>
+    <string name="n3ds_readiness_action_understood">Got it</string>
+    <string name="n3ds_readiness_action_retry">Try again</string>
+    <string name="n3ds_readiness_action_open_storage">Open storage</string>
+    <string name="n3ds_readiness_action_import_mii">Import my Mii data</string>
+    <string name="n3ds_readiness_action_extract_content">How to extract</string>
+    <string name="n3ds_readiness_action_continue">Continue anyway</string>
+    <string name="n3ds_settings_global_title">Nintendo 3DS settings</string>
+    <string name="n3ds_settings_game_title">Settings for this game</string>
+    <string name="n3ds_settings_screen_layout">Screen layout</string>
+    <string name="n3ds_settings_layout_default">Default</string>
+    <string name="n3ds_settings_layout_side_by_side">Side by side</string>
+    <string name="n3ds_settings_layout_large_top">Large top screen</string>
+    <string name="n3ds_settings_layout_large_bottom">Large bottom screen</string>
+    <string name="n3ds_settings_layout_single_top">Top screen only</string>
+    <string name="n3ds_settings_layout_single_bottom">Bottom screen only</string>
+    <string name="n3ds_settings_performance_profile">Performance profile</string>
+    <string name="n3ds_settings_performance_conservative">Conservative (1×)</string>
+    <string name="n3ds_settings_performance_balanced">Balanced (2×)</string>
+    <string name="n3ds_settings_performance_performance">High performance (2×, lower accuracy)</string>
+    <string name="n3ds_settings_audio_enabled">Enable audio</string>
+    <string name="n3ds_settings_audio_volume">Audio volume: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">Enable microphone (permission required)</string>
+    <string name="n3ds_settings_save">Save</string>
+    <string name="n3ds_settings_reset">Reset</string>
+    <string name="n3ds_product_settings">Settings</string>
+    <string name="n3ds_product_launch_failed">Nintendo 3DS could not be started.</string>
+    <string name="n3ds_product_settings_save_failed">Nintendo 3DS settings could not be saved.</string>
+    <string name="n3ds_product_microphone_permission_denied">The microphone will remain disabled without permission.</string>
+</resources>

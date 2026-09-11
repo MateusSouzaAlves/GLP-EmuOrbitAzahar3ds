@@ -1,0 +1,144 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0652dd7..cdbabe6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -129,6 +129,7 @@ CMAKE_DEPENDENT_OPTION(ENABLE_ROOM "Enable dedicated room functionality" ON "NOT
+ CMAKE_DEPENDENT_OPTION(ENABLE_ROOM_STANDALONE "Enable generating a standalone dedicated room executable" ON "ENABLE_ROOM" OFF)
+ 
+ option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
++option(ENABLE_HTTPS "Enable HTTPS support for emulated and frontend services" ON)
+ option(ENABLE_SCRIPTING "Enable RPC server for scripting" ON)
+ option(ENABLE_GDBSTUB "Enable GDB stub for emulated applications" ON)
+ 
+diff --git a/externals/CMakeLists.txt b/externals/CMakeLists.txt
+index a63ee57..9074935 100644
+--- a/externals/CMakeLists.txt
++++ b/externals/CMakeLists.txt
+@@ -316,21 +316,24 @@ else()
+     target_disable_warnings(json-headers)
+ endif()
+ 
+-# OpenSSL
+-if (USE_SYSTEM_OPENSSL)
+-    find_package(OpenSSL 1.1)
+-    set(OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
+-else()
+-    # LibreSSL
+-    set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
+-    set(OPENSSLDIR "/etc/ssl/")
+-    add_subdirectory(libressl EXCLUDE_FROM_ALL)
+-    target_include_directories(ssl INTERFACE ./libressl/include)
+-    target_disable_warnings(ssl)
+-    target_compile_definitions(ssl PRIVATE -DHAVE_INET_NTOP)
+-    get_directory_property(OPENSSL_LIBRARIES
+-        DIRECTORY libressl
+-        DEFINITION OPENSSL_LIBS)
++# OpenSSL. The offline libretro build disables this because the bundled
++# LibreSSL snapshot retains the historical OpenSSL/SSLeay terms.
++if (ENABLE_HTTPS)
++    if (USE_SYSTEM_OPENSSL)
++        find_package(OpenSSL 1.1)
++        set(OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
++    else()
++        # LibreSSL
++        set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
++        set(OPENSSLDIR "/etc/ssl/")
++        add_subdirectory(libressl EXCLUDE_FROM_ALL)
++        target_include_directories(ssl INTERFACE ./libressl/include)
++        target_disable_warnings(ssl)
++        target_compile_definitions(ssl PRIVATE -DHAVE_INET_NTOP)
++        get_directory_property(OPENSSL_LIBRARIES
++            DIRECTORY libressl
++            DEFINITION OPENSSL_LIBS)
++    endif()
+ endif()
+ 
+ # httplib
+@@ -358,8 +361,10 @@ else()
+     target_include_directories(httplib INTERFACE ./httplib)
+     target_disable_warnings(httplib)
+ endif()
+-target_compile_options(httplib INTERFACE -DCPPHTTPLIB_OPENSSL_SUPPORT)
+-target_link_libraries(httplib INTERFACE ${OPENSSL_LIBRARIES})
++if (ENABLE_HTTPS)
++    target_compile_options(httplib INTERFACE -DCPPHTTPLIB_OPENSSL_SUPPORT)
++    target_link_libraries(httplib INTERFACE ${OPENSSL_LIBRARIES})
++endif()
+ 
+ if (UNIX AND NOT APPLE)
+     add_subdirectory(gamemode EXCLUDE_FROM_ALL)
+diff --git a/src/core/hle/service/am/am.cpp b/src/core/hle/service/am/am.cpp
+index 34de4b8..42dfd3b 100644
+--- a/src/core/hle/service/am/am.cpp
++++ b/src/core/hle/service/am/am.cpp
+@@ -7,8 +7,8 @@
+ #include <cstring>
+ #include <cryptopp/aes.h>
+ #include <cryptopp/modes.h>
++#include <cryptopp/osrng.h>
+ #include <fmt/format.h>
+-#include <openssl/rand.h>
+ #include "common/alignment.h"
+ #include "common/archives.h"
+ #include "common/common_paths.h"
+@@ -4948,8 +4948,9 @@ void Module::Interface::ExportTicketWrapped(Kernel::HLERequestContext& ctx) {
+     std::vector<u8> key(0x10);
+     std::vector<u8> iv(0x10);
+ 
+-    RAND_bytes(key.data(), static_cast<int>(key.size()));
+-    RAND_bytes(iv.data(), static_cast<int>(iv.size()));
++    CryptoPP::AutoSeededRandomPool random;
++    random.GenerateBlock(key.data(), key.size());
++    random.GenerateBlock(iv.data(), iv.size());
+ 
+     CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption e(key.data(), key.size(), iv.data());
+     e.ProcessData(ticket_data.data(), ticket_data.data(), ticket_data.size());
+diff --git a/src/core/hle/service/http/http_c.cpp b/src/core/hle/service/http/http_c.cpp
+index f638a5a..734b211 100644
+--- a/src/core/hle/service/http/http_c.cpp
++++ b/src/core/hle/service/http/http_c.cpp
+@@ -351,6 +351,7 @@ void Context::MakeRequestNonSSL(httplib::Request& request, const Common::URLInfo
+ 
+ void Context::MakeRequestSSL(httplib::Request& request, const Common::URLInfo& url_info,
+                              std::vector<Context::RequestHeader>& pending_headers) {
++#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+     httplib::Error error{-1};
+     X509* cert = nullptr;
+     EVP_PKEY* key = nullptr;
+@@ -405,6 +406,13 @@ void Context::MakeRequestSSL(httplib::Request& request, const Common::URLInfo& u
+         LOG_DEBUG(Service_HTTP, "Request successful");
+         state = RequestState::ReceivingBody;
+     }
++#else
++    (void)request;
++    (void)url_info;
++    (void)pending_headers;
++    LOG_ERROR(Service_HTTP, "HTTPS is unavailable in this build");
++    state = RequestState::Completed;
++#endif
+ }
+ 
+ bool Context::ContentProvider(size_t offset, size_t length, httplib::DataSink& sink) {
+diff --git a/src/core/hle/service/ssl/ssl_c.cpp b/src/core/hle/service/ssl/ssl_c.cpp
+index 415c718..10b5ae6 100644
+--- a/src/core/hle/service/ssl/ssl_c.cpp
++++ b/src/core/hle/service/ssl/ssl_c.cpp
+@@ -2,7 +2,7 @@
+ // Licensed under GPLv2 or any later version
+ // Refer to the license.txt file included.
+ 
+-#include <openssl/rand.h>
++#include <cryptopp/osrng.h>
+ #include "common/archives.h"
+ #include "common/common_types.h"
+ #include "core/core.h"
+@@ -75,7 +75,8 @@ void InstallInterfaces(Core::System& system) {
+ 
+ void GenerateRandomData(std::vector<u8>& out) {
+     // Fill the output buffer with random data.
+-    RAND_bytes(out.data(), static_cast<int>(out.size()));
++    CryptoPP::AutoSeededRandomPool random;
++    random.GenerateBlock(out.data(), out.size());
+ }
+ 
+ } // namespace Service::SSL

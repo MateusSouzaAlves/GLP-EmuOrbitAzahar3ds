@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0505f6b9f..de77fa39d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -225,7 +225,8 @@ if (CITRA_USE_PRECOMPILED_HEADERS)
+     endif()
+ endif()
+ 
+-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/.git/hooks/pre-commit)
++if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/.git AND
++        NOT EXISTS ${PROJECT_SOURCE_DIR}/.git/hooks/pre-commit)
+     message(STATUS "Copying pre-commit hook")
+     file(COPY hooks/pre-commit
+         DESTINATION ${PROJECT_SOURCE_DIR}/.git/hooks)
+diff --git a/CMakeModules/GenerateBuildInfo.cmake b/CMakeModules/GenerateBuildInfo.cmake
+index bf41ac613..6fa736e1f 100644
+--- a/CMakeModules/GenerateBuildInfo.cmake
++++ b/CMakeModules/GenerateBuildInfo.cmake
+@@ -16,10 +16,16 @@ macro(generate_build_info)
+         string(SUBSTRING "${GIT_REV_RAW}" 0 9 GIT_DESC)
+         set(GIT_BRANCH "HEAD")
+-    elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git/objects")
++    elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+         # Find the package here with the known path so that the GetGit commands can find it as well
+         find_package(Git QUIET PATHS "${GIT_EXECUTABLE}")
+ 
+         # only use Git to check revision info when source is obtained via Git
+         include(GetGitRevisionDescription)
+         get_git_head_revision(GIT_REF_SPEC GIT_REV)
++        if(NOT GIT_REV)
++            execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
++                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
++                OUTPUT_VARIABLE GIT_REV
++                OUTPUT_STRIP_TRAILING_WHITESPACE)
++        endif()
+         git_describe(GIT_DESC --always --long --dirty)

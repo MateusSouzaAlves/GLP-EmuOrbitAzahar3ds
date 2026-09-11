@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS indisponible</string>
+    <string name="n3ds_readiness_warning_title">Avant de jouer à la Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">Le composant Nintendo 3DS n’est pas installé sur cet appareil.</string>
+    <string name="n3ds_readiness_core_invalid">Le composant Nintendo 3DS installé est incompatible ou endommagé.</string>
+    <string name="n3ds_readiness_arm64_required">Cet appareil ne fournit pas l’environnement ARM64 requis par l’émulateur.</string>
+    <string name="n3ds_readiness_vulkan_required">Cet appareil ne fournit pas la version de Vulkan requise par l’émulateur.</string>
+    <string name="n3ds_readiness_content_unavailable">Le fichier du jeu n’est plus disponible ou ne peut pas être lu.</string>
+    <string name="n3ds_readiness_content_requires_extraction">Extrayez le jeu avant de jouer. Les images Nintendo 3DS dans des fichiers ZIP ou RAR ne sont pas ouvertes directement.</string>
+    <string name="n3ds_readiness_content_encrypted">Ce jeu est chiffré. Utilisez uniquement une copie déchiffrée obtenue légalement ; l’application ne fournit pas de clés.</string>
+    <string name="n3ds_readiness_storage_low">L’espace privé est insuffisant pour préparer et exécuter ce jeu.</string>
+    <string name="n3ds_readiness_mii_required">Ce jeu nécessite des données Mii qui vous appartiennent. Importez un fichier CFL_DB.dat avec le sélecteur de fichiers.</string>
+    <string name="n3ds_readiness_mii_optional">Vous pouvez importer des données Mii qui vous appartiennent pour activer des fonctions supplémentaires de ce jeu.</string>
+    <string name="n3ds_readiness_device_unqualified">Cet appareil n’a pas terminé la qualification de performances Nintendo 3DS. Le jeu peut être lent ou instable.</string>
+    <string name="n3ds_readiness_action_understood">Compris</string>
+    <string name="n3ds_readiness_action_retry">Réessayer</string>
+    <string name="n3ds_readiness_action_open_storage">Ouvrir le stockage</string>
+    <string name="n3ds_readiness_action_import_mii">Importer mes données Mii</string>
+    <string name="n3ds_readiness_action_extract_content">Comment extraire</string>
+    <string name="n3ds_readiness_action_continue">Continuer quand même</string>
+    <string name="n3ds_settings_global_title">Paramètres Nintendo 3DS</string>
+    <string name="n3ds_settings_game_title">Paramètres de ce jeu</string>
+    <string name="n3ds_settings_screen_layout">Disposition des écrans</string>
+    <string name="n3ds_settings_layout_default">Par défaut</string>
+    <string name="n3ds_settings_layout_side_by_side">Côte à côte</string>
+    <string name="n3ds_settings_layout_large_top">Grand écran supérieur</string>
+    <string name="n3ds_settings_layout_large_bottom">Grand écran inférieur</string>
+    <string name="n3ds_settings_layout_single_top">Écran supérieur uniquement</string>
+    <string name="n3ds_settings_layout_single_bottom">Écran inférieur uniquement</string>
+    <string name="n3ds_settings_performance_profile">Profil de performances</string>
+    <string name="n3ds_settings_performance_conservative">Conservateur (1×)</string>
+    <string name="n3ds_settings_performance_balanced">Équilibré (2×)</string>
+    <string name="n3ds_settings_performance_performance">Hautes performances (2×, précision réduite)</string>
+    <string name="n3ds_settings_audio_enabled">Activer l’audio</string>
+    <string name="n3ds_settings_audio_volume">Volume audio : %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">Activer le microphone (autorisation requise)</string>
+    <string name="n3ds_settings_save">Enregistrer</string>
+    <string name="n3ds_settings_reset">Réinitialiser</string>
+    <string name="n3ds_product_settings">Paramètres</string>
+    <string name="n3ds_product_launch_failed">Impossible de démarrer la Nintendo 3DS.</string>
+    <string name="n3ds_product_settings_save_failed">Impossible d’enregistrer les paramètres Nintendo 3DS.</string>
+    <string name="n3ds_product_microphone_permission_denied">Le microphone restera désactivé sans l’autorisation.</string>
+</resources>

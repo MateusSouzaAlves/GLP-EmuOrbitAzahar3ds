@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS غير متاح</string>
+    <string name="n3ds_readiness_warning_title">قبل تشغيل ألعاب Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">مكوّن Nintendo 3DS غير مثبت على هذا الجهاز.</string>
+    <string name="n3ds_readiness_core_invalid">مكوّن Nintendo 3DS المثبت غير متوافق أو تالف.</string>
+    <string name="n3ds_readiness_arm64_required">لا يوفر هذا الجهاز بيئة ARM64 التي يحتاج إليها المحاكي.</string>
+    <string name="n3ds_readiness_vulkan_required">لا يوفر هذا الجهاز إصدار Vulkan الذي يحتاج إليه المحاكي.</string>
+    <string name="n3ds_readiness_content_unavailable">ملف اللعبة لم يعد متاحًا أو لا يمكن قراءته.</string>
+    <string name="n3ds_readiness_content_requires_extraction">استخرج اللعبة قبل التشغيل. لا يمكن فتح صور Nintendo 3DS داخل ملفات ZIP أو RAR مباشرة.</string>
+    <string name="n3ds_readiness_content_encrypted">هذه اللعبة مشفرة. استخدم فقط نسخة مفكوكة التشفير تم الحصول عليها بشكل قانوني؛ التطبيق لا يوفر المفاتيح.</string>
+    <string name="n3ds_readiness_storage_low">لا توجد مساحة تخزين خاصة كافية لإعداد هذه اللعبة وتشغيلها.</string>
+    <string name="n3ds_readiness_mii_required">تحتاج هذه اللعبة إلى بيانات Mii تملكها. استورد ملف CFL_DB.dat باستخدام منتقي الملفات.</string>
+    <string name="n3ds_readiness_mii_optional">يمكنك استيراد بيانات Mii التي تملكها لتمكين ميزات إضافية في هذه اللعبة.</string>
+    <string name="n3ds_readiness_device_unqualified">لم يكمل هذا الجهاز تأهيل أداء Nintendo 3DS بعد. قد تكون اللعبة بطيئة أو غير مستقرة.</string>
+    <string name="n3ds_readiness_action_understood">فهمت</string>
+    <string name="n3ds_readiness_action_retry">إعادة المحاولة</string>
+    <string name="n3ds_readiness_action_open_storage">فتح التخزين</string>
+    <string name="n3ds_readiness_action_import_mii">استيراد بيانات Mii الخاصة بي</string>
+    <string name="n3ds_readiness_action_extract_content">كيفية الاستخراج</string>
+    <string name="n3ds_readiness_action_continue">المتابعة على أي حال</string>
+    <string name="n3ds_settings_global_title">إعدادات Nintendo 3DS</string>
+    <string name="n3ds_settings_game_title">إعدادات هذه اللعبة</string>
+    <string name="n3ds_settings_screen_layout">تخطيط الشاشتين</string>
+    <string name="n3ds_settings_layout_default">افتراضي</string>
+    <string name="n3ds_settings_layout_side_by_side">جنبًا إلى جنب</string>
+    <string name="n3ds_settings_layout_large_top">الشاشة العلوية أكبر</string>
+    <string name="n3ds_settings_layout_large_bottom">الشاشة السفلية أكبر</string>
+    <string name="n3ds_settings_layout_single_top">الشاشة العلوية فقط</string>
+    <string name="n3ds_settings_layout_single_bottom">الشاشة السفلية فقط</string>
+    <string name="n3ds_settings_performance_profile">ملف الأداء</string>
+    <string name="n3ds_settings_performance_conservative">محافظ (1×)</string>
+    <string name="n3ds_settings_performance_balanced">متوازن (2×)</string>
+    <string name="n3ds_settings_performance_performance">أداء عالٍ (2×، دقة أقل)</string>
+    <string name="n3ds_settings_audio_enabled">تفعيل الصوت</string>
+    <string name="n3ds_settings_audio_volume">مستوى الصوت: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">تفعيل الميكروفون (يتطلب إذنًا)</string>
+    <string name="n3ds_settings_save">حفظ</string>
+    <string name="n3ds_settings_reset">إعادة ضبط</string>
+    <string name="n3ds_product_settings">الإعدادات</string>
+    <string name="n3ds_product_launch_failed">تعذّر تشغيل Nintendo 3DS.</string>
+    <string name="n3ds_product_settings_save_failed">تعذّر حفظ إعدادات Nintendo 3DS.</string>
+    <string name="n3ds_product_microphone_permission_denied">سيبقى الميكروفون معطّلًا من دون الإذن.</string>
+</resources>

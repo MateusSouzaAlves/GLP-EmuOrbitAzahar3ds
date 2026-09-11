@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "PRE_PUBLICATION",
+  "publicRemote": null,
+  "correspondingAppRevision": "PENDING_N3DS_12D3_COMMIT",
+  "component": "EmuOrbit Nintendo 3DS",
+  "combinedLicense": "GPL-3.0-or-later",
+  "azahar": {
+    "tag": "2126.0",
+    "commit": "fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a",
+    "recursiveSubmodules": 52
+  },
+  "expectedBinary": {
+    "path": "azahar_libretro.so",
+    "bytes": 23157736,
+    "sha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c"
+  },
+  "excluded": [
+    "EmuOrbit host application",
+    "precompiled binaries",
+    "ROMs and homebrew binaries",
+    "BIOS, firmware and keys",
+    "saves and user data",
+    "credentials, telemetry and monetization configuration"
+  ]
+}

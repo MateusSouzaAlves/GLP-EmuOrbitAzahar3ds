@@ -1,0 +1,50 @@
+# Nintendo 3DS third-party notice index
+
+Generated from `config/nintendo3ds-source-scope.json`. This is the pinned
+notice and license-evidence index for the private implementation baseline; it
+does not authorize distribution. Before release, the complete corresponding
+source and required license texts/notices must be published and matched to the
+distributed artifact.
+
+## Combined component
+
+- Azahar libretro tag `2126.0` at `fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a`.
+- Upstream declaration: `GPL-2.0-or-later`.
+- Combined linked-work license: `GPL-3.0-or-later`.
+- Repository: https://github.com/azahar-emu/azahar.git
+
+## Adapted frontend source
+
+| Upstream path | Commit | License | Incorporated destinations | Repository |
+| --- | --- | --- | --- | --- |
+| `gfx/drivers/vulkan.c` | `81478f2aa2abb942cfacb2109cbc25a4bd3b46ca` | `GPL-3.0-or-later` | `nintendo3dscore/src/main/cpp/vulkan_render_host.cpp`<br>`nintendo3dscore/src/main/cpp/vulkan_render_host.h` | https://github.com/libretro/RetroArch.git |
+| `libretro-common/include/libretro_vulkan.h` | `81478f2aa2abb942cfacb2109cbc25a4bd3b46ca` | `MIT` | `nintendo3dscore/src/main/cpp/libretro_vulkan_abi.h` | https://github.com/libretro/RetroArch.git |
+| `libretro-common/include/libretro.h` | `81478f2aa2abb942cfacb2109cbc25a4bd3b46ca` | `MIT` | `nintendo3dscore/src/main/cpp/libretro_gameplay_abi.h` | https://github.com/libretro/RetroArch.git |
+
+## Linked dependencies
+
+| Source path | Commit | License expression | Evidence | Repository |
+| --- | --- | --- | --- | --- |
+| `externals/boost` | `6a85c3100499e886e11c87a5c2109eedacea0a61` | `BSL-1.0` | `LICENSE_1_0.txt` | https://github.com/azahar-emu/ext-boost.git |
+| `externals/cryptopp` | `8d92d788421483a43e09acf1cd4a2861cb2b8cab` | `BSL-1.0 AND LicenseRef-CryptoPP-Multi` | `LICENSE` | https://github.com/cryptopp-modern/cryptopp-modern.git |
+| `externals/dynarmic` | `e77b1ba0b7da7cbe93021b01a663acfe7c4dd516` | `ISC` | `LICENSE.txt` | https://github.com/azahar-emu/dynarmic.git |
+| `externals/dynarmic/externals/mcl` | `5fc4beaf331037649b10625736b41365defb4f50` | `MIT` | `LICENSE` | https://github.com/azahar-emu/mcl.git |
+| `externals/dynarmic/externals/robin-map` | `054ec5ad67440fcd65e0497e5a27ef31f53fcc7f` | `MIT` | `LICENSE` | https://github.com/Tessil/robin-map.git |
+| `externals/enet` | `2662c0de09e36f2a2030ccc2c528a3e4c9e8138a` | `MIT` | `LICENSE` | https://github.com/lsalzman/enet.git |
+| `externals/faad2/faad2` | `216f00e8ddba6f2c64caf481a04f1ddd78b93e78` | `GPL-2.0-or-later` | `COPYING` | https://github.com/knik0/faad2 |
+| `externals/fmt` | `e424e3f2e607da02742f73db84873b8084fc714c` | `MIT` | `LICENSE` | https://github.com/fmtlib/fmt.git |
+| `externals/glslang` | `fc9889c889561c5882e83819dcaffef5ed45529b` | `BSD-3-Clause AND LicenseRef-glslang-Multi` | `LICENSE.txt` | https://github.com/KhronosGroup/glslang |
+| `externals/libretro-common/libretro-common` | `7fc7feeddca391be65c94e6541381467684b814d` | `MIT` | `include/libretro.h`<br>`compat/compat_posix_string.c`<br>`compat/compat_strl.c`<br>`compat/fopen_utf8.c`<br>`encodings/encoding_utf.c`<br>`file/file_path.c`<br>`streams/file_stream_transforms.c`<br>`streams/file_stream.c`<br>`string/stdstring.c`<br>`time/rtime.c`<br>`vfs/vfs_implementation.c` | https://github.com/libretro/libretro-common.git |
+| `externals/lodepng/lodepng` | `0b1d9ccfc2093e5d6620cd9a11d03ee6ff6705f5` | `Zlib` | `LICENSE` | https://github.com/lvandeve/lodepng.git |
+| `externals/oaknut` | `6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152` | `MIT` | `LICENSE` | https://github.com/merryhime/oaknut.git |
+| `externals/sirit/sirit` | `37d49d2aa4c0a62f872720d6e5f2eaf90b2c95fa` | `BSD-3-Clause` | `LICENSE.txt` | https://github.com/azahar-emu/sirit |
+| `externals/soundtouch` | `9ef8458d8561d9471dd20e9619e3be4cfe564796` | `LGPL-2.1-or-later` | `COPYING.TXT` | https://github.com/azahar-emu/soundtouch.git |
+| `externals/spirv-headers` | `aa6cef192b8e693916eb713e7a9ccadf06062ceb` | `MIT AND LicenseRef-SPIRV-Headers-Multi` | `LICENSE` | https://github.com/KhronosGroup/SPIRV-Headers |
+| `externals/spirv-tools` | `a62abcb402009b9ca5975e6167c09f237f630e0e` | `Apache-2.0` | `LICENSE` | https://github.com/KhronosGroup/SPIRV-Tools |
+| `externals/teakra` | `3d697a18df504f4677b65129d9ab14c7c597e3eb` | `MIT` | `LICENSE` | https://github.com/wwylele/teakra.git |
+| `externals/xxHash` | `e626a72bc2321cd320e953a0ccf1584cad60f363` | `BSD-2-Clause` | `LICENSE` | https://github.com/Cyan4973/xxHash.git |
+| `externals/zstd` | `f8745da6ff1ad1e7bab384bd1f9d742439278e99` | `BSD-3-Clause` | `LICENSE` | https://github.com/facebook/zstd.git |
+
+## Explicit exclusion
+
+`externals/libressl` at `88b8e41b71099fabc57813bc06d8bc1aba050a19` is not linked. Historical OpenSSL/SSLeay terms are GPL-incompatible; HTTPS is disabled by the recorded patch.

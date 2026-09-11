@@ -1,0 +1,6 @@
+EMUORBIT_N3DS_BOOTSTRAP_1 {
+    global:
+        JNI_OnLoad;
+    local:
+        *;
+};

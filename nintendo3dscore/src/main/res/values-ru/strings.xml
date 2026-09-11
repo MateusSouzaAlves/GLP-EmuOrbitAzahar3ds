@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS недоступна</string>
+    <string name="n3ds_readiness_warning_title">Перед запуском Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">Компонент Nintendo 3DS не установлен на этом устройстве.</string>
+    <string name="n3ds_readiness_core_invalid">Установленный компонент Nintendo 3DS несовместим или повреждён.</string>
+    <string name="n3ds_readiness_arm64_required">На этом устройстве нет среды ARM64, необходимой эмулятору.</string>
+    <string name="n3ds_readiness_vulkan_required">На этом устройстве нет версии Vulkan, необходимой эмулятору.</string>
+    <string name="n3ds_readiness_content_unavailable">Файл игры больше недоступен или не читается.</string>
+    <string name="n3ds_readiness_content_requires_extraction">Распакуйте игру перед запуском. Образы Nintendo 3DS внутри ZIP- или RAR-файлов не открываются напрямую.</string>
+    <string name="n3ds_readiness_content_encrypted">Эта игра зашифрована. Используйте только законно полученную расшифрованную копию; приложение не предоставляет ключи.</string>
+    <string name="n3ds_readiness_storage_low">Недостаточно закрытого хранилища для подготовки и запуска этой игры.</string>
+    <string name="n3ds_readiness_mii_required">Этой игре нужны принадлежащие вам данные Mii. Импортируйте CFL_DB.dat через средство выбора файлов.</string>
+    <string name="n3ds_readiness_mii_optional">Можно импортировать принадлежащие вам данные Mii, чтобы включить дополнительные функции этой игры.</string>
+    <string name="n3ds_readiness_device_unqualified">Это устройство ещё не прошло проверку производительности Nintendo 3DS. Игра может работать медленно или нестабильно.</string>
+    <string name="n3ds_readiness_action_understood">Понятно</string>
+    <string name="n3ds_readiness_action_retry">Повторить</string>
+    <string name="n3ds_readiness_action_open_storage">Открыть хранилище</string>
+    <string name="n3ds_readiness_action_import_mii">Импортировать мои данные Mii</string>
+    <string name="n3ds_readiness_action_extract_content">Как распаковать</string>
+    <string name="n3ds_readiness_action_continue">Всё равно продолжить</string>
+    <string name="n3ds_settings_global_title">Настройки Nintendo 3DS</string>
+    <string name="n3ds_settings_game_title">Настройки этой игры</string>
+    <string name="n3ds_settings_screen_layout">Расположение экранов</string>
+    <string name="n3ds_settings_layout_default">По умолчанию</string>
+    <string name="n3ds_settings_layout_side_by_side">Рядом</string>
+    <string name="n3ds_settings_layout_large_top">Большой верхний экран</string>
+    <string name="n3ds_settings_layout_large_bottom">Большой нижний экран</string>
+    <string name="n3ds_settings_layout_single_top">Только верхний экран</string>
+    <string name="n3ds_settings_layout_single_bottom">Только нижний экран</string>
+    <string name="n3ds_settings_performance_profile">Профиль производительности</string>
+    <string name="n3ds_settings_performance_conservative">Экономичный (1×)</string>
+    <string name="n3ds_settings_performance_balanced">Сбалансированный (2×)</string>
+    <string name="n3ds_settings_performance_performance">Высокая производительность (2×, ниже точность)</string>
+    <string name="n3ds_settings_audio_enabled">Включить звук</string>
+    <string name="n3ds_settings_audio_volume">Громкость звука: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">Включить микрофон (требуется разрешение)</string>
+    <string name="n3ds_settings_save">Сохранить</string>
+    <string name="n3ds_settings_reset">Сбросить</string>
+    <string name="n3ds_product_settings">Настройки</string>
+    <string name="n3ds_product_launch_failed">Не удалось запустить Nintendo 3DS.</string>
+    <string name="n3ds_product_settings_save_failed">Не удалось сохранить настройки Nintendo 3DS.</string>
+    <string name="n3ds_product_microphone_permission_denied">Без разрешения микрофон останется выключенным.</string>
+</resources>

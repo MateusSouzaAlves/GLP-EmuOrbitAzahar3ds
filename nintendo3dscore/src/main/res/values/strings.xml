@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS indisponível</string>
+    <string name="n3ds_readiness_warning_title">Antes de jogar no Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">O componente do Nintendo 3DS não está instalado neste aparelho.</string>
+    <string name="n3ds_readiness_core_invalid">O componente instalado do Nintendo 3DS é incompatível ou está corrompido.</string>
+    <string name="n3ds_readiness_arm64_required">Este aparelho não oferece o ambiente ARM64 exigido pelo emulador.</string>
+    <string name="n3ds_readiness_vulkan_required">Este aparelho não oferece a versão Vulkan exigida pelo emulador.</string>
+    <string name="n3ds_readiness_content_unavailable">O arquivo do jogo não está mais disponível ou não pode ser lido.</string>
+    <string name="n3ds_readiness_content_requires_extraction">Extraia o jogo antes de jogar. Imagens Nintendo 3DS dentro de ZIP ou RAR não são abertas diretamente.</string>
+    <string name="n3ds_readiness_content_encrypted">Este jogo está criptografado. Use somente uma cópia descriptografada obtida legalmente; o app não fornece chaves.</string>
+    <string name="n3ds_readiness_storage_low">Não há espaço privado suficiente para preparar e executar este jogo.</string>
+    <string name="n3ds_readiness_mii_required">Este jogo precisa de dados Mii pertencentes a você. Importe um CFL_DB.dat pelo seletor de arquivos.</string>
+    <string name="n3ds_readiness_mii_optional">Dados Mii pertencentes a você podem ser importados para habilitar recursos adicionais deste jogo.</string>
+    <string name="n3ds_readiness_device_unqualified">Este aparelho ainda não concluiu a qualificação de desempenho para Nintendo 3DS. O jogo pode ficar lento ou instável.</string>
+    <string name="n3ds_readiness_action_understood">Entendi</string>
+    <string name="n3ds_readiness_action_retry">Tentar novamente</string>
+    <string name="n3ds_readiness_action_open_storage">Abrir armazenamento</string>
+    <string name="n3ds_readiness_action_import_mii">Importar meus dados Mii</string>
+    <string name="n3ds_readiness_action_extract_content">Como extrair</string>
+    <string name="n3ds_readiness_action_continue">Continuar mesmo assim</string>
+    <string name="n3ds_settings_global_title">Configurações do Nintendo 3DS</string>
+    <string name="n3ds_settings_game_title">Configurações deste jogo</string>
+    <string name="n3ds_settings_screen_layout">Layout das telas</string>
+    <string name="n3ds_settings_layout_default">Padrão</string>
+    <string name="n3ds_settings_layout_side_by_side">Lado a lado</string>
+    <string name="n3ds_settings_layout_large_top">Tela superior maior</string>
+    <string name="n3ds_settings_layout_large_bottom">Tela inferior maior</string>
+    <string name="n3ds_settings_layout_single_top">Somente tela superior</string>
+    <string name="n3ds_settings_layout_single_bottom">Somente tela inferior</string>
+    <string name="n3ds_settings_performance_profile">Perfil de desempenho</string>
+    <string name="n3ds_settings_performance_conservative">Conservador (1×)</string>
+    <string name="n3ds_settings_performance_balanced">Equilibrado (2×)</string>
+    <string name="n3ds_settings_performance_performance">Alto desempenho (2×, menor precisão)</string>
+    <string name="n3ds_settings_audio_enabled">Ativar áudio</string>
+    <string name="n3ds_settings_audio_volume">Volume do áudio: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">Ativar microfone (requer permissão)</string>
+    <string name="n3ds_settings_save">Salvar</string>
+    <string name="n3ds_settings_reset">Redefinir</string>
+    <string name="n3ds_product_settings">Configurações</string>
+    <string name="n3ds_product_launch_failed">Não foi possível iniciar o Nintendo 3DS.</string>
+    <string name="n3ds_product_settings_save_failed">Não foi possível salvar as configurações do Nintendo 3DS.</string>
+    <string name="n3ds_product_microphone_permission_denied">O microfone continuará desativado sem a permissão.</string>
+</resources>

@@ -1,0 +1,508 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:17ea2dd8-5987-5870-b155-60c14a5f38f8",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-10T14:53:08Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:generic/azahar-libretro@fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a",
+      "name": "azahar-libretro",
+      "version": "fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a",
+      "licenses": [
+        {
+          "expression": "GPL-3.0-or-later"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/azahar.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "emuorbit:recursive-submodule-status-sha256",
+        "value": "8e7520c8628a6ee809f4b2e4860af30430b1e13024812bf4983fa9547bcbc3ff"
+      },
+      {
+        "name": "emuorbit:build-artifact-sha256",
+        "value": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/boost@6a85c3100499e886e11c87a5c2109eedacea0a61",
+      "name": "externals/boost",
+      "version": "6a85c3100499e886e11c87a5c2109eedacea0a61",
+      "licenses": [
+        {
+          "expression": "BSL-1.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/ext-boost.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "6a85c3100499e886e11c87a5c2109eedacea0a61"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/cryptopp@8d92d788421483a43e09acf1cd4a2861cb2b8cab",
+      "name": "externals/cryptopp",
+      "version": "8d92d788421483a43e09acf1cd4a2861cb2b8cab",
+      "licenses": [
+        {
+          "expression": "BSL-1.0 AND LicenseRef-CryptoPP-Multi"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/cryptopp-modern/cryptopp-modern.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "8d92d788421483a43e09acf1cd4a2861cb2b8cab"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/dynarmic@e77b1ba0b7da7cbe93021b01a663acfe7c4dd516",
+      "name": "externals/dynarmic",
+      "version": "e77b1ba0b7da7cbe93021b01a663acfe7c4dd516",
+      "licenses": [
+        {
+          "expression": "ISC"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/dynarmic.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "e77b1ba0b7da7cbe93021b01a663acfe7c4dd516"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/dynarmic/externals/mcl@5fc4beaf331037649b10625736b41365defb4f50",
+      "name": "externals/dynarmic/externals/mcl",
+      "version": "5fc4beaf331037649b10625736b41365defb4f50",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/mcl.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "5fc4beaf331037649b10625736b41365defb4f50"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/dynarmic/externals/robin-map@054ec5ad67440fcd65e0497e5a27ef31f53fcc7f",
+      "name": "externals/dynarmic/externals/robin-map",
+      "version": "054ec5ad67440fcd65e0497e5a27ef31f53fcc7f",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/Tessil/robin-map.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "054ec5ad67440fcd65e0497e5a27ef31f53fcc7f"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/enet@2662c0de09e36f2a2030ccc2c528a3e4c9e8138a",
+      "name": "externals/enet",
+      "version": "2662c0de09e36f2a2030ccc2c528a3e4c9e8138a",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/lsalzman/enet.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "2662c0de09e36f2a2030ccc2c528a3e4c9e8138a"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/faad2/faad2@216f00e8ddba6f2c64caf481a04f1ddd78b93e78",
+      "name": "externals/faad2/faad2",
+      "version": "216f00e8ddba6f2c64caf481a04f1ddd78b93e78",
+      "licenses": [
+        {
+          "expression": "GPL-2.0-or-later"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/knik0/faad2"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "216f00e8ddba6f2c64caf481a04f1ddd78b93e78"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/fmt@e424e3f2e607da02742f73db84873b8084fc714c",
+      "name": "externals/fmt",
+      "version": "e424e3f2e607da02742f73db84873b8084fc714c",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/fmtlib/fmt.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "e424e3f2e607da02742f73db84873b8084fc714c"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/glslang@fc9889c889561c5882e83819dcaffef5ed45529b",
+      "name": "externals/glslang",
+      "version": "fc9889c889561c5882e83819dcaffef5ed45529b",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause AND LicenseRef-glslang-Multi"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/KhronosGroup/glslang"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "fc9889c889561c5882e83819dcaffef5ed45529b"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/libretro-common/libretro-common@7fc7feeddca391be65c94e6541381467684b814d",
+      "name": "externals/libretro-common/libretro-common",
+      "version": "7fc7feeddca391be65c94e6541381467684b814d",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/libretro/libretro-common.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "7fc7feeddca391be65c94e6541381467684b814d"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/lodepng/lodepng@0b1d9ccfc2093e5d6620cd9a11d03ee6ff6705f5",
+      "name": "externals/lodepng/lodepng",
+      "version": "0b1d9ccfc2093e5d6620cd9a11d03ee6ff6705f5",
+      "licenses": [
+        {
+          "expression": "Zlib"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/lvandeve/lodepng.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "0b1d9ccfc2093e5d6620cd9a11d03ee6ff6705f5"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/oaknut@6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152",
+      "name": "externals/oaknut",
+      "version": "6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/merryhime/oaknut.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/sirit/sirit@37d49d2aa4c0a62f872720d6e5f2eaf90b2c95fa",
+      "name": "externals/sirit/sirit",
+      "version": "37d49d2aa4c0a62f872720d6e5f2eaf90b2c95fa",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/sirit"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "37d49d2aa4c0a62f872720d6e5f2eaf90b2c95fa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/soundtouch@9ef8458d8561d9471dd20e9619e3be4cfe564796",
+      "name": "externals/soundtouch",
+      "version": "9ef8458d8561d9471dd20e9619e3be4cfe564796",
+      "licenses": [
+        {
+          "expression": "LGPL-2.1-or-later"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/azahar-emu/soundtouch.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "9ef8458d8561d9471dd20e9619e3be4cfe564796"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/spirv-headers@aa6cef192b8e693916eb713e7a9ccadf06062ceb",
+      "name": "externals/spirv-headers",
+      "version": "aa6cef192b8e693916eb713e7a9ccadf06062ceb",
+      "licenses": [
+        {
+          "expression": "MIT AND LicenseRef-SPIRV-Headers-Multi"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/KhronosGroup/SPIRV-Headers"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "aa6cef192b8e693916eb713e7a9ccadf06062ceb"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/spirv-tools@a62abcb402009b9ca5975e6167c09f237f630e0e",
+      "name": "externals/spirv-tools",
+      "version": "a62abcb402009b9ca5975e6167c09f237f630e0e",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/KhronosGroup/SPIRV-Tools"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "a62abcb402009b9ca5975e6167c09f237f630e0e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/teakra@3d697a18df504f4677b65129d9ab14c7c597e3eb",
+      "name": "externals/teakra",
+      "version": "3d697a18df504f4677b65129d9ab14c7c597e3eb",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/wwylele/teakra.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "3d697a18df504f4677b65129d9ab14c7c597e3eb"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/xxHash@e626a72bc2321cd320e953a0ccf1584cad60f363",
+      "name": "externals/xxHash",
+      "version": "e626a72bc2321cd320e953a0ccf1584cad60f363",
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/Cyan4973/xxHash.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "e626a72bc2321cd320e953a0ccf1584cad60f363"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/externals/zstd@f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+      "name": "externals/zstd",
+      "version": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/facebook/zstd.git"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emuorbit:git-commit",
+          "value": "f8745da6ff1ad1e7bab384bd1f9d742439278e99"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/azahar-libretro@fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a",
+      "dependsOn": [
+        "pkg:generic/externals/boost@6a85c3100499e886e11c87a5c2109eedacea0a61",
+        "pkg:generic/externals/cryptopp@8d92d788421483a43e09acf1cd4a2861cb2b8cab",
+        "pkg:generic/externals/dynarmic@e77b1ba0b7da7cbe93021b01a663acfe7c4dd516",
+        "pkg:generic/externals/dynarmic/externals/mcl@5fc4beaf331037649b10625736b41365defb4f50",
+        "pkg:generic/externals/dynarmic/externals/robin-map@054ec5ad67440fcd65e0497e5a27ef31f53fcc7f",
+        "pkg:generic/externals/enet@2662c0de09e36f2a2030ccc2c528a3e4c9e8138a",
+        "pkg:generic/externals/faad2/faad2@216f00e8ddba6f2c64caf481a04f1ddd78b93e78",
+        "pkg:generic/externals/fmt@e424e3f2e607da02742f73db84873b8084fc714c",
+        "pkg:generic/externals/glslang@fc9889c889561c5882e83819dcaffef5ed45529b",
+        "pkg:generic/externals/libretro-common/libretro-common@7fc7feeddca391be65c94e6541381467684b814d",
+        "pkg:generic/externals/lodepng/lodepng@0b1d9ccfc2093e5d6620cd9a11d03ee6ff6705f5",
+        "pkg:generic/externals/oaknut@6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152",
+        "pkg:generic/externals/sirit/sirit@37d49d2aa4c0a62f872720d6e5f2eaf90b2c95fa",
+        "pkg:generic/externals/soundtouch@9ef8458d8561d9471dd20e9619e3be4cfe564796",
+        "pkg:generic/externals/spirv-headers@aa6cef192b8e693916eb713e7a9ccadf06062ceb",
+        "pkg:generic/externals/spirv-tools@a62abcb402009b9ca5975e6167c09f237f630e0e",
+        "pkg:generic/externals/teakra@3d697a18df504f4677b65129d9ab14c7c597e3eb",
+        "pkg:generic/externals/xxHash@e626a72bc2321cd320e953a0ccf1584cad60f363",
+        "pkg:generic/externals/zstd@f8745da6ff1ad1e7bab384bd1f9d742439278e99"
+      ]
+    }
+  ]
+}

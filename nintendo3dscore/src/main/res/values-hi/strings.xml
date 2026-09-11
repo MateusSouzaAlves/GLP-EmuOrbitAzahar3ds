@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS उपलब्ध नहीं है</string>
+    <string name="n3ds_readiness_warning_title">Nintendo 3DS खेलने से पहले</string>
+    <string name="n3ds_readiness_core_missing">इस डिवाइस पर Nintendo 3DS घटक इंस्टॉल नहीं है।</string>
+    <string name="n3ds_readiness_core_invalid">इंस्टॉल किया गया Nintendo 3DS घटक असंगत या दूषित है।</string>
+    <string name="n3ds_readiness_arm64_required">इस डिवाइस में एमुलेटर के लिए आवश्यक ARM64 परिवेश उपलब्ध नहीं है।</string>
+    <string name="n3ds_readiness_vulkan_required">इस डिवाइस में एमुलेटर के लिए आवश्यक Vulkan संस्करण उपलब्ध नहीं है।</string>
+    <string name="n3ds_readiness_content_unavailable">गेम फ़ाइल अब उपलब्ध नहीं है या उसे पढ़ा नहीं जा सकता।</string>
+    <string name="n3ds_readiness_content_requires_extraction">खेलने से पहले गेम एक्सट्रैक्ट करें। ZIP या RAR में मौजूद Nintendo 3DS इमेज सीधे नहीं खोली जातीं।</string>
+    <string name="n3ds_readiness_content_encrypted">यह गेम एन्क्रिप्टेड है। केवल कानूनी रूप से प्राप्त डिक्रिप्टेड कॉपी का उपयोग करें; ऐप कुंजियाँ प्रदान नहीं करता।</string>
+    <string name="n3ds_readiness_storage_low">इस गेम को तैयार और चलाने के लिए पर्याप्त निजी स्टोरेज नहीं है।</string>
+    <string name="n3ds_readiness_mii_required">इस गेम को आपके स्वामित्व वाले Mii डेटा की आवश्यकता है। फ़ाइल पिकर से CFL_DB.dat आयात करें।</string>
+    <string name="n3ds_readiness_mii_optional">इस गेम की अतिरिक्त सुविधाएँ चालू करने के लिए आप अपने स्वामित्व वाला Mii डेटा आयात कर सकते हैं।</string>
+    <string name="n3ds_readiness_device_unqualified">इस डिवाइस ने अभी Nintendo 3DS प्रदर्शन योग्यता पूरी नहीं की है। गेम धीमा या अस्थिर हो सकता है।</string>
+    <string name="n3ds_readiness_action_understood">समझ गया</string>
+    <string name="n3ds_readiness_action_retry">फिर से कोशिश करें</string>
+    <string name="n3ds_readiness_action_open_storage">स्टोरेज खोलें</string>
+    <string name="n3ds_readiness_action_import_mii">मेरा Mii डेटा आयात करें</string>
+    <string name="n3ds_readiness_action_extract_content">एक्सट्रैक्ट करने का तरीका</string>
+    <string name="n3ds_readiness_action_continue">फिर भी जारी रखें</string>
+    <string name="n3ds_settings_global_title">Nintendo 3DS सेटिंग</string>
+    <string name="n3ds_settings_game_title">इस गेम की सेटिंग</string>
+    <string name="n3ds_settings_screen_layout">स्क्रीन लेआउट</string>
+    <string name="n3ds_settings_layout_default">डिफ़ॉल्ट</string>
+    <string name="n3ds_settings_layout_side_by_side">साथ-साथ</string>
+    <string name="n3ds_settings_layout_large_top">बड़ी ऊपरी स्क्रीन</string>
+    <string name="n3ds_settings_layout_large_bottom">बड़ी निचली स्क्रीन</string>
+    <string name="n3ds_settings_layout_single_top">केवल ऊपरी स्क्रीन</string>
+    <string name="n3ds_settings_layout_single_bottom">केवल निचली स्क्रीन</string>
+    <string name="n3ds_settings_performance_profile">प्रदर्शन प्रोफ़ाइल</string>
+    <string name="n3ds_settings_performance_conservative">संरक्षण (1×)</string>
+    <string name="n3ds_settings_performance_balanced">संतुलित (2×)</string>
+    <string name="n3ds_settings_performance_performance">उच्च प्रदर्शन (2×, कम सटीकता)</string>
+    <string name="n3ds_settings_audio_enabled">ऑडियो चालू करें</string>
+    <string name="n3ds_settings_audio_volume">ऑडियो वॉल्यूम: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">माइक्रोफ़ोन चालू करें (अनुमति आवश्यक)</string>
+    <string name="n3ds_settings_save">सहेजें</string>
+    <string name="n3ds_settings_reset">रीसेट करें</string>
+    <string name="n3ds_product_settings">सेटिंग</string>
+    <string name="n3ds_product_launch_failed">Nintendo 3DS शुरू नहीं किया जा सका।</string>
+    <string name="n3ds_product_settings_save_failed">Nintendo 3DS सेटिंग सहेजी नहीं जा सकीं।</string>
+    <string name="n3ds_product_microphone_permission_denied">अनुमति के बिना माइक्रोफ़ोन बंद रहेगा।</string>
+</resources>

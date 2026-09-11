@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS 不可用</string>
+    <string name="n3ds_readiness_warning_title">开始 Nintendo 3DS 游戏之前</string>
+    <string name="n3ds_readiness_core_missing">此设备尚未安装 Nintendo 3DS 组件。</string>
+    <string name="n3ds_readiness_core_invalid">已安装的 Nintendo 3DS 组件不兼容或已损坏。</string>
+    <string name="n3ds_readiness_arm64_required">此设备不具备模拟器所需的 ARM64 环境。</string>
+    <string name="n3ds_readiness_vulkan_required">此设备不支持模拟器所需的 Vulkan 版本。</string>
+    <string name="n3ds_readiness_content_unavailable">游戏文件已不可用或无法读取。</string>
+    <string name="n3ds_readiness_content_requires_extraction">请先解压游戏再开始。ZIP 或 RAR 文件中的 Nintendo 3DS 镜像无法直接打开。</string>
+    <string name="n3ds_readiness_content_encrypted">此游戏已加密。请仅使用合法取得的已解密副本；本应用不提供密钥。</string>
+    <string name="n3ds_readiness_storage_low">私有存储空间不足，无法准备并运行此游戏。</string>
+    <string name="n3ds_readiness_mii_required">此游戏需要属于您的 Mii 数据。请通过文件选择器导入 CFL_DB.dat。</string>
+    <string name="n3ds_readiness_mii_optional">您可以导入属于自己的 Mii 数据，以启用此游戏的其他功能。</string>
+    <string name="n3ds_readiness_device_unqualified">此设备尚未完成 Nintendo 3DS 性能认证。游戏可能运行缓慢或不稳定。</string>
+    <string name="n3ds_readiness_action_understood">知道了</string>
+    <string name="n3ds_readiness_action_retry">重试</string>
+    <string name="n3ds_readiness_action_open_storage">打开存储设置</string>
+    <string name="n3ds_readiness_action_import_mii">导入我的 Mii 数据</string>
+    <string name="n3ds_readiness_action_extract_content">如何解压</string>
+    <string name="n3ds_readiness_action_continue">仍然继续</string>
+    <string name="n3ds_settings_global_title">Nintendo 3DS 设置</string>
+    <string name="n3ds_settings_game_title">此游戏的设置</string>
+    <string name="n3ds_settings_screen_layout">屏幕布局</string>
+    <string name="n3ds_settings_layout_default">默认</string>
+    <string name="n3ds_settings_layout_side_by_side">并排</string>
+    <string name="n3ds_settings_layout_large_top">放大上屏</string>
+    <string name="n3ds_settings_layout_large_bottom">放大下屏</string>
+    <string name="n3ds_settings_layout_single_top">仅上屏</string>
+    <string name="n3ds_settings_layout_single_bottom">仅下屏</string>
+    <string name="n3ds_settings_performance_profile">性能配置</string>
+    <string name="n3ds_settings_performance_conservative">节能（1×）</string>
+    <string name="n3ds_settings_performance_balanced">均衡（2×）</string>
+    <string name="n3ds_settings_performance_performance">高性能（2×，较低精度）</string>
+    <string name="n3ds_settings_audio_enabled">启用音频</string>
+    <string name="n3ds_settings_audio_volume">音量：%1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">启用麦克风（需要权限）</string>
+    <string name="n3ds_settings_save">保存</string>
+    <string name="n3ds_settings_reset">重置</string>
+    <string name="n3ds_product_settings">设置</string>
+    <string name="n3ds_product_launch_failed">无法启动 Nintendo 3DS。</string>
+    <string name="n3ds_product_settings_save_failed">无法保存 Nintendo 3DS 设置。</string>
+    <string name="n3ds_product_microphone_permission_denied">未授予权限时，麦克风将保持关闭。</string>
+</resources>

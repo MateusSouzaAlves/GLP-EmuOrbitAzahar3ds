@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="n3ds_readiness_blocked_title">Nintendo 3DS tidak tersedia</string>
+    <string name="n3ds_readiness_warning_title">Sebelum memainkan Nintendo 3DS</string>
+    <string name="n3ds_readiness_core_missing">Komponen Nintendo 3DS belum terpasang di perangkat ini.</string>
+    <string name="n3ds_readiness_core_invalid">Komponen Nintendo 3DS yang terpasang tidak kompatibel atau rusak.</string>
+    <string name="n3ds_readiness_arm64_required">Perangkat ini tidak menyediakan lingkungan ARM64 yang diperlukan emulator.</string>
+    <string name="n3ds_readiness_vulkan_required">Perangkat ini tidak menyediakan versi Vulkan yang diperlukan emulator.</string>
+    <string name="n3ds_readiness_content_unavailable">File game tidak lagi tersedia atau tidak dapat dibaca.</string>
+    <string name="n3ds_readiness_content_requires_extraction">Ekstrak game sebelum bermain. Image Nintendo 3DS di dalam file ZIP atau RAR tidak dibuka secara langsung.</string>
+    <string name="n3ds_readiness_content_encrypted">Game ini terenkripsi. Gunakan hanya salinan terdekripsi yang diperoleh secara sah; aplikasi tidak menyediakan kunci.</string>
+    <string name="n3ds_readiness_storage_low">Penyimpanan privat tidak cukup untuk menyiapkan dan menjalankan game ini.</string>
+    <string name="n3ds_readiness_mii_required">Game ini memerlukan data Mii milik Anda. Impor CFL_DB.dat dengan pemilih file.</string>
+    <string name="n3ds_readiness_mii_optional">Data Mii milik Anda dapat diimpor untuk mengaktifkan fitur tambahan dalam game ini.</string>
+    <string name="n3ds_readiness_device_unqualified">Perangkat ini belum menyelesaikan kualifikasi performa Nintendo 3DS. Game mungkin lambat atau tidak stabil.</string>
+    <string name="n3ds_readiness_action_understood">Mengerti</string>
+    <string name="n3ds_readiness_action_retry">Coba lagi</string>
+    <string name="n3ds_readiness_action_open_storage">Buka penyimpanan</string>
+    <string name="n3ds_readiness_action_import_mii">Impor data Mii saya</string>
+    <string name="n3ds_readiness_action_extract_content">Cara mengekstrak</string>
+    <string name="n3ds_readiness_action_continue">Tetap lanjutkan</string>
+    <string name="n3ds_settings_global_title">Setelan Nintendo 3DS</string>
+    <string name="n3ds_settings_game_title">Setelan untuk game ini</string>
+    <string name="n3ds_settings_screen_layout">Tata letak layar</string>
+    <string name="n3ds_settings_layout_default">Default</string>
+    <string name="n3ds_settings_layout_side_by_side">Berdampingan</string>
+    <string name="n3ds_settings_layout_large_top">Layar atas besar</string>
+    <string name="n3ds_settings_layout_large_bottom">Layar bawah besar</string>
+    <string name="n3ds_settings_layout_single_top">Hanya layar atas</string>
+    <string name="n3ds_settings_layout_single_bottom">Hanya layar bawah</string>
+    <string name="n3ds_settings_performance_profile">Profil performa</string>
+    <string name="n3ds_settings_performance_conservative">Hemat (1×)</string>
+    <string name="n3ds_settings_performance_balanced">Seimbang (2×)</string>
+    <string name="n3ds_settings_performance_performance">Performa tinggi (2×, akurasi lebih rendah)</string>
+    <string name="n3ds_settings_audio_enabled">Aktifkan audio</string>
+    <string name="n3ds_settings_audio_volume">Volume audio: %1$d%%</string>
+    <string name="n3ds_settings_microphone_enabled">Aktifkan mikrofon (memerlukan izin)</string>
+    <string name="n3ds_settings_save">Simpan</string>
+    <string name="n3ds_settings_reset">Reset</string>
+    <string name="n3ds_product_settings">Setelan</string>
+    <string name="n3ds_product_launch_failed">Nintendo 3DS tidak dapat dimulai.</string>
+    <string name="n3ds_product_settings_save_failed">Setelan Nintendo 3DS tidak dapat disimpan.</string>
+    <string name="n3ds_product_microphone_permission_denied">Mikrofon akan tetap dinonaktifkan tanpa izin.</string>
+</resources>

@@ -1,0 +1,43 @@
+diff --git a/src/common/file_util.cpp b/src/common/file_util.cpp
+index 635bf986b..df4f55a5e 100644
+--- a/src/common/file_util.cpp
++++ b/src/common/file_util.cpp
+@@ -102,5 +102,6 @@ typedef struct stat file_stat_t;
+ #define FERROR rferror
+ #define FFLUSH rfflush
++#define FSEEK_FAILED(result) ((result) < 0)
+ 
+ #else
+ 
+@@ -115,6 +116,7 @@ typedef struct stat file_stat_t;
+ #define FEOF feof
+ #define FERROR ferror
+ #define FFLUSH std::fflush
++#define FSEEK_FAILED(result) ((result) != 0)
+ 
+ #ifdef _MSC_VER
+ #define DUP_FD _dup
+@@ -559,12 +561,12 @@ u64 GetSize(const int fd) {
+ u64 GetSize(FILE* f) {
+     // can't use off_t here because it can be 32-bit
+     u64 pos = FTELL(f);
+-    if (FSEEK(f, 0, SEEK_END) != 0) {
++    if (FSEEK_FAILED(FSEEK(f, 0, SEEK_END))) {
+         LOG_ERROR(Common_Filesystem, "GetSize: seek failed {}: {}", fmt::ptr(f), GetLastErrorMsg());
+         return 0;
+     }
+     u64 size = FTELL(f);
+-    if ((size != pos) && (FSEEK(f, pos, SEEK_SET) != 0)) {
++    if ((size != pos) && FSEEK_FAILED(FSEEK(f, pos, SEEK_SET))) {
+         LOG_ERROR(Common_Filesystem, "GetSize: seek failed {}: {}", fmt::ptr(f), GetLastErrorMsg());
+         return 0;
+     }
+@@ -1416,7 +1418,7 @@ u64 IOFile::GetSize() const {
+ }
+ 
+ bool IOFile::Seek(s64 off, int origin) {
+-    if (!IsOpen() || 0 != FSEEK(m_file, off, origin))
++    if (!IsOpen() || FSEEK_FAILED(FSEEK(m_file, off, origin)))
+         m_good = false;
+ 
+     return m_good;
