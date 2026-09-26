@@ -218,5 +218,8 @@ using DeinitFunction = void (*)();
 using LoadGameFunction = bool (*)(const GameInfo*);
 using UnloadGameFunction = void (*)();
 using RunFunction = void (*)();
+using SerializeSizeFunction = size_t (*)();
+using SerializeFunction = bool (*)(void*, size_t);
+using UnserializeFunction = bool (*)(const void*, size_t);
 
 }  // namespace emuorbit::n3ds

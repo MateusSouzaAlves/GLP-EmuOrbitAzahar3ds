@@ -200,7 +200,7 @@ public final class Nintendo3DsExperimentalHost implements AutoCloseable {
         File checkedContent = Objects.requireNonNull(content);
         return new Nintendo3DsCoreLifecycleController(
                 context,
-                checkedCore.getAbsolutePath(),
+                Nintendo3DsProductLaunchRequest.serializeCorePath(checkedCore),
                 checkedContent.getAbsolutePath(),
                 storageLayout,
                 Nintendo3DsStorageLayout.CURRENT_CORE_REVISION);

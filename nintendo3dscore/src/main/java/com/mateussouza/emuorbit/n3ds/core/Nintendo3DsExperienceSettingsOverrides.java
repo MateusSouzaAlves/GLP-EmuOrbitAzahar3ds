@@ -10,13 +10,22 @@ public final class Nintendo3DsExperienceSettingsOverrides {
     private final Boolean audioEnabled;
     private final Float audioVolume;
     private final Boolean microphoneEnabled;
+    private final Boolean virtualControlsVisible;
+    private final Integer virtualControlOpacityPercent;
 
     public Nintendo3DsExperienceSettingsOverrides(
             Nintendo3DsScreenLayout screenLayout,
             Boolean audioEnabled,
             Float audioVolume,
             Boolean microphoneEnabled) {
-        this(screenLayout, null, audioEnabled, audioVolume, microphoneEnabled);
+        this(
+                screenLayout,
+                null,
+                audioEnabled,
+                audioVolume,
+                microphoneEnabled,
+                null,
+                null);
     }
 
     public Nintendo3DsExperienceSettingsOverrides(
@@ -25,6 +34,24 @@ public final class Nintendo3DsExperienceSettingsOverrides {
             Boolean audioEnabled,
             Float audioVolume,
             Boolean microphoneEnabled) {
+        this(
+                screenLayout,
+                performanceProfile,
+                audioEnabled,
+                audioVolume,
+                microphoneEnabled,
+                null,
+                null);
+    }
+
+    public Nintendo3DsExperienceSettingsOverrides(
+            Nintendo3DsScreenLayout screenLayout,
+            Nintendo3DsPerformanceProfile performanceProfile,
+            Boolean audioEnabled,
+            Float audioVolume,
+            Boolean microphoneEnabled,
+            Boolean virtualControlsVisible,
+            Integer virtualControlOpacityPercent) {
         this.screenLayout = screenLayout;
         this.performanceProfile = performanceProfile;
         this.audioEnabled = audioEnabled;
@@ -32,10 +59,16 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 ? null
                 : Nintendo3DsExperienceSettings.normalizeAudioVolume(audioVolume);
         this.microphoneEnabled = microphoneEnabled;
+        this.virtualControlsVisible = virtualControlsVisible;
+        this.virtualControlOpacityPercent = virtualControlOpacityPercent == null
+                ? null
+                : Nintendo3DsExperienceSettings.normalizeVirtualControlOpacity(
+                        virtualControlOpacityPercent);
     }
 
     public static Nintendo3DsExperienceSettingsOverrides none() {
-        return new Nintendo3DsExperienceSettingsOverrides(null, null, null, null, null);
+        return new Nintendo3DsExperienceSettingsOverrides(
+                null, null, null, null, null, null, null);
     }
 
     public static Nintendo3DsExperienceSettingsOverrides between(
@@ -53,7 +86,12 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 Float.compare(global.getAudioVolume(), selected.getAudioVolume()) == 0
                         ? null : selected.getAudioVolume(),
                 global.isMicrophoneEnabled() == selected.isMicrophoneEnabled()
-                        ? null : selected.isMicrophoneEnabled());
+                        ? null : selected.isMicrophoneEnabled(),
+                global.areVirtualControlsVisible() == selected.areVirtualControlsVisible()
+                        ? null : selected.areVirtualControlsVisible(),
+                global.getVirtualControlOpacityPercent()
+                                == selected.getVirtualControlOpacityPercent()
+                        ? null : selected.getVirtualControlOpacityPercent());
     }
 
     public Nintendo3DsExperienceSettings resolve(Nintendo3DsExperienceSettings global) {
@@ -65,7 +103,12 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 audioEnabled == null ? global.isAudioEnabled() : audioEnabled,
                 audioVolume == null ? global.getAudioVolume() : audioVolume,
                 microphoneEnabled == null
-                        ? global.isMicrophoneEnabled() : microphoneEnabled);
+                        ? global.isMicrophoneEnabled() : microphoneEnabled,
+                virtualControlsVisible == null
+                        ? global.areVirtualControlsVisible() : virtualControlsVisible,
+                virtualControlOpacityPercent == null
+                        ? global.getVirtualControlOpacityPercent()
+                        : virtualControlOpacityPercent);
     }
 
     public boolean isEmpty() {
@@ -73,7 +116,9 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 && performanceProfile == null
                 && audioEnabled == null
                 && audioVolume == null
-                && microphoneEnabled == null;
+                && microphoneEnabled == null
+                && virtualControlsVisible == null
+                && virtualControlOpacityPercent == null;
     }
 
     public Nintendo3DsScreenLayout getScreenLayout() {
@@ -96,6 +141,14 @@ public final class Nintendo3DsExperienceSettingsOverrides {
         return microphoneEnabled;
     }
 
+    public Boolean getVirtualControlsVisible() {
+        return virtualControlsVisible;
+    }
+
+    public Integer getVirtualControlOpacityPercent() {
+        return virtualControlOpacityPercent;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -110,7 +163,11 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 && performanceProfile == value.performanceProfile
                 && Objects.equals(audioEnabled, value.audioEnabled)
                 && Objects.equals(audioVolume, value.audioVolume)
-                && Objects.equals(microphoneEnabled, value.microphoneEnabled);
+                && Objects.equals(microphoneEnabled, value.microphoneEnabled)
+                && Objects.equals(virtualControlsVisible, value.virtualControlsVisible)
+                && Objects.equals(
+                        virtualControlOpacityPercent,
+                        value.virtualControlOpacityPercent);
     }
 
     @Override
@@ -120,6 +177,8 @@ public final class Nintendo3DsExperienceSettingsOverrides {
                 performanceProfile,
                 audioEnabled,
                 audioVolume,
-                microphoneEnabled);
+                microphoneEnabled,
+                virtualControlsVisible,
+                virtualControlOpacityPercent);
     }
 }

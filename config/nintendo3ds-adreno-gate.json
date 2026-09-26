@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "planItems": ["N3DS-06C", "N3DS-11D", "N3DS-13D"],
+  "purpose": "PORTABLE_PHYSICAL_ADRENO_ACCEPTANCE",
+  "requiresPhysicalDevice": true,
+  "commercialContentAllowed": false,
+  "paidServiceActivationAllowed": false,
+  "minimumSdk": 26,
+  "requiredAbi": "arm64-v8a",
+  "acceptanceGpuRegex": "(?i)\\bAdreno(?:\\s|$)",
+  "emulatedOrNonTargetGpuRegex": "(?i)(SwiftShader|llvmpipe|Xclipse|Mali)",
+  "testPackage": "com.mateussouza.emuorbit.n3ds.core.test",
+  "cloudTargetPackage": "com.mateussouza.emuorbit.n3ds.adreno.target",
+  "instrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+  "core": {
+    "bundlePath": "azahar_libretro.so",
+    "bytes": 23157736,
+    "sha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c",
+    "licenseSpdx": "GPL-3.0-or-later",
+    "correspondingSourceRepository": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
+    "correspondingSourceCommit": "85ff5ce78e439e5d9fae84dd45165f061a9f18ed"
+  },
+  "content": {
+    "slotId": "OPEN_HOMEBREW_7",
+    "bundlePath": "open-homebrew.3dsx",
+    "assetUrl": "https://github.com/BotRandomness/Mars3DS/releases/download/v1.0.0/Mars3D.3dsx",
+    "bytes": 713384,
+    "sha256": "00fb87d97ecb866a99902740ab67e38e05f81d74295e0c3774eb62b90b0a335b",
+    "licenseSpdx": "MIT",
+    "licenseUrl": "https://raw.githubusercontent.com/BotRandomness/Mars3DS/v1.0.0/LICENSE",
+    "licenseBytes": 1071,
+    "licenseSha256": "e7263faf3265216f672f54cedc9f8e112182c80c8b97031b53379fefc0b42f32"
+  },
+  "focalTests": [
+    {
+      "id": "VULKAN_SWAPCHAIN",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsHardwareRenderHostInstrumentedTest#createsPresentsAndDestroysRealAndroidSwapchain",
+      "evidenceToken": "N3DS_VULKAN_REPORT"
+    },
+    {
+      "id": "VULKAN_SURFACE_RECREATION",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsHardwareRenderHostInstrumentedTest#repeatsSurfaceLifecycleWithoutLeakingNativeOwnership",
+      "evidenceToken": null
+    },
+    {
+      "id": "AZAHAR_60_FRAMES",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#loadsAzaharNegotiatesVulkanAndPresentsRealFrames",
+      "evidenceToken": "N3DS_CORE_FRAME"
+    },
+    {
+      "id": "PROFILE_SWITCH",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#appliesPerformanceProfileBeforeSessionAndRecreatesAtomically",
+      "evidenceToken": "N3DS_PROFILE_SWITCH"
+    },
+    {
+      "id": "AUDIO_FRONTEND",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#validatesAudioFrontendForSilentOrPcmHomebrew",
+      "evidenceToken": "N3DS_AUDIO_FRONTEND"
+    },
+    {
+      "id": "INPUT_TOUCH_LIFECYCLE",
+      "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#forwardsDigitalAnalogAndTouchThroughAzaharLibretroInput",
+      "evidenceToken": "N3DS_INPUT"
+    }
+  ],
+  "longRun": {
+    "requiredForAcceptance": true,
+    "profile": "balanced",
+    "minutes": 20,
+    "minimumSpeedPercent": 95.0,
+    "maximumPssGrowthKilobytes": 524288,
+    "galaxyProfilesReused": ["conservative", "balanced", "performance"],
+    "classMethod": "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#sustainsSelectedPerformanceProfileForLongRun",
+    "evidenceToken": "N3DS_LONG_RUN"
+  },
+  "localLifecycleGate": {
+    "requiredForN3ds06": true,
+    "classMethods": [
+      "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreLifecycleInstrumentedTest#closesAndRecreatesOwnerThreadSessionAcrossAndroidLifecycle",
+      "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreLifecycleInstrumentedTest#survivesRealLauncherSwitchesAndScreenOffOn",
+      "com.mateussouza.emuorbit.n3ds.core.Nintendo3DsCoreSessionInstrumentedTest#restoresTransientLifecycleStateAcrossFreshController"
+    ],
+    "evidenceTokens": ["N3DS_ANDROID_LIFECYCLE", "N3DS_EXTERNAL_LIFECYCLE"],
+    "framesPerTransition": 2,
+    "externalLifecycleCycles": 3,
+    "requiredPhysicalDevices": [
+      {"name": "Samsung Galaxy A37 5G", "status": "PASSED"},
+      {"name": "Samsung Galaxy A34 5G", "status": "PASSED"},
+      {"name": "Poco X6 Pro", "status": "PASSED"}
+    ],
+    "remoteSubstitutionAllowed": false,
+    "executionPolicy": "RUN_ONCE_PER_FINAL_LOCAL_DEVICE_GATE"
+  },
+  "firebaseTestLab": {
+    "projectId": "emuorbitadvance",
+    "requiredBillingPlan": "SPARK",
+    "billingMustBeDisabled": true,
+    "noCostOnly": true,
+    "deviceForm": "PHYSICAL",
+    "recommendedDeviceCatalogId": "redfin-30",
+    "recommendedDeviceName": "Google Pixel 5",
+    "recommendedModelId": "redfin",
+    "recommendedAndroidVersionId": "30",
+    "recommendedSoc": "Qualcomm Snapdragon 765G",
+    "recommendedGpu": "Qualcomm Adreno 620",
+    "matrixTimeoutMinutes": 45,
+    "orientation": "portrait",
+    "locale": "pt_BR",
+    "targetApk": "emuorbit-n3ds-firebase-target.apk",
+    "testApk": "emuorbit-n3ds-firebase-test.apk",
+    "expectedGpuArgument": "n3dsExpectedGpuRegex"
+  },
+  "requiredBundleFiles": [
+    "adreno-gate.json",
+    "azahar_libretro.so",
+    "bundle-manifest.json",
+    "emuorbit-n3ds-adreno-test.apk",
+    "emuorbit-n3ds-firebase-target.apk",
+    "emuorbit-n3ds-firebase-test.apk",
+    "MARS3DS_LICENSE.txt",
+    "open-homebrew.3dsx",
+    "README.txt",
+    "run-adreno-gate.ps1",
+    "run-firebase-adreno-gate.ps1",
+    "THIRD_PARTY_NOTICES.txt"
+  ]
+}

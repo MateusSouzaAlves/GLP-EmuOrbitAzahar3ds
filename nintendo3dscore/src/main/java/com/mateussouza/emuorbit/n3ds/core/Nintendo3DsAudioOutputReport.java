@@ -11,6 +11,7 @@ public final class Nintendo3DsAudioOutputReport {
     private final long writtenFrames;
     private final long decimatedFrames;
     private final long droppedFrames;
+    private final int pendingFrames;
     private final long shortWrites;
     private final long nonBlockingWriteCalls;
     private final long underruns;
@@ -31,6 +32,7 @@ public final class Nintendo3DsAudioOutputReport {
             long writtenFrames,
             long decimatedFrames,
             long droppedFrames,
+            int pendingFrames,
             long shortWrites,
             long nonBlockingWriteCalls,
             long underruns,
@@ -49,6 +51,7 @@ public final class Nintendo3DsAudioOutputReport {
         this.writtenFrames = writtenFrames;
         this.decimatedFrames = decimatedFrames;
         this.droppedFrames = droppedFrames;
+        this.pendingFrames = Math.max(0, pendingFrames);
         this.shortWrites = shortWrites;
         this.nonBlockingWriteCalls = nonBlockingWriteCalls;
         this.underruns = underruns;
@@ -76,6 +79,8 @@ public final class Nintendo3DsAudioOutputReport {
     public long getDecimatedFrames() { return decimatedFrames; }
 
     public long getDroppedFrames() { return droppedFrames; }
+
+    public int getPendingFrames() { return pendingFrames; }
 
     public long getShortWrites() { return shortWrites; }
 

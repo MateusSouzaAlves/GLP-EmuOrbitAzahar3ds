@@ -23,7 +23,7 @@ public final class Nintendo3DsLaunchReadiness {
         CONTENT_REQUIRES_EXTRACTION(Severity.BLOCKED),
         CONTENT_ENCRYPTED(Severity.BLOCKED),
         STORAGE_LOW(Severity.BLOCKED),
-        MII_DATA_REQUIRED(Severity.BLOCKED),
+        MII_FALLBACK_ACTIVE(Severity.WARNING),
         MII_DATA_OPTIONAL(Severity.WARNING),
         DEVICE_UNQUALIFIED(Severity.WARNING);
 
@@ -51,7 +51,12 @@ public final class Nintendo3DsLaunchReadiness {
         ENCRYPTED
     }
 
-    /** The caller sets REQUIRED only with title-specific evidence; UNKNOWN is never guessed. */
+    /**
+     * The caller sets REQUIRED only with title-specific evidence; UNKNOWN is never guessed.
+     * A missing private database never blocks the pinned Azahar core because its default Mii
+     * selector supplies the upstream standard Mii. REQUIRED therefore means that fidelity may be
+     * limited and that the optional user-owned import should be offered before continuing.
+     */
     public enum MiiRequirement {
         UNKNOWN,
         NOT_REQUIRED,
@@ -158,14 +163,13 @@ public final class Nintendo3DsLaunchReadiness {
         }
         if (checked.miiDataStatus != Nintendo3DsMiiDataManager.Status.READY) {
             if (checked.miiRequirement == MiiRequirement.REQUIRED) {
-                issues.add(Issue.MII_DATA_REQUIRED);
+                issues.add(Issue.MII_FALLBACK_ACTIVE);
             } else if (checked.miiRequirement == MiiRequirement.OPTIONAL) {
                 issues.add(Issue.MII_DATA_OPTIONAL);
             }
         }
-        if (!checked.deviceQualified) {
-            issues.add(Issue.DEVICE_UNQUALIFIED);
-        }
+        // Device qualification is advisory evidence, not a per-launch warning. The app presents
+        // its hardware guidance once, using the same durable rule as the Nintendo DS notice.
 
         Severity severity = Severity.READY;
         for (Issue issue : issues) {

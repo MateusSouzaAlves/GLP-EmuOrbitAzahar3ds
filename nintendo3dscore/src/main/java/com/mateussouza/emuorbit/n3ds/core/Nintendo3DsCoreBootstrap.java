@@ -3,8 +3,6 @@ package com.mateussouza.emuorbit.n3ds.core;
 
 import android.content.Context;
 
-import com.google.android.play.core.splitinstall.SplitInstallHelper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -30,17 +28,13 @@ public final class Nintendo3DsCoreBootstrap {
 
     /** Loads and inspects the exact native core delivered inside the installed split. */
     public static Nintendo3DsCoreInfo inspectPackaged(Context context) throws IOException {
-        try {
-            SplitInstallHelper.loadLibrary(
-                    Objects.requireNonNull(context).getApplicationContext(),
-                    "azahar_libretro");
-        } catch (UnsatisfiedLinkError failure) {
-            throw new IOException(
-                    "A biblioteca do núcleo Nintendo 3DS não está instalada no split.",
-                    failure);
-        }
+        Context checkedContext = Objects.requireNonNull(context).getApplicationContext();
+        p(checkedContext.getAssets());
         return new Nintendo3DsCoreInfo(n(PACKAGED_CORE_LIBRARY_PATH));
     }
 
     private static native String[] n(String absoluteLibraryPath) throws IOException;
+
+    private static native void p(android.content.res.AssetManager assetManager)
+            throws IOException;
 }

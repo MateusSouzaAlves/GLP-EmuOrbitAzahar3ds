@@ -1,8 +1,19 @@
 {
   "schemaVersion": 1,
-  "status": "PUBLIC_SOURCE_MATCHED_TO_N3DS_12D3_RUNTIME",
+  "status": "CURRENT_DISTRIBUTABLE_COMPONENT_SOURCE",
   "publicRemote": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
-  "correspondingAppRevision": "76168397232e7665c6e778406de029b79e10a822",
+  "sourceTag": "gpl-source-2026-09-26",
+  "hostApplication": {
+    "repository": "https://github.com/MateusSouzaAlves/EmuOrbit-Advance",
+    "sourceTag": "gpl-source-2026-09-26",
+    "requiredPaths": [
+      "nintendo3dscore",
+      "app/src/main/cpp/bridge/protected_core_container.cpp",
+      "app/src/main/cpp/bridge/protected_core_container.h",
+      "app/src/main/cpp/bridge/protected_ds_symbols.h.in",
+      "cmake/protected_symbols.cmake"
+    ]
+  },
   "component": "EmuOrbit Nintendo 3DS",
   "combinedLicense": "GPL-3.0-or-later",
   "azahar": {
@@ -16,11 +27,10 @@
     "sha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c"
   },
   "excluded": [
-    "EmuOrbit host application",
     "precompiled binaries",
     "ROMs and homebrew binaries",
     "BIOS, firmware and keys",
     "saves and user data",
-    "credentials, telemetry and monetization configuration"
+    "credentials and signing keys"
   ]
 }

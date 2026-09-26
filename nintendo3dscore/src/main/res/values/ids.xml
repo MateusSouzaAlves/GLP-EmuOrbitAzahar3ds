@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="n3ds_settings_hub_back" type="id" />
+    <item name="n3ds_settings_hub_title" type="id" />
+    <item name="n3ds_settings_hub_open_settings" type="id" />
+    <item name="n3ds_settings_hub_mii_status" type="id" />
+    <item name="n3ds_settings_hub_import_mii" type="id" />
+    <item name="n3ds_settings_hub_backup_status" type="id" />
+    <item name="n3ds_settings_hub_create_backup" type="id" />
+    <item name="n3ds_settings_hub_restore_backup" type="id" />
+    <item name="n3ds_settings_hub_export_portable" type="id" />
+    <item name="n3ds_settings_hub_import_portable" type="id" />
+    <item name="n3ds_settings_hub_help_body" type="id" />
+</resources>

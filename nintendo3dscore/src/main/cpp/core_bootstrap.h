@@ -40,6 +40,7 @@ private:
     CoreBootstrapSession() = default;
 
     void* library_ = nullptr;
+    bool libraryProcessResident_ = false;
     bool ownsActiveEnvironment_ = false;
     bool ownsCoreSession_ = false;
     CoreBootstrapInfo info_;

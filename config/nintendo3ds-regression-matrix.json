@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "planItem": "N3DS-13",
+  "privacyMode": "OPAQUE_SLOT_IDS_ONLY",
+  "minimumDistinctNintendo3DsContents": 10,
+  "maximumDistinctNintendo3DsContents": 20,
+  "currentlyAvailableSlots": [
+    "PRIVATE_OWNED_DUMP_1",
+    "PRIVATE_OWNED_DUMP_2",
+    "PRIVATE_OWNED_DUMP_3",
+    "OPEN_HOMEBREW_1",
+    "OPEN_HOMEBREW_2",
+    "OPEN_HOMEBREW_3",
+    "OPEN_HOMEBREW_4",
+    "OPEN_HOMEBREW_5",
+    "OPEN_HOMEBREW_6",
+    "OPEN_HOMEBREW_7"
+  ],
+  "requiredExistingSystems": ["GB", "GBC", "GBA", "NDS"],
+  "requiredPerContentEvidence": [
+    "OPEN",
+    "VIDEO",
+    "AUDIO",
+    "INPUT",
+    "CLEAN_CLOSE"
+  ],
+  "requiredMatrixEvidence": [
+    "TOUCH",
+    "SAVE_ROUNDTRIP",
+    "PAUSE_RESUME",
+    "SURFACE_RECREATION",
+    "UPDATE_WITHOUT_DATA_CLEAR",
+    "PROLONGED_RUN"
+  ],
+  "acceptanceSlices": [
+    "N3DS-13A_MATRIX_AND_SANITIZED_REPORT_CONTRACT",
+    "N3DS-13B_AVAILABLE_GALAXY_CORPUS_AND_EXISTING_SYSTEMS",
+    "N3DS-13C_SAVE_UPDATE_LIFECYCLE_AND_LONG_RUN",
+    "N3DS-13D_TEN_CONTENTS_AND_PHYSICAL_ADRENO"
+  ],
+  "reportContract": {
+    "allowedTopLevelFields": [
+      "schemaVersion",
+      "planItem",
+      "status",
+      "deviceClass",
+      "cases",
+      "existingSystems",
+      "matrixEvidence",
+      "summary"
+    ],
+    "allowedCaseFields": [
+      "slotId",
+      "status",
+      "frames",
+      "audioFrames",
+      "inputPolls",
+      "touchEvents",
+      "saveRoundTrips",
+      "lifecycleCycles",
+      "elapsedMillis",
+      "fatalSignals"
+    ],
+    "allowedExistingSystemFields": ["system", "status", "scenarios"],
+    "allowedMatrixEvidenceFields": ["evidence", "status", "observations"],
+    "allowedSummaryFields": [
+      "distinctNintendo3DsContents",
+      "passedNintendo3DsContents",
+      "passedExistingSystems",
+      "fatalSignals",
+      "externalGatesRemaining"
+    ],
+    "forbiddenKeyFragments": [
+      "path",
+      "file",
+      "name",
+      "title",
+      "productcode",
+      "hash",
+      "digest",
+      "uri"
+    ],
+    "forbiddenValuePatterns": [
+      "WINDOWS_ABSOLUTE_PATH",
+      "ANDROID_OR_UNIX_ABSOLUTE_PATH",
+      "ROM_FILENAME_EXTENSION",
+      "SHA256_HEX"
+    ]
+  }
+}

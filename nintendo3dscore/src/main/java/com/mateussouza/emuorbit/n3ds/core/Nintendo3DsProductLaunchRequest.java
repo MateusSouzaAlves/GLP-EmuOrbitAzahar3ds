@@ -50,13 +50,20 @@ public final class Nintendo3DsProductLaunchRequest {
     /** Creates an explicit, non-exported Activity intent without exposing a base-app dependency. */
     public Intent createIntent(Context context) {
         return new Intent(Objects.requireNonNull(context), Nintendo3DsProductActivity.class)
-                .putExtra(EXTRA_CORE_PATH, coreLibrary.getAbsolutePath())
+                .putExtra(EXTRA_CORE_PATH, serializeCorePath(coreLibrary))
                 .putExtra(EXTRA_CONTENT_PATH, content.getAbsolutePath())
                 .putExtra(EXTRA_PERSISTENT_ID, persistentId)
                 .putExtra(EXTRA_CONTENT_STATUS, contentStatus.name())
                 .putExtra(EXTRA_REQUIRED_STORAGE, requiredPrivateStorageBytes)
                 .putExtra(EXTRA_MII_REQUIREMENT, miiRequirement.name())
                 .putExtra(EXTRA_DEVICE_QUALIFIED, deviceQualified);
+    }
+
+    static String serializeCorePath(File coreLibrary) {
+        File checked = Objects.requireNonNull(coreLibrary);
+        return Nintendo3DsCoreBootstrap.PACKAGED_CORE_LIBRARY_PATH.equals(checked.getPath())
+                ? checked.getPath()
+                : checked.getAbsolutePath();
     }
 
     public File getCoreLibrary() {
@@ -105,6 +112,11 @@ public final class Nintendo3DsProductLaunchRequest {
 
     private static File requireAbsolute(File value, String name) {
         File checked = Objects.requireNonNull(value, name);
+        if ("coreLibrary".equals(name)
+                && Nintendo3DsCoreBootstrap.PACKAGED_CORE_LIBRARY_PATH.equals(
+                checked.getPath())) {
+            return checked;
+        }
         if (!checked.isAbsolute()) {
             throw new IllegalArgumentException(name + " deve usar um caminho absoluto.");
         }

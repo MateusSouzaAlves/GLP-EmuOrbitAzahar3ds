@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "planItem": "N3DS-13",
+  "status": "PASSED",
+  "deviceClass": "GALAXY_XCLIPSE_REFERENCE",
+  "cases": [
+    {
+      "slotId": "PRIVATE_OWNED_DUMP_1",
+      "status": "PASSED",
+      "frames": 60,
+      "audioFrames": 717600,
+      "inputPolls": 69,
+      "touchEvents": 1,
+      "saveRoundTrips": 1,
+      "lifecycleCycles": 4,
+      "elapsedMillis": 29224,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "PRIVATE_OWNED_DUMP_2",
+      "status": "PASSED",
+      "frames": 60,
+      "audioFrames": 315200,
+      "inputPolls": 14,
+      "touchEvents": 1,
+      "saveRoundTrips": 1,
+      "lifecycleCycles": 4,
+      "elapsedMillis": 13982,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "PRIVATE_OWNED_DUMP_3",
+      "status": "PASSED",
+      "frames": 60,
+      "audioFrames": 352160,
+      "inputPolls": 145,
+      "touchEvents": 1,
+      "saveRoundTrips": 1,
+      "lifecycleCycles": 4,
+      "elapsedMillis": 24043,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_1",
+      "status": "PASSED",
+      "frames": 60,
+      "audioFrames": 0,
+      "inputPolls": 174,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 4,
+      "elapsedMillis": 11732,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_2",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 12,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 5520,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_3",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 25,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 5545,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_4",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 4,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 4868,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_5",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 5,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 4926,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_6",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 6,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 5095,
+      "fatalSignals": 0
+    },
+    {
+      "slotId": "OPEN_HOMEBREW_7",
+      "status": "PASSED",
+      "frames": 12,
+      "audioFrames": 0,
+      "inputPolls": 13,
+      "touchEvents": 1,
+      "saveRoundTrips": 0,
+      "lifecycleCycles": 2,
+      "elapsedMillis": 5184,
+      "fatalSignals": 0
+    }
+  ],
+  "existingSystems": [
+    {"system": "GB", "status": "PASSED", "scenarios": 1},
+    {"system": "GBC", "status": "PASSED", "scenarios": 1},
+    {"system": "GBA", "status": "PASSED", "scenarios": 1},
+    {"system": "NDS", "status": "PASSED", "scenarios": 1}
+  ],
+  "matrixEvidence": [
+    {"evidence": "TOUCH", "status": "PASSED", "observations": 10},
+    {"evidence": "SAVE_ROUNDTRIP", "status": "PASSED", "observations": 3},
+    {"evidence": "PAUSE_RESUME", "status": "PASSED", "observations": 9},
+    {"evidence": "SURFACE_RECREATION", "status": "PASSED", "observations": 10},
+    {"evidence": "UPDATE_WITHOUT_DATA_CLEAR", "status": "PASSED", "observations": 3},
+    {"evidence": "PROLONGED_RUN", "status": "PASSED", "observations": 3}
+  ],
+  "summary": {
+    "distinctNintendo3DsContents": 10,
+    "passedNintendo3DsContents": 10,
+    "passedExistingSystems": 4,
+    "fatalSignals": 0,
+    "externalGatesRemaining": 0
+  }
+}

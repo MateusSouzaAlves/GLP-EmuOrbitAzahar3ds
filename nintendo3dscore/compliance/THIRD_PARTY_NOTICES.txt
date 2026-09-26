@@ -4,6 +4,7 @@ Generated from `config/nintendo3ds-source-scope.json`. This is the pinned
 notice and license-evidence index for the Nintendo 3DS component. Complete
 corresponding source is published at:
 https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds
+Revision: 85ff5ce78e439e5d9fae84dd45165f061a9f18ed
 
 ## Combined component
 

@@ -12,6 +12,7 @@
 
 #include "libretro_bootstrap_abi.h"
 #include "core_session_registry.h"
+#include "protected_nintendo3ds_core.h"
 
 namespace emuorbit::n3ds {
 namespace {
@@ -120,7 +121,12 @@ std::unique_ptr<CoreBootstrapSession> CoreBootstrapSession::open(
     session->ownsCoreSession_ = true;
 
     std::lock_guard<std::mutex> lock(g_sessionMutex);
-    session->library_ = dlopen(libraryPath, RTLD_NOW | RTLD_LOCAL);
+    if (std::strcmp(libraryPath, kPackagedCoreSoname) == 0) {
+        session->library_ = protectedNintendo3DsCoreHandle();
+        session->libraryProcessResident_ = true;
+    } else {
+        session->library_ = dlopen(libraryPath, RTLD_NOW | RTLD_LOCAL);
+    }
     if (session->library_ == nullptr) {
         error = "Unable to load the Nintendo 3DS core library";
         return nullptr;
@@ -179,7 +185,7 @@ CoreBootstrapSession::~CoreBootstrapSession() {
         }
         ownsActiveEnvironment_ = false;
     }
-    if (library_ != nullptr) {
+    if (library_ != nullptr && !libraryProcessResident_) {
         dlclose(library_);
         library_ = nullptr;
     }

@@ -4,7 +4,11 @@ package com.mateussouza.emuorbit.n3ds.core;
 import android.content.Context;
 import android.view.Surface;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -15,17 +19,17 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.LockSupport;
 
 /*
  * Serializes the Android Surface and process lifecycle onto the core's owner thread.
  *
- * <p>The caller retains ownership of each {@link Surface}. A pause or matching Surface loss
- * returns only after the native session has been closed, so Android can safely release it.
+ * <p>The caller retains ownership of each {@link Surface}. A pause drains pending owner-thread
+ * work and releases active Android producers. If Android destroys or replaces the Surface, the
+ * native session is closed safely before the driver target disappears.
  */
 public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
     public static final long DEFAULT_TRANSITION_TIMEOUT_MS = 30_000;
-    private static final double NOMINAL_VIDEO_FRAMES_PER_SECOND = 60.0;
+    static final long MAX_RECOVERY_STATE_BYTES = 128L * 1024L * 1024L;
 
     private final Object stateLock = new Object();
     private final Context appContext;
@@ -35,6 +39,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
     private final String saveDirectory;
     private final Nintendo3DsStorageLayout storageLayout;
     private final String coreRevision;
+    private final File recoveryStateFile;
     private final ExecutorService coreExecutor;
     private final Nintendo3DsAudioOutput audioOutput = new Nintendo3DsAudioOutput();
     private final Nintendo3DsInputState inputState = new Nintendo3DsInputState();
@@ -45,7 +50,10 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
     private final Nintendo3DsRegenerableCachePolicy regenerableCachePolicy;
     private final AtomicLong openedSessionCount = new AtomicLong();
     private final AtomicLong closedSessionCount = new AtomicLong();
+    private final AtomicLong capturedRecoveryStateCount = new AtomicLong();
+    private final AtomicLong restoredRecoveryStateCount = new AtomicLong();
     private volatile Nintendo3DsStorageLayout.CheckpointReport lastStorageCheckpoint;
+    private volatile String lastRecoveryStateFailure;
 
     // Guarded by stateLock.
     private Surface surface;
@@ -63,8 +71,8 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
     // Accessed only by coreExecutor's single owner thread.
     private Nintendo3DsCoreSession coreSession;
     private long coreSessionSurfaceGeneration = -1;
-    private long nextFastForwardFrameDeadlineNanos;
-    private float pacedFastForwardSpeed = 1.0f;
+    private boolean recoveryStateCapturedForSession;
+    private final Nintendo3DsFramePacer framePacer = Nintendo3DsFramePacer.createDefault();
     private final short[] microphoneTransfer = new short[4_096];
 
     public Nintendo3DsCoreLifecycleController(
@@ -131,6 +139,9 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         this.saveDirectory = Objects.requireNonNull(saveDirectory);
         this.storageLayout = storageLayout;
         this.coreRevision = coreRevision;
+        recoveryStateFile = storageLayout == null
+                ? null
+                : recoveryStateFile(storageLayout, contentPath, coreRevision);
         regenerableCachePolicy = storageLayout == null
                 ? null
                 : new Nintendo3DsRegenerableCachePolicy(storageLayout);
@@ -157,7 +168,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         }
     }
 
-    /* Closes the native session before returning from an Android pause transition. */
+    /* Suspends producers and drains frames without unloading the title or native core. */
     public void onPauseAndAwait() throws IOException {
         onPauseAndAwait(DEFAULT_TRANSITION_TIMEOUT_MS);
     }
@@ -170,7 +181,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
             }
             resumed = false;
             inputState.clear();
-            transition = submitCloseSession();
+            transition = submitCaptureRecoveryState();
         }
         if (motionSource != null) {
             motionSource.stop();
@@ -182,9 +193,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         await(transition, timeoutMs, "pausa");
     }
 
-    /*
-     * Replaces the render target. If another target backed an open session, it is closed first.
-     */
+    /* Replaces the render target after safely closing any session tied to the old Surface. */
     public void onSurfaceAvailable(Surface nextSurface, int width, int height) throws IOException {
         onSurfaceAvailable(nextSurface, width, height, DEFAULT_TRANSITION_TIMEOUT_MS);
     }
@@ -215,15 +224,13 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
             surfaceHeight = height;
             surfaceGeneration++;
             inputState.clear();
-            transition = submitCloseSession();
+            transition = submitCloseSessionPreservingRecovery();
         }
         audioOutput.releaseForTransition();
         await(transition, timeoutMs, "substituição da Surface");
     }
 
-    /*
-     * Detaches only the matching Surface, protecting a newly-created target from a stale callback.
-     */
+    /* Closes only the matching Surface, protecting a new target from a stale callback. */
     public void onSurfaceDestroyedAndAwait(Surface destroyedSurface) throws IOException {
         onSurfaceDestroyedAndAwait(destroyedSurface, DEFAULT_TRANSITION_TIMEOUT_MS);
     }
@@ -241,7 +248,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
             surfaceHeight = 0;
             surfaceGeneration++;
             inputState.clear();
-            transition = submitCloseSession();
+            transition = submitCloseSessionPreservingRecovery();
         }
         audioOutput.releaseForTransition();
         await(transition, timeoutMs, "perda da Surface");
@@ -287,6 +294,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
                     drainMicrophoneOnOwnerThread();
                     coreSession.updateInput(inputState.snapshot());
                     report = coreSession.runFrame();
+                    recoveryStateCapturedForSession = false;
                     audioOutput.consume(
                             coreSession,
                             report.getAudioSampleRate(),
@@ -294,9 +302,14 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
                     performanceCollector.recordFrame(
                             Math.max(1L, System.nanoTime() - frameStartedNanos),
                             report);
-                    paceFastForwardFrame(request);
+                    paceFrame(
+                            request,
+                            frameStartedNanos,
+                            report.getNominalFramesPerSecond());
                 }
                 return Objects.requireNonNull(report);
+            } catch (SessionInvalidatedException expectedTransition) {
+                throw expectedTransition;
             } catch (IOException | RuntimeException exception) {
                 try {
                     closeCoreSessionAndCheckpointOnOwnerThread();
@@ -327,6 +340,18 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
 
     public long getClosedSessionCount() {
         return closedSessionCount.get();
+    }
+
+    public long getCapturedRecoveryStateCount() {
+        return capturedRecoveryStateCount.get();
+    }
+
+    public long getRestoredRecoveryStateCount() {
+        return restoredRecoveryStateCount.get();
+    }
+
+    public String getLastRecoveryStateFailure() {
+        return lastRecoveryStateFailure;
     }
 
     public Nintendo3DsStorageLayout.CheckpointReport getLastStorageCheckpoint() {
@@ -364,6 +389,28 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
             });
         }
         await(reset, timeoutMs, "reinício da medição de desempenho");
+    }
+
+    /**
+     * Checkpoints and closes the current native session on its owner thread.
+     * The current Surface, lifecycle and product settings remain attached, so
+     * the next requested frame starts the title again from a fresh core session.
+     */
+    public void restartSessionAndAwait() throws IOException {
+        restartSessionAndAwait(DEFAULT_TRANSITION_TIMEOUT_MS);
+    }
+
+    public void restartSessionAndAwait(long timeoutMs) throws IOException {
+        Future<Void> transition;
+        synchronized (stateLock) {
+            requireControllerOpen();
+            surfaceGeneration++;
+            inputState.clear();
+            transition = submitCloseSession();
+        }
+        audioOutput.releaseForTransition();
+        await(transition, timeoutMs, "reinício da sessão");
+        performanceCollector.reset();
     }
 
     /**
@@ -642,17 +689,35 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         });
     }
 
+    private Future<Void> submitCaptureRecoveryState() {
+        return coreExecutor.submit(() -> {
+            captureRecoveryStateOnOwnerThread();
+            framePacer.reset();
+            return null;
+        });
+    }
+
+    private Future<Void> submitCloseSessionPreservingRecovery() {
+        return coreExecutor.submit(() -> {
+            captureRecoveryStateOnOwnerThread();
+            closeCoreSessionAndCheckpointOnOwnerThread();
+            return null;
+        });
+    }
+
     private void ensureRequestStillCurrent(SessionRequest request) throws IOException {
         synchronized (stateLock) {
             if (closed
                     || !resumed
                     || surface != request.surface
                     || surfaceGeneration != request.surfaceGeneration) {
-                throw new IOException("A transição de lifecycle invalidou o frame 3DS pendente.");
+                throw new SessionInvalidatedException(
+                        "A transição de lifecycle invalidou o frame 3DS pendente.");
             }
         }
         if (!request.surface.isValid()) {
-            throw new IOException("A Surface 3DS foi invalidada antes da criação do contexto.");
+            throw new SessionInvalidatedException(
+                    "A Surface 3DS foi invalidada antes da criação do contexto.");
         }
     }
 
@@ -662,6 +727,11 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
             return;
         }
         closeCoreSessionAndCheckpointOnOwnerThread();
+        openCoreSession(request);
+        restoreRecoveryStateOnOwnerThread(request);
+    }
+
+    private void openCoreSession(SessionRequest request) throws IOException {
         coreSession = Nintendo3DsCoreSession.open(
                 request.surface,
                 request.width,
@@ -673,7 +743,65 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
                 request.screenLayout,
                 request.performanceProfile);
         coreSessionSurfaceGeneration = request.surfaceGeneration;
+        recoveryStateCapturedForSession = false;
         openedSessionCount.incrementAndGet();
+    }
+
+    private void captureRecoveryStateOnOwnerThread() {
+        if (coreSession == null
+                || recoveryStateFile == null
+                || recoveryStateCapturedForSession) {
+            return;
+        }
+        File parent = recoveryStateFile.getParentFile();
+        if (parent == null || (!parent.isDirectory() && !parent.mkdirs())) {
+            lastRecoveryStateFailure = "Não foi possível preparar o cache de retomada 3DS.";
+            return;
+        }
+        try {
+            coreSession.saveRecoveryState(
+                    recoveryStateFile.getAbsolutePath(),
+                    MAX_RECOVERY_STATE_BYTES);
+            recoveryStateCapturedForSession = true;
+            capturedRecoveryStateCount.incrementAndGet();
+            lastRecoveryStateFailure = null;
+        } catch (IOException | RuntimeException exception) {
+            lastRecoveryStateFailure = exception.getMessage();
+            deleteRecoveryStateFiles();
+        }
+    }
+
+    private void restoreRecoveryStateOnOwnerThread(SessionRequest request) throws IOException {
+        if (coreSession == null || recoveryStateFile == null || !recoveryStateFile.isFile()) {
+            return;
+        }
+        try {
+            coreSession.restoreRecoveryState(
+                    recoveryStateFile.getAbsolutePath(),
+                    MAX_RECOVERY_STATE_BYTES);
+            restoredRecoveryStateCount.incrementAndGet();
+            lastRecoveryStateFailure = null;
+            deleteRecoveryStateFiles();
+        } catch (IOException | RuntimeException exception) {
+            lastRecoveryStateFailure = exception.getMessage();
+            deleteRecoveryStateFiles();
+            closeCoreSessionOnOwnerThread();
+            openCoreSession(request);
+        }
+    }
+
+    private void deleteRecoveryStateFiles() {
+        if (recoveryStateFile == null) {
+            return;
+        }
+        if (recoveryStateFile.exists() && !recoveryStateFile.delete()) {
+            lastRecoveryStateFailure = "Não foi possível remover o estado transitório 3DS.";
+        }
+        File temporary = new File(recoveryStateFile.getAbsolutePath() + ".tmp");
+        if (temporary.exists() && !temporary.delete()) {
+            lastRecoveryStateFailure = "Não foi possível remover o estado transitório incompleto 3DS.";
+        }
+        recoveryStateCapturedForSession = false;
     }
 
     private void drainMicrophoneOnOwnerThread() {
@@ -694,8 +822,7 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
 
     private boolean closeCoreSessionOnOwnerThread() {
         audioOutput.releaseForTransition();
-        nextFastForwardFrameDeadlineNanos = 0;
-        pacedFastForwardSpeed = 1.0f;
+        framePacer.reset();
         if (coreSession == null) {
             return false;
         }
@@ -715,34 +842,19 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         }
     }
 
-    private void paceFastForwardFrame(SessionRequest request) throws IOException {
+    private void paceFrame(
+            SessionRequest request,
+            long frameStartedNanos,
+            double nominalFramesPerSecond) throws IOException {
         float speed;
         synchronized (stateLock) {
             speed = fastForwardSpeed;
         }
-        if (speed <= 1.0f) {
-            nextFastForwardFrameDeadlineNanos = 0;
-            pacedFastForwardSpeed = 1.0f;
-            return;
-        }
-
-        long frameDurationNanos = Math.max(
-                1L,
-                (long) (1_000_000_000.0 / (NOMINAL_VIDEO_FRAMES_PER_SECOND * speed)));
-        long now = System.nanoTime();
-        if (nextFastForwardFrameDeadlineNanos == 0
-                || Float.compare(pacedFastForwardSpeed, speed) != 0
-                || now - nextFastForwardFrameDeadlineNanos > frameDurationNanos * 4) {
-            nextFastForwardFrameDeadlineNanos = now;
-            pacedFastForwardSpeed = speed;
-        }
-        nextFastForwardFrameDeadlineNanos += frameDurationNanos;
-        long remainingNanos = nextFastForwardFrameDeadlineNanos - System.nanoTime();
-        if (remainingNanos > 0) {
-            LockSupport.parkNanos(remainingNanos);
-            if (Thread.interrupted()) {
-                throw new IOException("Pacing 3DS interrompido.");
-            }
+        try {
+            framePacer.pace(speed, nominalFramesPerSecond, frameStartedNanos);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Pacing 3DS interrompido.", exception);
         }
         ensureRequestStillCurrent(request);
     }
@@ -777,6 +889,37 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
         }
     }
 
+    private static final class SessionInvalidatedException extends IOException {
+        SessionInvalidatedException(String message) {
+            super(message);
+        }
+    }
+
+    private static File recoveryStateFile(
+            Nintendo3DsStorageLayout storageLayout,
+            String contentPath,
+            String coreRevision) {
+        File content = new File(contentPath);
+        String identity = Objects.toString(coreRevision, "unknown")
+                + '\n' + content.getAbsolutePath()
+                + '\n' + content.length()
+                + '\n' + content.lastModified();
+        byte[] digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256")
+                    .digest(identity.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 indisponível para retomada 3DS.", exception);
+        }
+        StringBuilder name = new StringBuilder(digest.length * 2);
+        for (byte value : digest) {
+            name.append(String.format(java.util.Locale.ROOT, "%02x", value & 0xff));
+        }
+        return new File(
+                new File(storageLayout.getTransientDirectory(), "lifecycle"),
+                name + ".state");
+    }
+
     private static final class SessionRequest {
         private final Surface surface;
         private final int width;
@@ -804,7 +947,21 @@ public final class Nintendo3DsCoreLifecycleController implements AutoCloseable {
     private static final class CoreThreadFactory implements ThreadFactory {
         @Override
         public Thread newThread(Runnable runnable) {
-            Thread thread = new Thread(runnable, "EmuOrbit-N3DS-Core");
+            Thread thread = new Thread(() -> {
+                try {
+                    // The core owns presentation timing and creates the Vulkan/pipeline workers.
+                    // DISPLAY is Android's normal render-thread priority: applying it before the
+                    // native session opens also lets those workers inherit the same scheduling
+                    // class, reducing long first-use shader stalls without changing emulation
+                    // accuracy, resolution or clock settings.
+                    android.os.Process.setThreadPriority(
+                            android.os.Process.THREAD_PRIORITY_DISPLAY);
+                } catch (RuntimeException | LinkageError ignored) {
+                    // Host-side JVM tests and vendor schedulers may not expose this hint. The
+                    // controller remains functional at the platform's default priority.
+                }
+                runnable.run();
+            }, "EmuOrbit-N3DS-Core");
             thread.setDaemon(false);
             return thread;
         }

@@ -3,6 +3,7 @@ package com.mateussouza.emuorbit.n3ds.core;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,12 +23,17 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /*
  * Owns the versioned private directory contract used by the Azahar libretro frontend.
@@ -50,6 +56,12 @@ public final class Nintendo3DsStorageLayout {
                     + "extdata/00048000/F000000B/user/CFL_DB.dat";
     private static final String MANIFEST_MAGIC = "EMUORBIT_N3DS_DIRECTORY_CHECKPOINT";
     private static final int MANIFEST_SCHEMA_VERSION = 1;
+    private static final String PORTABLE_ARCHIVE_MAGIC = "EMUORBIT_N3DS_PORTABLE_DATA";
+    private static final int PORTABLE_ARCHIVE_SCHEMA_VERSION = 1;
+    private static final String PORTABLE_HEADER_ENTRY = "emuorbit-n3ds.properties";
+    private static final String PORTABLE_MANIFEST_ENTRY = "checkpoint.manifest";
+    private static final int MAX_PORTABLE_HEADER_BYTES = 16 * 1024;
+    private static final long MAX_PORTABLE_LOGICAL_BYTES = 256L * 1024 * 1024 * 1024;
     private static final int COPY_BUFFER_BYTES = 128 * 1024;
     private static final long DISK_SAFETY_BYTES = 1024 * 1024;
     private static final int MAX_MANIFEST_ENTRIES = 100_000;
@@ -348,6 +360,157 @@ public final class Nintendo3DsStorageLayout {
                 selection.usedFallback);
     }
 
+    /**
+     * Captures the current durable tree and writes a self-contained portable ZIP.
+     * The caller must first quiesce and close the core. The destination is closed on return.
+     */
+    public synchronized PortableExportReport exportPortableDataAfterCoreClosed(
+            String coreRevision,
+            OutputStream destination) throws IOException {
+        String checkedRevision = requireCoreRevision(coreRevision);
+        Objects.requireNonNull(destination, "destination");
+        CheckpointReport checkpoint = checkpointAfterCoreClosed(checkedRevision);
+        ManifestSelection selection = selectRestoreManifest(checkedRevision);
+        Manifest manifest = selection.manifest;
+        byte[] manifestBytes = Files.readAllBytes(selection.sourceFile.toPath());
+        long logicalBytes = logicalBytes(manifest.entries);
+        LinkedHashMap<String, Entry> uniqueObjects = uniqueObjects(manifest.entries);
+        byte[] header = encodePortableHeader(
+                checkedRevision,
+                manifest.entries.size(),
+                logicalBytes,
+                sha256(manifestBytes));
+
+        try (ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(destination))) {
+            writeZipEntry(zip, PORTABLE_HEADER_ENTRY, header);
+            writeZipEntry(zip, PORTABLE_MANIFEST_ENTRY, manifestBytes);
+            byte[] buffer = new byte[COPY_BUFFER_BYTES];
+            for (Map.Entry<String, Entry> objectEntry : uniqueObjects.entrySet()) {
+                Entry expected = objectEntry.getValue();
+                File object = objectFile(objectEntry.getKey());
+                if (!isVerifiedObject(object, expected)) {
+                    throw new IOException("Um objeto exigido pelo arquivo portátil 3DS está ausente.");
+                }
+                ZipEntry zipEntry = portableZipEntry("objects/" + objectEntry.getKey());
+                zip.putNextEntry(zipEntry);
+                try (InputStream input = new BufferedInputStream(new FileInputStream(object))) {
+                    int count;
+                    while ((count = input.read(buffer)) != -1) {
+                        zip.write(buffer, 0, count);
+                    }
+                }
+                zip.closeEntry();
+            }
+            zip.finish();
+        }
+        return new PortableExportReport(
+                checkpoint.getGeneration(),
+                manifest.entries.size(),
+                uniqueObjects.size(),
+                logicalBytes);
+    }
+
+    /**
+     * Validates, imports and transactionally restores a self-contained portable ZIP.
+     * The caller must first quiesce and close the core. The source is closed on return.
+     */
+    public synchronized PortableImportReport importPortableDataAfterCoreClosed(
+            String coreRevision,
+            InputStream source) throws IOException {
+        String checkedRevision = requireCoreRevision(coreRevision);
+        Objects.requireNonNull(source, "source");
+        prepareDirectories();
+        requireNoPendingRestoreRollback();
+        clearStagingDirectory();
+
+        File importedManifestFile = child(stagingDirectory, "portable-import.manifest");
+        Manifest importedManifest;
+        LinkedHashMap<String, Entry> expectedObjects;
+        long logicalBytes;
+        try (ZipInputStream zip = new ZipInputStream(new BufferedInputStream(source))) {
+            ZipEntry headerEntry = requireNextPortableEntry(zip, PORTABLE_HEADER_ENTRY);
+            byte[] headerBytes = readBoundedZipEntry(
+                    zip, MAX_PORTABLE_HEADER_BYTES, "O cabeçalho do arquivo portátil 3DS é inválido.");
+            zip.closeEntry();
+            PortableHeader header = parsePortableHeader(headerBytes);
+            if (!checkedRevision.equals(header.coreRevision)) {
+                throw new IOException("O arquivo portátil 3DS pertence a outra revisão do core.");
+            }
+
+            ZipEntry manifestEntry = requireNextPortableEntry(zip, PORTABLE_MANIFEST_ENTRY);
+            byte[] manifestBytes = readBoundedZipEntry(
+                    zip, MAX_MANIFEST_BYTES, "O manifesto do arquivo portátil 3DS é inválido.");
+            zip.closeEntry();
+            if (!sha256(manifestBytes).equals(header.manifestSha256)) {
+                throw new IOException("O manifesto do arquivo portátil 3DS foi alterado.");
+            }
+            publishBytesToStaging(importedManifestFile, manifestBytes);
+            importedManifest = readManifestIfPresent(importedManifestFile);
+            if (importedManifest == null
+                    || !checkedRevision.equals(importedManifest.coreRevision)
+                    || importedManifest.entries.size() != header.fileCount) {
+                throw new IOException("O arquivo portátil 3DS é incompatível.");
+            }
+            logicalBytes = logicalBytes(importedManifest.entries);
+            if (logicalBytes != header.logicalBytes
+                    || logicalBytes > MAX_PORTABLE_LOGICAL_BYTES) {
+                throw new IOException("O tamanho declarado pelo arquivo portátil 3DS é inválido.");
+            }
+            expectedObjects = uniqueObjects(importedManifest.entries);
+            long uniqueBytes = logicalBytes(new ArrayList<>(expectedObjects.values()));
+            long requiredBytes = Math.addExact(
+                    uniqueBytes,
+                    Math.addExact(logicalBytes, DISK_SAFETY_BYTES));
+            if (Math.max(0, usableSpaceSupplier.getAsLong()) < requiredBytes) {
+                throw new IOException("Espaço insuficiente para importar os dados portáteis 3DS.");
+            }
+
+            File importedObjects = child(stagingDirectory, "portable-import.objects");
+            ensureDirectory(importedObjects);
+            for (Map.Entry<String, Entry> objectEntry : expectedObjects.entrySet()) {
+                String hash = objectEntry.getKey();
+                Entry expected = objectEntry.getValue();
+                ZipEntry objectZipEntry = requireNextPortableEntry(zip, "objects/" + hash);
+                File stagedObject = child(importedObjects, hash);
+                copyAndVerifyPortableObject(zip, stagedObject, expected);
+                zip.closeEntry();
+            }
+            if (zip.getNextEntry() != null) {
+                throw new IOException("O arquivo portátil 3DS contém entradas inesperadas.");
+            }
+        } catch (IOException | RuntimeException exception) {
+            clearStagingDirectory();
+            throw exception;
+        }
+
+        File importedObjects = child(stagingDirectory, "portable-import.objects");
+        for (Map.Entry<String, Entry> objectEntry : expectedObjects.entrySet()) {
+            String hash = objectEntry.getKey();
+            Entry expected = objectEntry.getValue();
+            File target = objectFile(hash);
+            File staged = child(importedObjects, hash);
+            if (isVerifiedObject(target, expected)) {
+                Files.deleteIfExists(staged.toPath());
+            } else {
+                ensureDirectory(Objects.requireNonNull(target.getParentFile()));
+                moveAtomically(staged, target, false);
+            }
+        }
+
+        long generation = Math.addExact(highestSnapshotGeneration(), 1);
+        byte[] normalizedManifest = encodeManifest(
+                generation, checkedRevision, importedManifest.entries);
+        publishBytesAtomically(snapshotFile(generation), normalizedManifest);
+        publishBytesAtomically(latestManifest, normalizedManifest);
+        clearStagingDirectory();
+        RestoreReport restored = restoreLatestAfterCoreClosed(checkedRevision);
+        return new PortableImportReport(
+                restored.getGeneration(),
+                restored.getFileCount(),
+                expectedObjects.size(),
+                restored.getRestoredBytes());
+    }
+
     Set<String> latestEntryPathsForTesting() throws IOException {
         Manifest manifest = readManifestIfPresent(latestManifest);
         if (manifest == null) {
@@ -575,6 +738,139 @@ public final class Nintendo3DsStorageLayout {
             }
         }
         return combined;
+    }
+
+    private static LinkedHashMap<String, Entry> uniqueObjects(List<Entry> entries)
+            throws IOException {
+        LinkedHashMap<String, Entry> unique = new LinkedHashMap<>();
+        for (Entry entry : entries) {
+            Entry previous = unique.putIfAbsent(entry.sha256, entry);
+            if (previous != null && previous.size != entry.size) {
+                throw new IOException("O manifesto 3DS reutiliza um hash com tamanho diferente.");
+            }
+        }
+        return unique;
+    }
+
+    private static byte[] encodePortableHeader(
+            String coreRevision,
+            int fileCount,
+            long logicalBytes,
+            String manifestSha256) {
+        String text = PORTABLE_ARCHIVE_MAGIC + "\t" + PORTABLE_ARCHIVE_SCHEMA_VERSION + "\n"
+                + "storage\t" + STORAGE_SCHEMA_VERSION + "\n"
+                + "core\t" + encodeText(coreRevision) + "\n"
+                + "files\t" + fileCount + "\n"
+                + "bytes\t" + logicalBytes + "\n"
+                + "manifest\t" + manifestSha256 + "\n";
+        return text.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static PortableHeader parsePortableHeader(byte[] bytes) throws IOException {
+        String text = new String(bytes, StandardCharsets.UTF_8);
+        String[] lines = text.split("\n", -1);
+        if (lines.length != 7
+                || !lines[6].isEmpty()
+                || !(PORTABLE_ARCHIVE_MAGIC + "\t" + PORTABLE_ARCHIVE_SCHEMA_VERSION)
+                        .equals(lines[0])
+                || !Integer.toString(STORAGE_SCHEMA_VERSION).equals(field(lines[1], "storage"))) {
+            throw new IOException("O cabeçalho do arquivo portátil 3DS é incompatível.");
+        }
+        String coreRevision = requireCoreRevision(decodeText(field(lines[2], "core")));
+        int fileCount;
+        try {
+            fileCount = Math.toIntExact(parseNonNegativeLong(field(lines[3], "files")));
+        } catch (ArithmeticException exception) {
+            throw new IOException("O arquivo portátil 3DS excede o limite de arquivos.", exception);
+        }
+        long logicalBytes = parseNonNegativeLong(field(lines[4], "bytes"));
+        String manifestSha256 = requireHash(field(lines[5], "manifest"));
+        if (fileCount > MAX_MANIFEST_ENTRIES || logicalBytes > MAX_PORTABLE_LOGICAL_BYTES) {
+            throw new IOException("O arquivo portátil 3DS excede os limites seguros.");
+        }
+        return new PortableHeader(coreRevision, fileCount, logicalBytes, manifestSha256);
+    }
+
+    private static ZipEntry portableZipEntry(String name) {
+        ZipEntry entry = new ZipEntry(name);
+        entry.setTime(0L);
+        return entry;
+    }
+
+    private static void writeZipEntry(ZipOutputStream zip, String name, byte[] contents)
+            throws IOException {
+        zip.putNextEntry(portableZipEntry(name));
+        zip.write(contents);
+        zip.closeEntry();
+    }
+
+    private static ZipEntry requireNextPortableEntry(ZipInputStream zip, String expectedName)
+            throws IOException {
+        ZipEntry entry = zip.getNextEntry();
+        if (entry == null || entry.isDirectory() || !expectedName.equals(entry.getName())) {
+            throw new IOException("A estrutura do arquivo portátil 3DS é inválida.");
+        }
+        return entry;
+    }
+
+    private static byte[] readBoundedZipEntry(
+            ZipInputStream zip,
+            long maximumBytes,
+            String errorMessage) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[Math.min(COPY_BUFFER_BYTES, MAX_PORTABLE_HEADER_BYTES)];
+        long copied = 0;
+        int count;
+        while ((count = zip.read(buffer)) != -1) {
+            copied = Math.addExact(copied, count);
+            if (copied > maximumBytes) {
+                throw new IOException(errorMessage);
+            }
+            output.write(buffer, 0, count);
+        }
+        if (copied == 0) {
+            throw new IOException(errorMessage);
+        }
+        return output.toByteArray();
+    }
+
+    private static void publishBytesToStaging(File target, byte[] contents) throws IOException {
+        ensureDirectory(Objects.requireNonNull(target.getParentFile()));
+        try (FileOutputStream output = new FileOutputStream(target)) {
+            output.write(contents);
+            output.flush();
+            output.getChannel().force(true);
+        }
+    }
+
+    private static void copyAndVerifyPortableObject(
+            ZipInputStream zip,
+            File target,
+            Entry expected) throws IOException {
+        MessageDigest digest = sha256Digest();
+        long copied = 0;
+        byte[] buffer = new byte[COPY_BUFFER_BYTES];
+        try (FileOutputStream fileOutput = new FileOutputStream(target);
+             OutputStream output = new BufferedOutputStream(fileOutput)) {
+            int count;
+            while ((count = zip.read(buffer)) != -1) {
+                copied = Math.addExact(copied, count);
+                if (copied > expected.size) {
+                    throw new IOException("Um objeto do arquivo portátil 3DS excede o tamanho esperado.");
+                }
+                output.write(buffer, 0, count);
+                digest.update(buffer, 0, count);
+            }
+            output.flush();
+            fileOutput.getChannel().force(true);
+        } catch (IOException | RuntimeException exception) {
+            Files.deleteIfExists(target.toPath());
+            throw exception;
+        }
+        if (copied != expected.size || !hex(digest.digest()).equals(expected.sha256)) {
+            Files.deleteIfExists(target.toPath());
+            throw new IOException("Um objeto do arquivo portátil 3DS está corrompido.");
+        }
     }
 
     private void publishBytesAtomically(File target, byte[] contents) throws IOException {
@@ -849,6 +1145,12 @@ public final class Nintendo3DsStorageLayout {
         return hex(digest.digest());
     }
 
+    private static String sha256(byte[] bytes) {
+        MessageDigest digest = sha256Digest();
+        digest.update(bytes);
+        return hex(digest.digest());
+    }
+
     private static MessageDigest sha256Digest() {
         try {
             return MessageDigest.getInstance("SHA-256");
@@ -874,6 +1176,24 @@ public final class Nintendo3DsStorageLayout {
             this.relativePath = relativePath;
             this.size = size;
             this.sha256 = sha256;
+        }
+    }
+
+    private static final class PortableHeader {
+        private final String coreRevision;
+        private final int fileCount;
+        private final long logicalBytes;
+        private final String manifestSha256;
+
+        private PortableHeader(
+                String coreRevision,
+                int fileCount,
+                long logicalBytes,
+                String manifestSha256) {
+            this.coreRevision = coreRevision;
+            this.fileCount = fileCount;
+            this.logicalBytes = logicalBytes;
+            this.manifestSha256 = manifestSha256;
         }
     }
 
@@ -1016,6 +1336,76 @@ public final class Nintendo3DsStorageLayout {
 
         public boolean isFallbackSnapshotUsed() {
             return fallbackSnapshotUsed;
+        }
+    }
+
+    /** Immutable evidence for one complete portable archive export. */
+    public static final class PortableExportReport {
+        private final long generation;
+        private final int fileCount;
+        private final int objectCount;
+        private final long logicalBytes;
+
+        private PortableExportReport(
+                long generation,
+                int fileCount,
+                int objectCount,
+                long logicalBytes) {
+            this.generation = generation;
+            this.fileCount = fileCount;
+            this.objectCount = objectCount;
+            this.logicalBytes = logicalBytes;
+        }
+
+        public long getGeneration() {
+            return generation;
+        }
+
+        public int getFileCount() {
+            return fileCount;
+        }
+
+        public int getObjectCount() {
+            return objectCount;
+        }
+
+        public long getLogicalBytes() {
+            return logicalBytes;
+        }
+    }
+
+    /** Immutable evidence for one validated portable import and transactional restore. */
+    public static final class PortableImportReport {
+        private final long generation;
+        private final int fileCount;
+        private final int objectCount;
+        private final long restoredBytes;
+
+        private PortableImportReport(
+                long generation,
+                int fileCount,
+                int objectCount,
+                long restoredBytes) {
+            this.generation = generation;
+            this.fileCount = fileCount;
+            this.objectCount = objectCount;
+            this.restoredBytes = restoredBytes;
+        }
+
+        public long getGeneration() {
+            return generation;
+        }
+
+        public int getFileCount() {
+            return fileCount;
+        }
+
+        public int getObjectCount() {
+            return objectCount;
+        }
+
+        public long getRestoredBytes() {
+            return restoredBytes;
         }
     }
 }

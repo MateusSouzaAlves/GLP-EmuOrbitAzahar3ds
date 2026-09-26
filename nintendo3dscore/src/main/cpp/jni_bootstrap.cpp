@@ -9,6 +9,7 @@
 #include "core_bootstrap.h"
 #include "jni_core_gameplay_session.h"
 #include "jni_hardware_render_host.h"
+#include "protected_nintendo3ds_core.h"
 
 namespace {
 
@@ -75,9 +76,19 @@ jobjectArray inspectCore(JNIEnv* env, jclass, jstring libraryPath) {
     return result;
 }
 
+void prepareProtectedCore(JNIEnv* env, jclass, jobject assetManager) {
+    std::string error;
+    if (!emuorbit::n3ds::prepareProtectedNintendo3DsCore(
+            env, assetManager, error)) {
+        throwIOException(env, error.c_str());
+    }
+}
+
 const JNINativeMethod kMethods[] = {
         {const_cast<char*>("n"), const_cast<char*>("(Ljava/lang/String;)[Ljava/lang/String;"),
          reinterpret_cast<void*>(inspectCore)},
+        {const_cast<char*>("p"), const_cast<char*>("(Landroid/content/res/AssetManager;)V"),
+         reinterpret_cast<void*>(prepareProtectedCore)},
 };
 
 }  // namespace

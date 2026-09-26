@@ -26,6 +26,7 @@ public enum Nintendo3DsPerformanceProfile {
         LinkedHashMap<String, String> options = new LinkedHashMap<>();
         options.put("citra_use_cpu_jit", "enabled");
         options.put("citra_cpu_clock_percentage", "100");
+        options.put("citra_audio_emulation", "HLE");
         options.put("citra_use_hw_shader", "enabled");
         options.put("citra_use_shader_jit", "enabled");
         options.put(

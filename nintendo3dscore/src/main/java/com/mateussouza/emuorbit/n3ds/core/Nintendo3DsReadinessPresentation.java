@@ -119,7 +119,7 @@ public final class Nintendo3DsReadinessPresentation {
                 R.string.n3ds_readiness_content_requires_extraction;
         case CONTENT_ENCRYPTED -> R.string.n3ds_readiness_content_encrypted;
         case STORAGE_LOW -> R.string.n3ds_readiness_storage_low;
-        case MII_DATA_REQUIRED -> R.string.n3ds_readiness_mii_required;
+        case MII_FALLBACK_ACTIVE -> R.string.n3ds_readiness_mii_fallback;
         case MII_DATA_OPTIONAL -> R.string.n3ds_readiness_mii_optional;
         case DEVICE_UNQUALIFIED -> R.string.n3ds_readiness_device_unqualified;
         };
@@ -133,7 +133,7 @@ public final class Nintendo3DsReadinessPresentation {
         case CORE_MISSING, CONTENT_UNAVAILABLE -> Action.RETRY;
         case CONTENT_REQUIRES_EXTRACTION -> Action.EXTRACT_CONTENT;
         case STORAGE_LOW -> Action.OPEN_STORAGE;
-        case MII_DATA_REQUIRED, MII_DATA_OPTIONAL -> Action.IMPORT_MII;
+        case MII_FALLBACK_ACTIVE, MII_DATA_OPTIONAL -> Action.IMPORT_MII;
         case DEVICE_UNQUALIFIED -> Action.CONTINUE;
         case CORE_INVALID, ARM64_REQUIRED, VULKAN_REQUIRED, CONTENT_ENCRYPTED ->
                 Action.UNDERSTOOD;

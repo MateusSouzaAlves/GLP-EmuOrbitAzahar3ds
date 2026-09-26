@@ -126,7 +126,7 @@ jobjectArray runFrame(JNIEnv* env, jclass, jlong handle) {
         return nullptr;
     }
     const CoreGameplayReport report = session->report();
-    const std::array<std::string, 64> values = {
+    const std::array<std::string, 65> values = {
             report.deviceName,
             std::to_string(VK_VERSION_MAJOR(report.apiVersion)),
             std::to_string(VK_VERSION_MINOR(report.apiVersion)),
@@ -191,6 +191,7 @@ jobjectArray runFrame(JNIEnv* env, jclass, jlong handle) {
             std::to_string(report.performanceOptionRequests),
             std::to_string(report.resolutionFactor),
             report.diskShaderCacheEnabled ? "1" : "0",
+            std::to_string(report.nominalFramesPerSecond),
     };
     jclass stringClass = env->FindClass("java/lang/String");
     if (stringClass == nullptr) {
@@ -213,6 +214,70 @@ jobjectArray runFrame(JNIEnv* env, jclass, jlong handle) {
         }
     }
     return result;
+}
+
+jlong saveState(
+        JNIEnv* env,
+        jclass,
+        jlong handle,
+        jstring destinationPath,
+        jlong maximumBytes) {
+    CoreGameplaySession* session = requireSession(env, handle);
+    if (session == nullptr) {
+        return 0;
+    }
+    std::string destination;
+    if (!copyString(env, destinationPath, destination)
+            || maximumBytes <= 0
+            || static_cast<uint64_t>(maximumBytes) > std::numeric_limits<size_t>::max()) {
+        if (!env->ExceptionCheck()) {
+            throwException(env, "java/lang/IllegalArgumentException", "Destino de recuperação 3DS inválido.");
+        }
+        return 0;
+    }
+    size_t stateSize = 0;
+    std::string error;
+    if (!session->saveState(
+                destination.c_str(),
+                static_cast<size_t>(maximumBytes),
+                stateSize,
+                error)) {
+        throwException(env, "java/io/IOException", error.c_str());
+        return 0;
+    }
+    return static_cast<jlong>(stateSize);
+}
+
+jlong restoreState(
+        JNIEnv* env,
+        jclass,
+        jlong handle,
+        jstring sourcePath,
+        jlong maximumBytes) {
+    CoreGameplaySession* session = requireSession(env, handle);
+    if (session == nullptr) {
+        return 0;
+    }
+    std::string source;
+    if (!copyString(env, sourcePath, source)
+            || maximumBytes <= 0
+            || static_cast<uint64_t>(maximumBytes) > std::numeric_limits<size_t>::max()) {
+        if (!env->ExceptionCheck()) {
+            throwException(env, "java/lang/IllegalArgumentException", "Origem de recuperação 3DS inválida.");
+        }
+        return 0;
+    }
+    size_t stateSize = 0;
+    std::string error;
+    if (!session->restoreState(
+                source.c_str(),
+                static_cast<size_t>(maximumBytes),
+                stateSize,
+                error)) {
+        throwException(env, "java/io/IOException", error.c_str());
+        return 0;
+    }
+    return static_cast<jlong>(stateSize);
 }
 
 jint drainAudio(JNIEnv* env, jclass, jlong handle, jobject output, jint capacityFrames) {
@@ -337,6 +402,10 @@ const JNINativeMethod kMethods[] = {
          reinterpret_cast<void*>(createSession)},
         {const_cast<char*>("r"), const_cast<char*>("(J)[Ljava/lang/String;"),
          reinterpret_cast<void*>(runFrame)},
+        {const_cast<char*>("s"), const_cast<char*>("(JLjava/lang/String;J)J"),
+         reinterpret_cast<void*>(saveState)},
+        {const_cast<char*>("l"), const_cast<char*>("(JLjava/lang/String;J)J"),
+         reinterpret_cast<void*>(restoreState)},
         {const_cast<char*>("d"), const_cast<char*>("(JLjava/nio/ByteBuffer;I)I"),
          reinterpret_cast<void*>(drainAudio)},
         {const_cast<char*>("u"), const_cast<char*>("(JIIIIIIIZFFFFFF)V"),

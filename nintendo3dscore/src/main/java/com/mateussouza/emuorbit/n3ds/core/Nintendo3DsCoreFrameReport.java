@@ -5,7 +5,7 @@ import java.util.Objects;
 
 /** Immutable evidence emitted after a real Azahar/Vulkan frame is presented. */
 public final class Nintendo3DsCoreFrameReport {
-    private static final int FIELD_COUNT = 64;
+    private static final int FIELD_COUNT = 65;
 
     private final String deviceName;
     private final int apiVersionMajor;
@@ -71,6 +71,7 @@ public final class Nintendo3DsCoreFrameReport {
     private final long performanceOptionRequests;
     private final int resolutionFactor;
     private final boolean diskShaderCacheEnabled;
+    private final double nominalFramesPerSecond;
 
     Nintendo3DsCoreFrameReport(String[] fields) {
         Objects.requireNonNull(fields);
@@ -141,6 +142,7 @@ public final class Nintendo3DsCoreFrameReport {
         performanceOptionRequests = parseLong(fields[61]);
         resolutionFactor = parseInt(fields[62]);
         diskShaderCacheEnabled = parseBoolean(fields[63]);
+        nominalFramesPerSecond = parsePositiveDouble(fields[64]);
     }
 
     public String getDeviceName() { return deviceName; }
@@ -207,6 +209,7 @@ public final class Nintendo3DsCoreFrameReport {
     public long getPerformanceOptionRequests() { return performanceOptionRequests; }
     public int getResolutionFactor() { return resolutionFactor; }
     public boolean isDiskShaderCacheEnabled() { return diskShaderCacheEnabled; }
+    public double getNominalFramesPerSecond() { return nominalFramesPerSecond; }
 
     private static int parseInt(String value) {
         try {
@@ -233,6 +236,18 @@ public final class Nintendo3DsCoreFrameReport {
             return parsed;
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Sensor 3DS inválido.", exception);
+        }
+    }
+
+    private static double parsePositiveDouble(String value) {
+        try {
+            double parsed = Double.parseDouble(value);
+            if (!Double.isFinite(parsed) || parsed <= 0.0) {
+                throw new NumberFormatException("non-positive or non-finite");
+            }
+            return parsed;
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Taxa nominal de frames 3DS inválida.", exception);
         }
     }
 

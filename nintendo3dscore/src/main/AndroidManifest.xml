@@ -6,7 +6,9 @@
         dist:instant="false"
         dist:title="@string/nintendo3ds_delivery_title">
         <dist:delivery>
-            <dist:on-demand />
+            <dist:install-time>
+                <dist:removable dist:value="true" />
+            </dist:install-time>
         </dist:delivery>
         <dist:fusing dist:include="true" />
     </dist:module>
@@ -18,9 +20,14 @@
 
     <application>
         <activity
+            android:name=".Nintendo3DsSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".Nintendo3DsProductActivity"
             android:configChanges="keyboard|keyboardHidden|navigation"
             android:exported="false"
-            android:hardwareAccelerated="true" />
+            android:hardwareAccelerated="true"
+            android:screenOrientation="landscape" />
     </application>
 </manifest>

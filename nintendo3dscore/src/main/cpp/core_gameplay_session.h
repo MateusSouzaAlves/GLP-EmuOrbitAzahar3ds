@@ -73,6 +73,7 @@ struct CoreGameplayReport {
     uint32_t lastWidth = 0;
     uint32_t lastHeight = 0;
     uint32_t audioSampleRate = 0;
+    double nominalFramesPerSecond = 60.0;
     bool preferredVulkan = false;
     bool hardwareRenderNegotiated = false;
     bool negotiationInterfaceReceived = false;
@@ -106,6 +107,16 @@ public:
     CoreGameplaySession& operator=(const CoreGameplaySession&) = delete;
 
     bool runFrame(std::string& error);
+    bool saveState(
+            const char* destinationPath,
+            size_t maximumBytes,
+            size_t& stateSize,
+            std::string& error);
+    bool restoreState(
+            const char* sourcePath,
+            size_t maximumBytes,
+            size_t& stateSize,
+            std::string& error);
     size_t drainAudio(int16_t* output, size_t capacityFrames);
     void updateInput(
             uint16_t buttonMask,
@@ -172,6 +183,9 @@ private:
         LoadGameFunction loadGame = nullptr;
         UnloadGameFunction unloadGame = nullptr;
         RunFunction run = nullptr;
+        SerializeSizeFunction serializeSize = nullptr;
+        SerializeFunction serialize = nullptr;
+        UnserializeFunction unserialize = nullptr;
     };
 
     std::thread::id ownerThread_;
@@ -181,6 +195,7 @@ private:
     bool contextReset_ = false;
     bool framePresentedThisRun_ = false;
     void* library_ = nullptr;
+    bool libraryProcessResident_ = false;
     CoreApi core_;
     HardwareRenderCallback hardwareCallback_{};
     const VulkanNegotiationInterface* negotiation_ = nullptr;

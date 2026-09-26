@@ -1,53 +1,46 @@
-# Código-fonte correspondente do componente Nintendo 3DS
+# Código-fonte correspondente — Nintendo 3DS
 
-Este repositório local separado contém somente o código-fonte correspondente
-ao componente Nintendo 3DS preparado para o EmuOrbit Advance. Ele segue a
-mesma separação usada pelo pacote público do Nintendo DS e **não contém o
-aplicativo hospedeiro**, ROMs, BIOS, firmware, chaves, saves, telemetria,
-monetização, credenciais ou binários pré-compilados.
+Este repositório contém a fonte, os patches, os avisos e os scripts do
+componente Nintendo 3DS distribuído pelo EmuOrbit Advance. A tag
+`gpl-source-2026-09-26` é a fonte atual do componente: não é um protótipo nem
+uma integração experimental.
 
-O código correspondente está publicado em
-`https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds`. Esta revisão está
-vinculada ao runtime N3DS-12D3 do EmuOrbit Advance em
-`76168397232e7665c6e778406de029b79e10a822`. A publicação do recurso Nintendo
-3DS no app permanece bloqueada até todos os gates de release serem concluídos.
+ROMs, homebrew, BIOS, firmware, chaves, saves, credenciais, telemetria e
+binários pré-compilados não fazem parte deste pacote de fonte.
 
-## Conteúdo mínimo correspondente
+## Composição da fonte
 
-- `third_party/azahar`: upstream Azahar 2126.0 no commit
-  `fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a`, com seus submódulos recursivos;
-- `nintendo3dscore/patches`: as quatro modificações aplicadas ao upstream;
-- `nintendo3dscore/src/main`: frontend Android/JNI/Vulkan, manifesto de feature
-  sob demanda e scripts CMake idênticos aos do componente distribuído;
-- `nintendo3dscore/src/standalone/AndroidManifest.xml`: substituição mínima do
-  manifesto usada apenas para reconstruir o AAR sem o aplicativo hospedeiro;
-- `scripts`: aquisição, build reproduzível e auditorias de licença/binário;
-- `config/nintendo3ds-source-scope.json`: versões, dependências, licenças,
-  opções de build e hashes que identificam o componente;
-- `nintendo3dscore/compliance`: índice de avisos e SBOM da versão.
+- `third_party/azahar`: Azahar 2126.0 em
+  `fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a`, incluindo submódulos recursivos;
+- `nintendo3dscore`: frontend Android/JNI/Vulkan, feature dinâmica, testes,
+  controles e recursos que acompanham o runtime distribuído;
+- `nintendo3dscore/patches`, `config` e `scripts`: patches, aquisição,
+  auditorias, SBOM e validações de release;
+- `app/src/main/cpp/bridge` e `cmake/protected_symbols.cmake`: fontes de
+  integração compartilhada exigidas pelo bootstrap;
+- [EmuOrbit Advance, tag `gpl-source-2026-09-26`](https://github.com/MateusSouzaAlves/EmuOrbit-Advance/tree/gpl-source-2026-09-26): fonte canônica do host Android e
+  da integração final do feature.
 
-O componente combinado é oferecido sob **GNU GPL versão 3 ou posterior**. O
-Azahar upstream declara GPL-2.0-or-later; a combinação auditada usa GPL-3.0-or-
-later por causa das dependências compatíveis registradas no manifesto.
+O componente combinado é disponibilizado sob **GPL-3.0-or-later**. A licença
+e a evidência de cada dependência vinculada estão no SBOM e no índice de
+avisos em `nintendo3dscore/compliance`.
 
-## Obter os upstreams
+## Obter e reproduzir o core
 
-Após clonar este repositório, inicialize tudo recursivamente:
+Após clonar, inicialize os upstreams:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-Ou adquira uma cópia limpa pelo script fixado:
+Ou obtenha uma cópia limpa do Azahar:
 
 ```powershell
 .\scripts\acquire-nintendo3ds-source.ps1 -Destination .\third_party\azahar
 ```
 
-## Reproduzir o core endurecido
-
-Requisitos fixados: Android NDK `27.3.13750724`, CMake `3.30.3`, Ninja
-`1.10.2`, Python 3 e Git. No Windows:
+Para construir o core ARM64, use Android NDK `27.3.13750724`, CMake `3.30.3`,
+Ninja `1.10.2`, Python 3 e Git:
 
 ```powershell
 .\scripts\build-nintendo3ds-reference-core.ps1 `
@@ -58,32 +51,14 @@ Requisitos fixados: Android NDK `27.3.13750724`, CMake `3.30.3`, Ninja
   -OutputDirectory .\out
 ```
 
-A saída esperada é `out/azahar_libretro.so`, com 23.157.736 bytes e SHA-256
-`64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c`.
+A referência auditada é `out/azahar_libretro.so`, com 23.157.736 bytes e
+SHA-256 `64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c`.
 
-## Compilar o frontend Android isolado
+## Fonte correspondente e publicação
 
-Use JDK 17, Android SDK 37, NDK `29.0.14206865` e CMake `3.22.1`. Aponte
-`sdk.dir` em um `local.properties` não versionado e execute:
-
-```powershell
-.\gradlew.bat :nintendo3dscore:assembleRelease `
-  -PEMUORBIT_N3DS_CORE_FILE=.\out\azahar_libretro.so
-```
-
-O AAR é apenas a reconstrução isolada do componente GPL. A integração e o
-aplicativo EmuOrbit não fazem parte deste pacote de fonte.
-
-## Correspondência com o binário
-
-Antes de distribuir uma versão do EmuOrbit que contenha este componente:
-
-1. sincronize aqui exatamente a fonte usada no build;
-2. faça commit e publique este repositório sem exigir login ou pagamento;
-3. registre no app e na página de distribuição a URL e o commit correspondentes;
-4. mantenha essa fonte disponível enquanto o binário correspondente estiver
-   sendo distribuído.
-
-O arquivo `CORRESPONDING_SOURCE.json` registra a revisão do runtime do app que
-esta fonte reproduz. Não inclua neste repositório nenhum artefato privado, ROM
-ou dado de usuário.
+`CORRESPONDING_SOURCE.json` identifica a composição e a tag de fonte. Antes
+de distribuir um novo AAB, atualize a fonte, publique uma tag, registre a URL,
+tag e hashes no repositório do app e preserve o acesso público enquanto o
+binário correspondente estiver disponível. A ausência de uma ROM ou de um
+binário pré-compilado neste repositório não limita os direitos concedidos pela
+GPL sobre o software aqui documentado.

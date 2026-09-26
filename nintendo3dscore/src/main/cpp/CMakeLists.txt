@@ -11,6 +11,17 @@ get_filename_component(
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../.."
         ABSOLUTE
 )
+include("${EMUORBIT_N3DS_WORKSPACE_ROOT}/cmake/protected_symbols.cmake")
+emuorbit_compute_ds_symbols(
+        "${EMUORBIT_BUILD_SEED}"
+        "n3ds-${ANDROID_ABI}"
+)
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
+configure_file(
+        "${EMUORBIT_N3DS_WORKSPACE_ROOT}/app/src/main/cpp/bridge/protected_ds_symbols.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/protected_ds_symbols.h"
+        @ONLY
+)
 
 add_library(
         emuorbit_n3ds_bootstrap
@@ -18,13 +29,29 @@ add_library(
         core_bootstrap.cpp
         core_gameplay_session.cpp
         core_session_registry.cpp
+        protected_nintendo3ds_core.cpp
+        "${EMUORBIT_N3DS_WORKSPACE_ROOT}/app/src/main/cpp/bridge/protected_core_container.cpp"
         jni_bootstrap.cpp
         jni_core_gameplay_session.cpp
         jni_hardware_render_host.cpp
         vulkan_render_host.cpp
 )
 
+target_include_directories(
+        emuorbit_n3ds_bootstrap
+        PRIVATE
+        "${EMUORBIT_N3DS_WORKSPACE_ROOT}/app/src/main/cpp/bridge"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated"
+)
+
 target_compile_features(emuorbit_n3ds_bootstrap PRIVATE cxx_std_17)
+if(EMUORBIT_N3DS_LOADER_DIAGNOSTIC)
+    target_compile_definitions(
+            emuorbit_n3ds_bootstrap
+            PRIVATE
+            EMUORBIT_SANITIZER_DIAGNOSTIC=1
+    )
+endif()
 set_target_properties(
         emuorbit_n3ds_bootstrap
         PROPERTIES

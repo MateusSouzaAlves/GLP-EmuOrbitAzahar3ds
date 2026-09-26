@@ -61,6 +61,17 @@ public final class Nintendo3DsAndroidLaunchReadinessInspector {
     }
 
     private Nintendo3DsLaunchReadiness.CoreStatus inspectCore(File coreLibrary) {
+        if (coreLibrary != null
+                && Nintendo3DsCoreBootstrap.PACKAGED_CORE_LIBRARY_PATH.equals(
+                coreLibrary.getPath())) {
+            try {
+                return isExpectedCore(Nintendo3DsCoreBootstrap.inspectPackaged(context))
+                        ? Nintendo3DsLaunchReadiness.CoreStatus.READY
+                        : Nintendo3DsLaunchReadiness.CoreStatus.INVALID;
+            } catch (IOException | RuntimeException | LinkageError invalid) {
+                return Nintendo3DsLaunchReadiness.CoreStatus.INVALID;
+            }
+        }
         if (coreLibrary == null || !coreLibrary.isFile() || !coreLibrary.canRead()) {
             return Nintendo3DsLaunchReadiness.CoreStatus.MISSING;
         }

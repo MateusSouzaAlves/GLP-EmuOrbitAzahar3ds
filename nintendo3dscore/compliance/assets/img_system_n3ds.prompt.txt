@@ -1,0 +1,11 @@
+Use case: product-mockup
+Asset type: square Android library card system artwork with transparent background
+Reference role: the existing EmuOrbit Nintendo DS system image was used only as a style and composition reference; its exact device, colors and details were not copied.
+Primary request: create an original polished 3D render of a dual-screen clamshell handheld game console representing the Nintendo 3DS category.
+Subject: open handheld viewed from a slightly elevated three-quarter front angle; upper widescreen display, smaller lower touchscreen, circle pad, directional pad, four face buttons, hinge and small speaker perforations. Use a dark graphite body with restrained cyan and violet edge lighting and warm amber screens so it fits the existing app artwork family.
+Composition/framing: device centered, fully contained, generous transparent margin, strong readable silhouette at thumbnail size, square canvas.
+Lighting/mood: clean studio-quality render, subtle glossy highlights, crisp but not photorealistic, premium gaming UI asset.
+Constraints: genuinely transparent background and preserved alpha; no logo, no words, no letters, no watermark, no real-world branding; make the hardware clearly distinct from the reference by using a wide top display and a circle pad.
+
+Correction pass:
+Remove only the generated gray-and-white checkerboard background and replace it with genuine transparent pixels. Preserve the handheld console exactly. Output a square PNG with a real alpha channel and no texture outside the console.

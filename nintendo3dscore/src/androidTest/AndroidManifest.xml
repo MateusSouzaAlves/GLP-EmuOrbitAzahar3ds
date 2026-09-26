@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+    <application
+        android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsLocalTestApplication"
+        android:supportsRtl="true">
+        <!--
+          Local QA self-targets the test APK, while Firebase targets the isolated
+          companion APK. Declaring the same debug-only host in both packages lets
+          the lifecycle test keep using targetContext without entering production.
+        -->
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsLifecycleTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsVirtualControlsTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsReadinessTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsSettingsTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsSettingsActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsSettingsAccessibilityTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsActivityResultTestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <activity
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsProductActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <provider
+            android:name="com.mateussouza.emuorbit.n3ds.core.Nintendo3DsMiiTestProvider"
+            android:authorities="com.mateussouza.emuorbit.n3ds.core.test.mii"
+            android:exported="false" />
+    </application>
+</manifest>

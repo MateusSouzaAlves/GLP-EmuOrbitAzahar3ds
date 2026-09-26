@@ -11,26 +11,32 @@ import java.nio.ByteOrder;
 /*
  * Owns one bounded, lifecycle-aware Android output for Nintendo 3DS PCM.
  *
- * Normal-speed blocking writes intentionally let the hardware output pace the core. Lifecycle
- * transitions may detach and release the AudioTrack concurrently, which wakes a blocked write
- * without moving any native core operation away from its owner thread.
+ * Writes never block the core/render owner thread. Frame pacing is handled independently by the
+ * lifecycle controller, while the bounded native queue and AudioTrack capacity absorb ordinary
+ * scheduling jitter without turning audio backpressure into visible frame stalls.
  */
 final class Nintendo3DsAudioOutput {
-    static final int AUDIO_PREROLL_MILLIS = 60;
+    static final int AUDIO_PREROLL_MILLIS = 160;
     static final int TRANSFER_CAPACITY_FRAMES = 2048;
+    static final int OUTPUT_BUFFER_MILLIS = 500;
 
     private static final int BYTES_PER_STEREO_FRAME = 4;
+    private static final float PCM_HEADROOM_GAIN = 0.90f;
     private static final int MIN_SAMPLE_RATE = 8000;
     private static final int MAX_SAMPLE_RATE = 192000;
 
     private final Object lock = new Object();
+    private final Object transferLock = new Object();
     private final ByteBuffer transferBuffer = ByteBuffer.allocateDirect(
             TRANSFER_CAPACITY_FRAMES * BYTES_PER_STEREO_FRAME)
             .order(ByteOrder.nativeOrder());
     private final Nintendo3DsFastForwardAudioProcessor fastForwardProcessor =
             new Nintendo3DsFastForwardAudioProcessor();
+    private final Nintendo3DsAudioProcessor audioProcessor =
+            new Nintendo3DsAudioProcessor();
 
-    // Guarded by lock, except transferBuffer which is used only by the core owner thread.
+    // Counters and AudioTrack state are guarded by lock. transferBuffer is guarded by
+    // transferLock so lifecycle transitions can safely discard only an exact pending block.
     private boolean enabled;
     private float volume = 1.0f;
     private float requestedSpeed = 1.0f;
@@ -40,6 +46,7 @@ final class Nintendo3DsAudioOutput {
     private int activeSampleRate;
     private int lastSampleRate;
     private int lastBufferCapacityFrames;
+    private int activeTrackUnderruns;
     private int bytesQueuedBeforePlay;
     private boolean primed;
     private long inputFrames;
@@ -54,6 +61,10 @@ final class Nintendo3DsAudioOutput {
     private long trackCreationFailures;
     private long outputFailures;
 
+    Nintendo3DsAudioOutput() {
+        transferBuffer.limit(0);
+    }
+
     void setEnabled(boolean enabled) {
         AudioTrack detached = null;
         synchronized (lock) {
@@ -67,7 +78,11 @@ final class Nintendo3DsAudioOutput {
         }
         releaseTrack(detached);
         if (!enabled) {
+            synchronized (transferLock) {
+                dropPendingFrames();
+            }
             fastForwardProcessor.reset();
+            audioProcessor.reset();
         }
     }
 
@@ -99,10 +114,23 @@ final class Nintendo3DsAudioOutput {
             detached = detachTrackLocked();
         }
         releaseTrack(detached);
+        synchronized (transferLock) {
+            dropPendingFrames();
+        }
         fastForwardProcessor.reset();
+        audioProcessor.reset();
     }
 
     void consume(Nintendo3DsCoreSession session, int sampleRate, long queuedInputFrames) {
+        synchronized (transferLock) {
+            consumeOnOwnerThread(session, sampleRate, queuedInputFrames);
+        }
+    }
+
+    private void consumeOnOwnerThread(
+            Nintendo3DsCoreSession session,
+            int sampleRate,
+            long queuedInputFrames) {
         if (sampleRate < MIN_SAMPLE_RATE || sampleRate > MAX_SAMPLE_RATE) {
             return;
         }
@@ -119,83 +147,70 @@ final class Nintendo3DsAudioOutput {
             lastSynchronizedSpeed = synchronizedSpeed;
         }
         AudioTrack track = ensureTrack(sampleRate);
+        track = recoverUnderrunIfNeeded(track, sampleRate);
         boolean outputAvailable = track != null;
-        int writeMode = speed > 1.0f
-                ? AudioTrack.WRITE_NON_BLOCKING
-                : AudioTrack.WRITE_BLOCKING;
 
-        while (isEnabled() && (outputAvailable ? isCurrentTrack(track) : true)) {
-            int frames = session.drainAudio(transferBuffer, TRANSFER_CAPACITY_FRAMES);
-            if (frames <= 0) {
+        // Complete an earlier partial write before draining new PCM. If the platform accepts the
+        // remainder, continue in this same frame instead of leaving valid native audio stranded.
+        if (transferBuffer.hasRemaining()) {
+            if (outputAvailable) {
+                writePending(track);
+            } else {
+                dropPendingFrames();
+            }
+            if (transferBuffer.hasRemaining()
+                    || (outputAvailable && !isCurrentTrack(track))) {
                 return;
             }
+        }
+        if (!isEnabled()) {
+            return;
+        }
+
+        // A short non-blocking write used to make the next video frame spend its only audio turn
+        // on old PCM. Under a demanding game that could starve AudioTrack even while the native
+        // ring still contained sound. Drain a small bounded burst so audio catches up without
+        // turning the render thread into an unbounded retry loop.
+        long drainStartedNanos = System.nanoTime();
+        for (int block = 0; isEnabled(); block++) {
+            if (!Nintendo3DsAudioDrainPolicy.shouldDrainBlock(
+                    block, System.nanoTime() - drainStartedNanos)) {
+                break;
+            }
+            transferBuffer.clear();
+            int frames = session.drainAudio(transferBuffer, TRANSFER_CAPACITY_FRAMES);
+            if (frames <= 0) {
+                transferBuffer.limit(0);
+                return;
+            }
+            if (!outputAvailable) {
+                // Keep the bounded native ring fresh without filtering/decimating PCM that
+                // cannot be played. Muted or temporarily unavailable output must not add work
+                // to an already expensive emulation frame.
+                recordReceivedFrames(frames, 0);
+                transferBuffer.position(0);
+                transferBuffer.limit(frames * BYTES_PER_STEREO_FRAME);
+                dropPendingFrames();
+                continue;
+            }
+            audioProcessor.process(
+                    transferBuffer,
+                    frames,
+                    synchronizedSpeed,
+                    PCM_HEADROOM_GAIN);
             int outputFrames = fastForwardProcessor.process(
                     transferBuffer,
                     frames,
                     synchronizedSpeed);
             int intentionallyDecimatedFrames = frames - outputFrames;
-            if (!outputAvailable) {
-                recordTransfer(
-                        frames,
-                        0,
-                        intentionallyDecimatedFrames,
-                        outputFrames,
-                        false);
-                continue;
-            }
-
-            int expectedBytes = outputFrames * BYTES_PER_STEREO_FRAME;
+            recordReceivedFrames(frames, intentionallyDecimatedFrames);
             transferBuffer.position(0);
-            transferBuffer.limit(expectedBytes);
-            int writtenBytes = 0;
-            boolean writeFailed = false;
-            while (transferBuffer.hasRemaining() && isCurrentTrack(track)) {
-                int requestedBytes = transferBuffer.remaining();
-                int result;
-                try {
-                    result = track.write(
-                            transferBuffer,
-                            requestedBytes,
-                            writeMode);
-                } catch (IllegalStateException exception) {
-                    result = AudioTrack.ERROR_INVALID_OPERATION;
+            transferBuffer.limit(outputFrames * BYTES_PER_STEREO_FRAME);
+            if (transferBuffer.hasRemaining()) {
+                writePending(track);
+                if (transferBuffer.hasRemaining() || !isCurrentTrack(track)) {
+                    return;
                 }
-                if (writeMode == AudioTrack.WRITE_NON_BLOCKING) {
-                    synchronized (lock) {
-                        nonBlockingWriteCalls++;
-                    }
-                }
-                if (result <= 0) {
-                    // A lifecycle transition intentionally releases the track to wake this write.
-                    // Count only failures from a track which is still the active destination.
-                    writeFailed = result < 0 && isCurrentTrack(track);
-                    break;
-                }
-                writtenBytes += result;
-                recordBytesQueuedAndStart(track, result);
-                if (result < requestedBytes) {
-                    synchronized (lock) {
-                        shortWrites++;
-                    }
-                }
-            }
-
-            int completeWrittenFrames = Math.min(
-                    outputFrames,
-                    writtenBytes / BYTES_PER_STEREO_FRAME);
-            int remainingFrames = outputFrames - completeWrittenFrames;
-            recordTransfer(
-                    frames,
-                    completeWrittenFrames,
-                    intentionallyDecimatedFrames,
-                    remainingFrames,
-                    writeFailed);
-            if (writeFailed) {
-                invalidateTrack(track);
-                return;
-            }
-            if (!isCurrentTrack(track)) {
-                return;
             }
         }
     }
@@ -206,11 +221,16 @@ final class Nintendo3DsAudioOutput {
             detached = detachTrackLocked();
         }
         releaseTrack(detached);
+        synchronized (transferLock) {
+            dropPendingFrames();
+        }
         fastForwardProcessor.reset();
+        audioProcessor.reset();
     }
 
     Nintendo3DsAudioOutputReport report() {
-        synchronized (lock) {
+        synchronized (transferLock) {
+            synchronized (lock) {
             AudioTrack track = audioTrack;
             boolean active = track != null;
             boolean playing = false;
@@ -232,6 +252,7 @@ final class Nintendo3DsAudioOutput {
                     writtenFrames,
                     decimatedFrames,
                     droppedFrames,
+                    transferBuffer.remaining() / BYTES_PER_STEREO_FRAME,
                     shortWrites,
                     nonBlockingWriteCalls,
                     underruns,
@@ -242,6 +263,7 @@ final class Nintendo3DsAudioOutput {
                     active,
                     primed,
                     playing);
+            }
         }
     }
 
@@ -277,6 +299,7 @@ final class Nintendo3DsAudioOutput {
                 activeSampleRate = sampleRate;
                 lastSampleRate = sampleRate;
                 lastBufferCapacityFrames = readBufferCapacityFrames(createdTrack);
+                activeTrackUnderruns = readUnderruns(createdTrack);
                 openedTrackCount++;
                 result = createdTrack;
             }
@@ -296,7 +319,8 @@ final class Nintendo3DsAudioOutput {
             }
             int bufferSize = Math.max(
                     minBufferSize * 2,
-                    sampleRate * BYTES_PER_STEREO_FRAME);
+                    sampleRate * BYTES_PER_STEREO_FRAME
+                            * OUTPUT_BUFFER_MILLIS / 1000);
             AudioTrack track = new AudioTrack.Builder()
                     .setAudioAttributes(new AudioAttributes.Builder()
                             .setUsage(AudioAttributes.USAGE_GAME)
@@ -348,21 +372,102 @@ final class Nintendo3DsAudioOutput {
         }
     }
 
-    private void recordTransfer(
-            int receivedInputFrames,
-            int completeWrittenFrames,
-            int intentionallyDecimatedFrames,
-            int remainingFrames,
-            boolean writeFailed) {
+    private void writePending(AudioTrack track) {
+        int requestedBytes = transferBuffer.remaining();
+        int result;
+        try {
+            result = track.write(
+                    transferBuffer,
+                    requestedBytes,
+                    AudioTrack.WRITE_NON_BLOCKING);
+        } catch (IllegalStateException exception) {
+            result = AudioTrack.ERROR_INVALID_OPERATION;
+        }
         synchronized (lock) {
-            inputFrames += receivedInputFrames;
-            writtenFrames += completeWrittenFrames;
-            decimatedFrames += intentionallyDecimatedFrames;
-            droppedFrames += remainingFrames;
-            if (writeFailed) {
-                outputFailures++;
+            nonBlockingWriteCalls++;
+        }
+        if (result < 0) {
+            if (isCurrentTrack(track)) {
+                synchronized (lock) {
+                    outputFailures++;
+                }
+                dropPendingFrames();
+                invalidateTrack(track);
+            } else {
+                dropPendingFrames();
+            }
+            return;
+        }
+        if (result == 0) {
+            if (!isCurrentTrack(track)) {
+                dropPendingFrames();
+            }
+            return;
+        }
+        if (result < requestedBytes) {
+            synchronized (lock) {
+                shortWrites++;
             }
         }
+        if (result % BYTES_PER_STEREO_FRAME != 0) {
+            synchronized (lock) {
+                outputFailures++;
+            }
+            dropPendingFrames();
+            invalidateTrack(track);
+            return;
+        }
+        synchronized (lock) {
+            writtenFrames += result / BYTES_PER_STEREO_FRAME;
+        }
+        recordBytesQueuedAndStart(track, result);
+        if (!isCurrentTrack(track)) {
+            dropPendingFrames();
+        }
+    }
+
+    private AudioTrack recoverUnderrunIfNeeded(AudioTrack track, int sampleRate) {
+        if (track == null) {
+            return null;
+        }
+        int observedUnderruns = readUnderruns(track);
+        boolean recover;
+        synchronized (lock) {
+            recover = track == audioTrack
+                    && primed
+                    && observedUnderruns > activeTrackUnderruns;
+            if (track == audioTrack && !recover) {
+                activeTrackUnderruns = Math.max(activeTrackUnderruns, observedUnderruns);
+            }
+        }
+        if (!recover) {
+            return track;
+        }
+
+        // A long shader/driver frame can exhaust even a generously sized streaming buffer.
+        // Recreate and pre-roll instead of letting AudioTrack auto-restart a disabled stream on
+        // the next write, which is the path that produces repeated pops and follow-on underruns.
+        invalidateTrack(track);
+        return ensureTrack(sampleRate);
+    }
+
+    private void recordReceivedFrames(int receivedInputFrames, int intentionallyDecimatedFrames) {
+        synchronized (lock) {
+            inputFrames += receivedInputFrames;
+            decimatedFrames += intentionallyDecimatedFrames;
+        }
+    }
+
+    /** Must be called while holding transferLock. */
+    private void dropPendingFrames() {
+        int pendingFrames = transferBuffer.remaining() / BYTES_PER_STEREO_FRAME;
+        if (pendingFrames > 0) {
+            synchronized (lock) {
+                droppedFrames += pendingFrames;
+            }
+        }
+        transferBuffer.position(0);
+        transferBuffer.limit(0);
     }
 
     private boolean isEnabled() {
@@ -396,6 +501,7 @@ final class Nintendo3DsAudioOutput {
         }
         audioTrack = null;
         activeSampleRate = 0;
+        activeTrackUnderruns = 0;
         bytesQueuedBeforePlay = 0;
         primed = false;
         return detached;

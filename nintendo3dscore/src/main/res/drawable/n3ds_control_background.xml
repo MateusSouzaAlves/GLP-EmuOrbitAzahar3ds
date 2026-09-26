@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/n3ds_control_disabled" android:state_enabled="false" />
+    <item android:drawable="@drawable/n3ds_control_pressed" android:state_pressed="true" />
+    <item android:drawable="@drawable/n3ds_control_rest" />
+</selector>

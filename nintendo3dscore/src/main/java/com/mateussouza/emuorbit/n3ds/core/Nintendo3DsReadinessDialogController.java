@@ -2,10 +2,11 @@
 package com.mateussouza.emuorbit.n3ds.core;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Looper;
-import android.widget.Button;
+
+import androidx.appcompat.app.AlertDialog;
+
+import com.mateussouza.emuorbit.advance.ui.MateusDialog;
 
 import java.util.Objects;
 
@@ -89,46 +90,37 @@ public final class Nintendo3DsReadinessDialogController implements AutoCloseable
         if (themeResource < 0) {
             throw new IllegalArgumentException("Readiness dialog theme cannot be negative");
         }
-        AlertDialog.Builder builder = themeResource == 0
-                ? new AlertDialog.Builder(checkedActivity)
-                : new AlertDialog.Builder(checkedActivity, themeResource);
-        builder
+        MateusDialog.Builder builder = new MateusDialog.Builder(checkedActivity)
+                .setAvatar(
+                        com.mateussouza.emuorbit.advance.R.drawable
+                                .mateus_dialog_emulator_error)
                 .setTitle(checkedModel.getTitleResource())
                 .setMessage(checkedModel.formatMessages(checkedActivity))
-                .setPositiveButton(primary.getLabelResource(), null);
+                .setPositiveButton(
+                        primary.getLabelResource(),
+                        (dialog, which) -> checkedListener.onAction(primary));
         boolean hasContinueAlternative = checkedModel.canContinue()
                 && primary != Nintendo3DsReadinessPresentation.Action.CONTINUE;
         if (hasContinueAlternative) {
             builder.setNeutralButton(
-                    Nintendo3DsReadinessPresentation.Action.CONTINUE.getLabelResource(), null);
+                    Nintendo3DsReadinessPresentation.Action.CONTINUE.getLabelResource(),
+                    (dialog, which) -> checkedListener.onAction(
+                            Nintendo3DsReadinessPresentation.Action.CONTINUE));
         }
         if (primary != Nintendo3DsReadinessPresentation.Action.UNDERSTOOD) {
             builder.setNegativeButton(android.R.string.cancel, null);
         }
 
-        AlertDialog dialog = builder.create();
-        activeDialog = dialog;
-        dialog.setOnShowListener(ignored -> {
-            bindAction(dialog, DialogInterface.BUTTON_POSITIVE, primary, checkedListener);
-            if (hasContinueAlternative) {
-                bindAction(
-                        dialog,
-                        DialogInterface.BUTTON_NEUTRAL,
-                        Nintendo3DsReadinessPresentation.Action.CONTINUE,
-                        checkedListener);
-            }
-        });
-        dialog.setOnDismissListener(ignored -> {
-            if (activeDialog == dialog) {
-                activeDialog = null;
-            }
-        });
-        dialog.show();
+        builder.setOnDismissListener(ignored -> activeDialog = null);
+        activeDialog = builder.show();
         try {
-            styleAdapter.onDialogShown(checkedActivity, dialog, checkedModel);
+            styleAdapter.onDialogShown(checkedActivity, activeDialog, checkedModel);
         } catch (RuntimeException failure) {
+            AlertDialog dialog = activeDialog;
             activeDialog = null;
-            dialog.dismiss();
+            if (dialog != null) {
+                dialog.dismiss();
+            }
             throw failure;
         }
         return true;
@@ -161,24 +153,6 @@ public final class Nintendo3DsReadinessDialogController implements AutoCloseable
             dialog.setOnDismissListener(null);
             dialog.dismiss();
         }
-    }
-
-    private static void bindAction(
-            AlertDialog dialog,
-            int buttonId,
-            Nintendo3DsReadinessPresentation.Action action,
-            ActionListener listener) {
-        Button button = dialog.getButton(buttonId);
-        if (button == null) {
-            throw new IllegalStateException("Expected readiness action button is missing");
-        }
-        button.setOnClickListener(ignored -> {
-            if (!dialog.isShowing()) {
-                return;
-            }
-            dialog.dismiss();
-            listener.onAction(action);
-        });
     }
 
     private static void requireMainThread() {

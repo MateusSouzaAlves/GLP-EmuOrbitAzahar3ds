@@ -85,6 +85,18 @@ VkExtent2D chooseExtent(
     };
 }
 
+VkSurfaceTransformFlagBitsKHR choosePreTransform(
+        const VkSurfaceCapabilitiesKHR& capabilities) {
+    // Android may report ROTATE_90/270 after an Activity orientation change. The compositor
+    // applies the current display transform when the swapchain uses IDENTITY; declaring the
+    // current transform instead means the application promises it already rotated every frame.
+    // Our blit keeps core pixels upright, so prefer IDENTITY and let SurfaceFlinger rotate once.
+    if ((capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) != 0) {
+        return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    }
+    return capabilities.currentTransform;
+}
+
 }  // namespace
 
 std::unique_ptr<VulkanRenderHost> VulkanRenderHost::create(
@@ -409,7 +421,7 @@ bool VulkanRenderHost::createSwapchain(
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.preTransform = capabilities.currentTransform;
+    createInfo.preTransform = choosePreTransform(capabilities);
     createInfo.compositeAlpha = chooseCompositeAlpha(capabilities.supportedCompositeAlpha);
     createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     createInfo.clipped = VK_TRUE;
@@ -750,13 +762,18 @@ bool VulkanRenderHost::presentCoreFrame(
             1,
             &destinationToTransfer);
 
-    VkClearColorValue black{};
-    black.float32[3] = 1.0F;
+    // Match EmuOrbit's #080B18 navy so any aspect-ratio remainder reads as an
+    // intentional controls backdrop instead of a black bar or stretched game pixels.
+    VkClearColorValue backdrop{};
+    backdrop.float32[0] = 8.0F / 255.0F;
+    backdrop.float32[1] = 11.0F / 255.0F;
+    backdrop.float32[2] = 24.0F / 255.0F;
+    backdrop.float32[3] = 1.0F;
     clearColorImage(
             commandBuffer_,
             swapchainImages_[syncIndex_],
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            &black,
+            &backdrop,
             1,
             &destinationToTransfer.subresourceRange);
 
@@ -798,27 +815,30 @@ bool VulkanRenderHost::presentCoreFrame(
     } else {
         destinationHeight = static_cast<uint32_t>(
                 static_cast<uint64_t>(extent_.width) * sourceHeight / sourceWidth);
+        // Center the complete dual-screen frame in both orientations. The remaining space is
+        // balanced above and below in landscape, with no crop, stretch or duplicated pixels.
         destinationY = static_cast<int32_t>((extent_.height - destinationHeight) / 2U);
     }
 
-    VkImageBlit region{};
-    region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.srcSubresource.mipLevel = source->createInfo.subresourceRange.baseMipLevel;
-    region.srcSubresource.baseArrayLayer = source->createInfo.subresourceRange.baseArrayLayer;
-    region.srcSubresource.layerCount = 1;
-    region.srcOffsets[1] = {
+    VkImageBlit frameRegion{};
+    frameRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    frameRegion.srcSubresource.mipLevel = source->createInfo.subresourceRange.baseMipLevel;
+    frameRegion.srcSubresource.baseArrayLayer = source->createInfo.subresourceRange.baseArrayLayer;
+    frameRegion.srcSubresource.layerCount = 1;
+    frameRegion.srcOffsets[1] = {
             static_cast<int32_t>(sourceWidth),
             static_cast<int32_t>(sourceHeight),
             1,
     };
-    region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.dstSubresource.layerCount = 1;
-    region.dstOffsets[0] = {destinationX, destinationY, 0};
-    region.dstOffsets[1] = {
+    frameRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    frameRegion.dstSubresource.layerCount = 1;
+    frameRegion.dstOffsets[0] = {destinationX, destinationY, 0};
+    frameRegion.dstOffsets[1] = {
             destinationX + static_cast<int32_t>(destinationWidth),
             destinationY + static_cast<int32_t>(destinationHeight),
             1,
     };
+
     blitImage(
             commandBuffer_,
             source->createInfo.image,
@@ -826,7 +846,7 @@ bool VulkanRenderHost::presentCoreFrame(
             swapchainImages_[syncIndex_],
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             1,
-            &region,
+            &frameRegion,
             VK_FILTER_LINEAR);
 
     VkImageMemoryBarrier sourceRestore = sourceToTransfer;

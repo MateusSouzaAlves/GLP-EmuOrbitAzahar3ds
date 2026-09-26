@@ -22,6 +22,8 @@ public final class Nintendo3DsExperienceSettingsStore {
     private static final String AUDIO_ENABLED = "audio_enabled";
     private static final String AUDIO_VOLUME = "audio_volume";
     private static final String MICROPHONE_ENABLED = "microphone_enabled";
+    private static final String VIRTUAL_CONTROLS_VISIBLE = "virtual_controls_visible";
+    private static final String VIRTUAL_CONTROL_OPACITY = "virtual_control_opacity";
     private static final Pattern PERSISTENT_ID_PATTERN = Pattern.compile(
             "n3ds-v1:[0-9a-f]{64}:[0-9a-f]{64}(?::[0-9a-f]{64})?");
 
@@ -48,7 +50,13 @@ public final class Nintendo3DsExperienceSettingsStore {
                 readFloat(GLOBAL_PREFIX + AUDIO_VOLUME, defaults.getAudioVolume()),
                 readBoolean(
                         GLOBAL_PREFIX + MICROPHONE_ENABLED,
-                        defaults.isMicrophoneEnabled()));
+                        defaults.isMicrophoneEnabled()),
+                readBoolean(
+                        GLOBAL_PREFIX + VIRTUAL_CONTROLS_VISIBLE,
+                        defaults.areVirtualControlsVisible()),
+                readInt(
+                        GLOBAL_PREFIX + VIRTUAL_CONTROL_OPACITY,
+                        defaults.getVirtualControlOpacityPercent()));
     }
 
     public boolean saveGlobal(Nintendo3DsExperienceSettings settings) {
@@ -63,6 +71,12 @@ public final class Nintendo3DsExperienceSettingsStore {
                 .putBoolean(GLOBAL_PREFIX + AUDIO_ENABLED, settings.isAudioEnabled())
                 .putFloat(GLOBAL_PREFIX + AUDIO_VOLUME, settings.getAudioVolume())
                 .putBoolean(GLOBAL_PREFIX + MICROPHONE_ENABLED, settings.isMicrophoneEnabled())
+                .putBoolean(
+                        GLOBAL_PREFIX + VIRTUAL_CONTROLS_VISIBLE,
+                        settings.areVirtualControlsVisible())
+                .putInt(
+                        GLOBAL_PREFIX + VIRTUAL_CONTROL_OPACITY,
+                        settings.getVirtualControlOpacityPercent())
                 .commit();
     }
 
@@ -73,6 +87,8 @@ public final class Nintendo3DsExperienceSettingsStore {
                 .remove(GLOBAL_PREFIX + AUDIO_ENABLED)
                 .remove(GLOBAL_PREFIX + AUDIO_VOLUME)
                 .remove(GLOBAL_PREFIX + MICROPHONE_ENABLED)
+                .remove(GLOBAL_PREFIX + VIRTUAL_CONTROLS_VISIBLE)
+                .remove(GLOBAL_PREFIX + VIRTUAL_CONTROL_OPACITY)
                 .commit();
     }
 
@@ -88,7 +104,11 @@ public final class Nintendo3DsExperienceSettingsStore {
                 preferences.contains(prefix + AUDIO_VOLUME)
                         ? readOptionalFloat(prefix + AUDIO_VOLUME) : null,
                 preferences.contains(prefix + MICROPHONE_ENABLED)
-                        ? readOptionalBoolean(prefix + MICROPHONE_ENABLED) : null);
+                        ? readOptionalBoolean(prefix + MICROPHONE_ENABLED) : null,
+                preferences.contains(prefix + VIRTUAL_CONTROLS_VISIBLE)
+                        ? readOptionalBoolean(prefix + VIRTUAL_CONTROLS_VISIBLE) : null,
+                preferences.contains(prefix + VIRTUAL_CONTROL_OPACITY)
+                        ? readOptionalInt(prefix + VIRTUAL_CONTROL_OPACITY) : null);
     }
 
     public boolean saveGameOverrides(
@@ -174,6 +194,16 @@ public final class Nintendo3DsExperienceSettingsStore {
         if (overrides.getMicrophoneEnabled() != null) {
             editor.putBoolean(prefix + MICROPHONE_ENABLED, overrides.getMicrophoneEnabled());
         }
+        if (overrides.getVirtualControlsVisible() != null) {
+            editor.putBoolean(
+                    prefix + VIRTUAL_CONTROLS_VISIBLE,
+                    overrides.getVirtualControlsVisible());
+        }
+        if (overrides.getVirtualControlOpacityPercent() != null) {
+            editor.putInt(
+                    prefix + VIRTUAL_CONTROL_OPACITY,
+                    overrides.getVirtualControlOpacityPercent());
+        }
     }
 
     private static void removeGameKeys(SharedPreferences.Editor editor, String prefix) {
@@ -181,7 +211,9 @@ public final class Nintendo3DsExperienceSettingsStore {
                 .remove(prefix + PERFORMANCE_PROFILE)
                 .remove(prefix + AUDIO_ENABLED)
                 .remove(prefix + AUDIO_VOLUME)
-                .remove(prefix + MICROPHONE_ENABLED);
+                .remove(prefix + MICROPHONE_ENABLED)
+                .remove(prefix + VIRTUAL_CONTROLS_VISIBLE)
+                .remove(prefix + VIRTUAL_CONTROL_OPACITY);
     }
 
     private String persistentIdFromKey(String key) {
@@ -260,6 +292,23 @@ public final class Nintendo3DsExperienceSettingsStore {
         try {
             float value = preferences.getFloat(key, Float.NaN);
             return Float.isFinite(value) ? value : null;
+        } catch (ClassCastException exception) {
+            return null;
+        }
+    }
+
+    private int readInt(String key, int fallback) {
+        Integer value = readOptionalInt(key);
+        return value == null ? fallback : value;
+    }
+
+    private Integer readOptionalInt(String key) {
+        if (!preferences.contains(key)) {
+            return null;
+        }
+        try {
+            return Nintendo3DsExperienceSettings.normalizeVirtualControlOpacity(
+                    preferences.getInt(key, Integer.MIN_VALUE));
         } catch (ClassCastException exception) {
             return null;
         }

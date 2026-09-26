@@ -103,6 +103,24 @@ public final class Nintendo3DsCoreSession implements AutoCloseable {
         return new Nintendo3DsCoreFrameReport(r(nativeHandle));
     }
 
+    long saveRecoveryState(String destinationPath, long maximumBytes) throws IOException {
+        requireOwnerThread();
+        requireOpen();
+        if (maximumBytes <= 0) {
+            throw new IllegalArgumentException("O limite do estado de recuperação 3DS deve ser positivo.");
+        }
+        return s(nativeHandle, Objects.requireNonNull(destinationPath), maximumBytes);
+    }
+
+    long restoreRecoveryState(String sourcePath, long maximumBytes) throws IOException {
+        requireOwnerThread();
+        requireOpen();
+        if (maximumBytes <= 0) {
+            throw new IllegalArgumentException("O limite do estado de recuperação 3DS deve ser positivo.");
+        }
+        return l(nativeHandle, Objects.requireNonNull(sourcePath), maximumBytes);
+    }
+
     public int drainAudio(ByteBuffer target, int capacityFrames) {
         requireOwnerThread();
         requireOpen();
@@ -188,6 +206,12 @@ public final class Nintendo3DsCoreSession implements AutoCloseable {
             String performanceProfile) throws IOException;
 
     private static native String[] r(long handle) throws IOException;
+
+    private static native long s(long handle, String destinationPath, long maximumBytes)
+            throws IOException;
+
+    private static native long l(long handle, String sourcePath, long maximumBytes)
+            throws IOException;
 
     private static native int d(long handle, ByteBuffer target, int capacityFrames);
 

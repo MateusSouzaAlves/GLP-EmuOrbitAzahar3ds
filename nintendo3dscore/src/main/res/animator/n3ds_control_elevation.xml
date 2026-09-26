@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="false">
+        <objectAnimator android:duration="100" android:propertyName="translationZ"
+            android:valueTo="0dp" android:valueType="floatType" />
+    </item>
+    <item android:state_pressed="true">
+        <objectAnimator android:duration="70" android:propertyName="translationZ"
+            android:valueTo="0dp" android:valueType="floatType" />
+    </item>
+    <item>
+        <objectAnimator android:duration="130" android:propertyName="translationZ"
+            android:valueTo="4dp" android:valueType="floatType" />
+    </item>
+</selector>

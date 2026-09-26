@@ -5,16 +5,21 @@
 
 #include <android/log.h>
 #include <dlfcn.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <atomic>
+#include <cerrno>
 #include <cstdarg>
 #include <cstring>
 #include <limits>
 #include <new>
+#include <vector>
 
 #include "core_session_registry.h"
+#include "protected_nintendo3ds_core.h"
 #include "vulkan_render_host.h"
 
 namespace emuorbit::n3ds {
@@ -34,6 +39,54 @@ struct Microphone {
 namespace {
 
 std::atomic<CoreGameplaySession*> g_activeSession{nullptr};
+std::mutex g_coreLibraryMutex;
+void* g_residentCoreLibrary = nullptr;
+std::string g_residentCoreLibraryPath;
+
+void* openCoreLibrary(
+        const std::string& path,
+        bool& processResident,
+        std::string& error) {
+    std::lock_guard<std::mutex> lock(g_coreLibraryMutex);
+    if (g_residentCoreLibrary != nullptr) {
+        if (g_residentCoreLibraryPath != path) {
+            error = "A different Nintendo 3DS core is already resident in this process";
+            return nullptr;
+        }
+        processResident = true;
+        return g_residentCoreLibrary;
+    }
+    if (path == "azahar_libretro.so") {
+        void* protectedLibrary = protectedNintendo3DsCoreHandle();
+        if (protectedLibrary == nullptr) {
+            error = "The protected Nintendo 3DS core was not prepared";
+            return nullptr;
+        }
+        g_residentCoreLibrary = protectedLibrary;
+        g_residentCoreLibraryPath = path;
+        processResident = true;
+        return protectedLibrary;
+    }
+    processResident = false;
+    return dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
+}
+
+bool retainCoreLibraryForProcess(
+        void* library,
+        const std::string& path,
+        std::string& error) {
+    std::lock_guard<std::mutex> lock(g_coreLibraryMutex);
+    if (g_residentCoreLibrary != nullptr) {
+        if (g_residentCoreLibrary != library || g_residentCoreLibraryPath != path) {
+            error = "The resident Nintendo 3DS core identity changed unexpectedly";
+            return false;
+        }
+        return true;
+    }
+    g_residentCoreLibrary = library;
+    g_residentCoreLibraryPath = path;
+    return true;
+}
 
 uint64_t packInputState(uint16_t buttonMask, int16_t circlePadX, int16_t circlePadY) {
     return static_cast<uint64_t>(buttonMask)
@@ -395,7 +448,8 @@ std::unique_ptr<CoreGameplaySession> CoreGameplaySession::open(
     session->resolutionFactor_ = resolutionFactorForProfile(performanceProfile);
     session->report_.performanceProfile = session->performanceProfile_;
 
-    session->library_ = dlopen(session->libraryPath_.c_str(), RTLD_NOW | RTLD_LOCAL);
+    session->library_ = openCoreLibrary(
+            session->libraryPath_, session->libraryProcessResident_, error);
     if (session->library_ == nullptr || !session->loadCoreApi(error)) {
         if (error.empty()) {
             error = "Unable to load the Nintendo 3DS core library";
@@ -411,6 +465,16 @@ std::unique_ptr<CoreGameplaySession> CoreGameplaySession::open(
             || !systemInfo.needFullPath) {
         error = "The native library is not the expected Nintendo 3DS core";
         return nullptr;
+    }
+    // Azahar and some Vulkan drivers retain auxiliary worker state briefly after
+    // retro_deinit. Keep one dlopen reference for the Android process lifetime so a
+    // late driver callback can never jump into an unmapped core. Reopened Surface
+    // sessions reuse this exact handle, so lifecycle churn does not grow refcounts.
+    if (!session->libraryProcessResident_) {
+        if (!retainCoreLibraryForProcess(session->library_, session->libraryPath_, error)) {
+            return nullptr;
+        }
+        session->libraryProcessResident_ = true;
     }
 
     session->core_.setEnvironment(environmentCallback);
@@ -433,6 +497,7 @@ std::unique_ptr<CoreGameplaySession> CoreGameplaySession::open(
     {
         std::lock_guard<std::mutex> lock(session->reportMutex_);
         session->report_.audioSampleRate = static_cast<uint32_t>(avInfo.timing.sampleRate + 0.5);
+        session->report_.nominalFramesPerSecond = avInfo.timing.fps;
     }
 
     GameInfo gameInfo{};
@@ -475,6 +540,36 @@ std::unique_ptr<CoreGameplaySession> CoreGameplaySession::open(
     return session;
 }
 
+bool writeAll(int descriptor, const uint8_t* data, size_t size) {
+    size_t written = 0;
+    while (written < size) {
+        const ssize_t result = write(descriptor, data + written, size - written);
+        if (result < 0 && errno == EINTR) {
+            continue;
+        }
+        if (result <= 0) {
+            return false;
+        }
+        written += static_cast<size_t>(result);
+    }
+    return true;
+}
+
+bool readAll(int descriptor, uint8_t* data, size_t size) {
+    size_t readBytes = 0;
+    while (readBytes < size) {
+        const ssize_t result = read(descriptor, data + readBytes, size - readBytes);
+        if (result < 0 && errno == EINTR) {
+            continue;
+        }
+        if (result <= 0) {
+            return false;
+        }
+        readBytes += static_cast<size_t>(result);
+    }
+    return true;
+}
+
 CoreGameplaySession::~CoreGameplaySession() {
     teardown();
 }
@@ -499,6 +594,9 @@ bool CoreGameplaySession::loadCoreApi(std::string& error) {
     LOAD_GAMEPLAY_SYMBOL(loadGame, "retro_load_game")
     LOAD_GAMEPLAY_SYMBOL(unloadGame, "retro_unload_game")
     LOAD_GAMEPLAY_SYMBOL(run, "retro_run")
+    LOAD_GAMEPLAY_SYMBOL(serializeSize, "retro_serialize_size")
+    LOAD_GAMEPLAY_SYMBOL(serialize, "retro_serialize")
+    LOAD_GAMEPLAY_SYMBOL(unserialize, "retro_unserialize")
 #undef LOAD_GAMEPLAY_SYMBOL
     return true;
 }
@@ -533,6 +631,125 @@ bool CoreGameplaySession::runFrame(std::string& error) {
         report_.swapchainImageCount = renderReport.swapchainImageCount;
         report_.presentedFrames = renderReport.presentedFrames;
     }
+    return true;
+}
+
+bool CoreGameplaySession::saveState(
+        const char* destinationPath,
+        size_t maximumBytes,
+        size_t& stateSize,
+        std::string& error) {
+    stateSize = 0;
+    if (!isOwnerThread()) {
+        error = "Nintendo 3DS state capture must stay on the owner thread";
+        return false;
+    }
+    if (!contentLoaded_ || core_.serializeSize == nullptr || core_.serialize == nullptr) {
+        error = "The Nintendo 3DS core is not ready to capture a recovery state";
+        return false;
+    }
+    if (!absolutePath(destinationPath) || maximumBytes == 0) {
+        error = "The Nintendo 3DS recovery path or size limit is invalid";
+        return false;
+    }
+
+    const size_t requiredBytes = core_.serializeSize();
+    if (requiredBytes == 0 || requiredBytes > maximumBytes) {
+        error = requiredBytes == 0
+                ? "Azahar did not provide a recoverable state"
+                : "The Nintendo 3DS recovery state exceeds the safe size limit";
+        return false;
+    }
+
+    std::vector<uint8_t> state;
+    try {
+        state.resize(requiredBytes);
+    } catch (const std::bad_alloc&) {
+        error = "There is not enough memory to capture the Nintendo 3DS recovery state";
+        return false;
+    }
+    if (!core_.serialize(state.data(), state.size())) {
+        error = "Azahar could not serialize the Nintendo 3DS recovery state";
+        return false;
+    }
+
+    const std::string temporaryPath = std::string(destinationPath) + ".tmp";
+    const int descriptor = ::open(
+            temporaryPath.c_str(),
+            O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW,
+            S_IRUSR | S_IWUSR);
+    if (descriptor < 0) {
+        error = "The Nintendo 3DS recovery file could not be created";
+        return false;
+    }
+    const bool written = writeAll(descriptor, state.data(), state.size());
+    const bool synced = written && fsync(descriptor) == 0;
+    const int closeResult = close(descriptor);
+    if (!synced || closeResult != 0
+            || rename(temporaryPath.c_str(), destinationPath) != 0) {
+        unlink(temporaryPath.c_str());
+        error = "The Nintendo 3DS recovery file could not be committed atomically";
+        return false;
+    }
+    stateSize = requiredBytes;
+    return true;
+}
+
+bool CoreGameplaySession::restoreState(
+        const char* sourcePath,
+        size_t maximumBytes,
+        size_t& stateSize,
+        std::string& error) {
+    stateSize = 0;
+    if (!isOwnerThread()) {
+        error = "Nintendo 3DS state restore must stay on the owner thread";
+        return false;
+    }
+    if (!contentLoaded_ || core_.unserialize == nullptr) {
+        error = "The Nintendo 3DS core is not ready to restore a recovery state";
+        return false;
+    }
+    if (!absolutePath(sourcePath) || maximumBytes == 0) {
+        error = "The Nintendo 3DS recovery path or size limit is invalid";
+        return false;
+    }
+
+    const int descriptor = ::open(sourcePath, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (descriptor < 0) {
+        error = "The Nintendo 3DS recovery file could not be opened";
+        return false;
+    }
+    struct stat fileStat {};
+    if (fstat(descriptor, &fileStat) != 0
+            || !S_ISREG(fileStat.st_mode)
+            || fileStat.st_size <= 0
+            || static_cast<uint64_t>(fileStat.st_size) > maximumBytes
+            || static_cast<uint64_t>(fileStat.st_size) > std::numeric_limits<size_t>::max()) {
+        close(descriptor);
+        error = "The Nintendo 3DS recovery file is invalid or exceeds the safe size limit";
+        return false;
+    }
+
+    const size_t requiredBytes = static_cast<size_t>(fileStat.st_size);
+    std::vector<uint8_t> state;
+    try {
+        state.resize(requiredBytes);
+    } catch (const std::bad_alloc&) {
+        close(descriptor);
+        error = "There is not enough memory to restore the Nintendo 3DS recovery state";
+        return false;
+    }
+    const bool read = readAll(descriptor, state.data(), state.size());
+    const int closeResult = close(descriptor);
+    if (!read || closeResult != 0) {
+        error = "The Nintendo 3DS recovery file could not be read completely";
+        return false;
+    }
+    if (!core_.unserialize(state.data(), state.size())) {
+        error = "Azahar rejected the Nintendo 3DS recovery state";
+        return false;
+    }
+    stateSize = requiredBytes;
     return true;
 }
 
@@ -941,6 +1158,13 @@ bool CoreGameplaySession::handleEnvironment(unsigned command, void* data) {
             return true;
         }
         if (variable->key != nullptr
+                && std::strcmp(variable->key, "citra_audio_emulation") == 0) {
+            // HLE is the core's fast audio path and avoids spending scarce frame time on LLE.
+            variable->value = "HLE";
+            report_.performanceOptionRequests++;
+            return true;
+        }
+        if (variable->key != nullptr
                 && std::strcmp(variable->key, "citra_layout_option") == 0) {
             variable->value = screenLayout_.c_str();
             return true;
@@ -1223,8 +1447,11 @@ void CoreGameplaySession::teardown() {
         g_activeSession.store(nullptr, std::memory_order_release);
     }
     if (library_ != nullptr) {
-        dlclose(library_);
+        if (!libraryProcessResident_) {
+            dlclose(library_);
+        }
         library_ = nullptr;
+        libraryProcessResident_ = false;
     }
     if (ownsCoreSession_) {
         releaseCoreSession(this);
