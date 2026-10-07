@@ -2,9 +2,10 @@
 
 Generated from `config/nintendo3ds-source-scope.json`. This is the pinned
 notice and license-evidence index for the Nintendo 3DS component. Complete
-corresponding source is published at:
+corresponding source is identified by this immutable source tag:
 https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds
-Revision: 85ff5ce78e439e5d9fae84dd45165f061a9f18ed
+Source tag: gpl-source-2026-10-07-cache-recovery
+Publishing source does not publish an APK or certify product runtime QA.
 
 ## Combined component
 

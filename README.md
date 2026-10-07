@@ -2,8 +2,10 @@
 
 Este repositório contém a fonte, os patches, os avisos e os scripts do
 componente Nintendo 3DS distribuído pelo EmuOrbit Advance. A tag
-`gpl-source-2026-09-26` é a fonte atual do componente: não é um protótipo nem
-uma integração experimental.
+`gpl-source-2026-09-26` preserva o componente anterior. A tag
+`gpl-source-2026-10-07-cache-recovery` acrescenta somente a correção do cache
+Vulkan para restauração de títulos com ID zero e sua receita/pins. A publicação
+da fonte não é publicação de APK nem certificação de toda a interface do app.
 
 ROMs, homebrew, BIOS, firmware, chaves, saves, credenciais, telemetria e
 binários pré-compilados não fazem parte deste pacote de fonte.
@@ -52,7 +54,15 @@ Ninja `1.10.2`, Python 3 e Git:
 ```
 
 A referência auditada é `out/azahar_libretro.so`, com 23.157.736 bytes e
-SHA-256 `64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c`.
+SHA-256 `2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061`.
+O registro `referenceBuild` conserva a evidência histórica do core anterior;
+`playQualityRecoveryCore` fixa o artefato corrigido e o único patch adicional.
+ABI, commit Azahar, dependências, alinhamento de 16 KiB e hardening permanecem.
+Seis cápsulas do core anterior foram restauradas em processos separados com
+120 frames novos em testes privados; não certificam partidas completas ou
+todas as versões históricas de estado. O APK/AAB normal continua sujeito
+aos gates de release do projeto. Nenhuma mídia/estado/credencial de teste
+é publicada nesta atualização, nem código novo de telas, Room ou analytics.
 
 ## Fonte correspondente e publicação
 

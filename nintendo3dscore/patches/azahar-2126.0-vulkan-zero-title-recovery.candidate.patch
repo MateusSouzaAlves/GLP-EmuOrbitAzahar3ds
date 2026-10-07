@@ -1,0 +1,15 @@
+diff --git a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
+--- a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
++++ b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
+@@ -158,7 +158,10 @@ void PipelineCache::LoadCache(const std::atomic_bool& stop_loading,
+ 
+ void PipelineCache::SwitchCache(u64 title_id, const std::atomic_bool& stop_loading,
+                                 const VideoCore::DiskResourceLoadCallback& callback) {
+-    if (GetProgramID() == title_id) {
++    // State restore recreates the renderer with program ID zero but no cache.
++    // Homebrew also uses ID zero: equality alone must not skip initialization.
++    // Only an already initialized cache for this title can be reused.
++    if (driver_pipeline_cache && curr_disk_cache && GetProgramID() == title_id) {
+         LOG_DEBUG(Render_Vulkan,
+                   "Skipping pipeline cache switch - already using cache for title_id={:016X}",
+                   title_id);

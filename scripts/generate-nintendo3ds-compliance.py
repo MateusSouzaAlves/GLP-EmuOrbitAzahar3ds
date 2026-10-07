@@ -50,6 +50,7 @@ def generate_sbom(manifest: dict) -> dict:
     )
     audit = manifest["upstreamAudit"]
     build = manifest["referenceBuild"]
+    artifact = manifest.get("playQualityRecoveryCore", build)
     root_ref = f"pkg:generic/azahar-libretro@{upstream['commit']}"
     components = []
     dependency_refs = []
@@ -92,7 +93,7 @@ def generate_sbom(manifest: dict) -> dict:
                 },
                 {
                     "name": "emuorbit:build-artifact-sha256",
-                    "value": build["strippedSha256"],
+                    "value": artifact["strippedSha256"],
                 },
             ],
         },
@@ -106,14 +107,16 @@ def generate_notices(manifest: dict) -> str:
         item for item in manifest["distributedUpstreams"] if item["id"] == "azahar"
     )
     audit = manifest["upstreamAudit"]
+    source_record = json.loads((PROJECT_ROOT / "CORRESPONDING_SOURCE.json").read_text(encoding="utf-8"))
     lines = [
         "# Nintendo 3DS third-party notice index",
         "",
         "Generated from `config/nintendo3ds-source-scope.json`. This is the pinned",
-        "notice and license-evidence index for the private implementation baseline; it",
-        "does not authorize distribution. Before release, the complete corresponding",
-        "source and required license texts/notices must be published and matched to the",
-        "distributed artifact.",
+        "notice and license-evidence index for the Nintendo 3DS component. Complete",
+        "corresponding source is identified by this immutable source tag:",
+        source_record["publicRemote"],
+        f"Source tag: {source_record['sourceTag']}",
+        "Publishing source does not publish an APK or certify product runtime QA.",
         "",
         "## Combined component",
         "",

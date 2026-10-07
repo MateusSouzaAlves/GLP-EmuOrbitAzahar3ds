@@ -10,6 +10,7 @@ param(
     [string] $Ninja,
     [string] $BuildDirectory,
     [string] $OutputDirectory = (Join-Path $env:TEMP 'emuorbit-n3ds-reference-core'),
+    [ValidateRange(1,64)][int] $BuildParallelism = 2,
     [switch] $UpdateCompatibilityCandidate
 )
 
@@ -48,6 +49,17 @@ $patches = @(
     (Join-Path $projectRoot `
         'nintendo3dscore\patches\azahar-2126.0-libretro-vfs-seek-semantics.patch')
 )
+$activeArtifact = $buildSpec
+if (-not $UpdateCompatibilityCandidate -and $manifest.playQualityRecoveryCore) {
+    $activeArtifact = $manifest.playQualityRecoveryCore
+    if ($activeArtifact.status -ne 'PINNED_RELEASE_CANDIDATE' -or $activeArtifact.baseReference -ne 'referenceBuild' -or
+        $activeArtifact.baselineStrippedSha256 -ne $buildSpec.strippedSha256 -or
+        @($activeArtifact.patches).Count -ne 1 -or $activeArtifact.patches[0] -ne
+            'nintendo3dscore/patches/azahar-2126.0-vulkan-zero-title-recovery.candidate.patch') {
+        throw 'Unexpected recovery core recipe; never apply an arbitrary patch or relax a pin'
+    }
+    $patches += Join-Path $projectRoot $activeArtifact.patches[0]
+}
 $hardeningScript = (Resolve-Path -LiteralPath (Join-Path $projectRoot `
     'nintendo3dscore\src\main\cpp\azahar_hardening.cmake')).Path.Replace('\', '/')
 $coreExportMap = (Resolve-Path -LiteralPath (Join-Path $projectRoot `
@@ -168,7 +180,7 @@ try {
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }
-    & $cmake --build $BuildDirectory --target azahar_libretro --parallel
+    & $cmake --build $BuildDirectory --target azahar_libretro --parallel $BuildParallelism
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }
@@ -212,8 +224,8 @@ if ($UpdateCompatibilityCandidate) {
             $actualSha256 -ne [string] $expectedRevision.strippedSha256)) {
         throw 'O candidato reproduzido diverge do tamanho ou SHA-256 fixado.'
     }
-} elseif ($actualSize -ne [long] $buildSpec.strippedBytes -or
-        $actualSha256 -ne [string] $buildSpec.strippedSha256) {
+} elseif ($actualSize -ne [long] $activeArtifact.strippedBytes -or
+        $actualSha256 -ne [string] $activeArtifact.strippedSha256) {
     throw 'O core reproduzido diverge do tamanho ou SHA-256 fixado no manifesto.'
 }
 

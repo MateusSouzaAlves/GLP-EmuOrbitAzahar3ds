@@ -2771,6 +2771,22 @@
     ],
     "binaryCommitted": false
   },
+  "playQualityRecoveryCore": {
+    "status": "PINNED_RELEASE_CANDIDATE",
+    "completedOn": "2026-10-07",
+    "baseReference": "referenceBuild",
+    "patches": [
+      "nintendo3dscore/patches/azahar-2126.0-vulkan-zero-title-recovery.candidate.patch"
+    ],
+    "strippedBytes": 23157736,
+    "strippedSha256": "2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061",
+    "unstrippedBytes": 408352608,
+    "unstrippedSha256": "c6b91fb478200ed36c904fc26dceffd60ad06432157e408212976a09602aa06e",
+    "baselineStrippedSha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c",
+    "verifiedCrossProcessContents": 6,
+    "distributionGate": "NORMAL_RELEASE_AND_QUALITY_PLAN_PENDING",
+    "binaryCommitted": false
+  },
   "referenceProbe": {
     "status": "PASSED",
     "scope": "ABI_INIT_LOAD_RUN_UNLOAD_DEINIT_SOFTWARE_OPENGLES_VULKAN_VFS_INPUT_SENSOR_MICROPHONE_AUDIO_PRIVATE_CONTENT_LONG_RUN_STATE_MEASUREMENT",
