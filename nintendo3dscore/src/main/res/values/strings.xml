@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">Não há espaço privado suficiente para preparar e executar este jogo.</string>
     <string name="n3ds_readiness_mii_fallback">Este jogo usa recursos Mii. Sem uma base própria, o Azahar continuará com o Mii padrão; alguns rostos ou recursos podem ficar limitados. Você ainda pode importar um CFL_DB.dat seu.</string>
     <string name="n3ds_readiness_mii_optional">Dados Mii pertencentes a você podem ser importados para habilitar recursos adicionais deste jogo.</string>
-    <string name="n3ds_readiness_device_unqualified">Este aparelho ainda não concluiu a qualificação de desempenho para Nintendo 3DS. O jogo pode ficar lento ou instável.</string>
     <string name="n3ds_readiness_action_understood">Entendi</string>
     <string name="n3ds_readiness_action_retry">Tentar novamente</string>
     <string name="n3ds_readiness_action_open_storage">Abrir armazenamento</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">Validar e importar</string>
     <string name="n3ds_settings_hub_portable_exported">Arquivo portátil criado: %1$d arquivo(s), %2$s.</string>
     <string name="n3ds_settings_hub_portable_imported">Dados portáteis restaurados: %1$d arquivo(s), %2$s.</string>
+    <string name="n3ds_product_recovery_failed">Não foi possível retomar a sessão. Seus saves do jogo não foram apagados.\n\nVolte à biblioteca. Se o erro persistir, limpe o cache 3DS nos Ajustes.</string>
 </resources>

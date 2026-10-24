@@ -20,6 +20,7 @@ import java.util.Objects;
 public final class Nintendo3DsExperimentalHost implements AutoCloseable {
     private final Context context;
     private final Nintendo3DsStorageLayout storageLayout;
+    private final String saveMappingLibraryId;
     private final Nintendo3DsMiiDataManager miiDataManager;
     private final Nintendo3DsAndroidLaunchReadinessInspector readinessInspector;
 
@@ -29,8 +30,14 @@ public final class Nintendo3DsExperimentalHost implements AutoCloseable {
     public Nintendo3DsExperimentalHost(
             Context context,
             Nintendo3DsStorageLayout storageLayout) {
+        this(context, storageLayout, null);
+    }
+
+    public Nintendo3DsExperimentalHost(Context context,
+            Nintendo3DsStorageLayout storageLayout, String saveMappingLibraryId) {
         this.context = Objects.requireNonNull(context).getApplicationContext();
         this.storageLayout = Objects.requireNonNull(storageLayout);
+        this.saveMappingLibraryId = saveMappingLibraryId;
         miiDataManager = new Nintendo3DsMiiDataManager(
                 storageLayout,
                 this::hasActiveNativeSession);
@@ -203,7 +210,8 @@ public final class Nintendo3DsExperimentalHost implements AutoCloseable {
                 Nintendo3DsProductLaunchRequest.serializeCorePath(checkedCore),
                 checkedContent.getAbsolutePath(),
                 storageLayout,
-                Nintendo3DsStorageLayout.CURRENT_CORE_REVISION);
+                Nintendo3DsStorageLayout.CURRENT_CORE_REVISION,
+                saveMappingLibraryId);
     }
 
     private static Nintendo3DsLaunchReadiness.ContentStatus normalizeContentStatus(

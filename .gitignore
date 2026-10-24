@@ -8,3 +8,15 @@ local.properties
 *.aab
 *.apk
 *.apks
+
+# Local source qualification output and private material
+/.local/
+/out/
+/build/
+/dist/
+/__pycache__/
+*.pyc
+*.keystore
+*.jks
+*.aab
+*.apk

@@ -72,3 +72,14 @@ tag e hashes no repositório do app e preserve o acesso público enquanto o
 binário correspondente estiver disponível. A ausência de uma ROM ou de um
 binário pré-compilado neste repositório não limita os direitos concedidos pela
 GPL sobre o software aqui documentado.
+
+
+## Component source refresh — 2026-10-24
+
+This tip updates the component sources/recipes identified in the source
+snapshot manifest. Older tags/commits remain historical snapshots. It does
+not assert that this entire current snapshot was the source of an earlier
+Play release, and does not certify the closed combined app or publish its
+remaining private host. References above to older artifact hashes or private
+application tags retain historical scope; they are not publicly available
+host-source substitutes. See SOURCE_REFRESH.md and releases/component-source-2026-10-24/manifest.json.

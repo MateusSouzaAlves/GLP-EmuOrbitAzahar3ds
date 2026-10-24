@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">Penyimpanan privat tidak cukup untuk menyiapkan dan menjalankan game ini.</string>
     <string name="n3ds_readiness_mii_fallback">Game ini menggunakan fitur Mii. Tanpa basis data milik Anda, Azahar akan melanjutkan dengan Mii standarnya; beberapa wajah atau fitur mungkin terbatas. Anda tetap dapat mengimpor CFL_DB.dat milik Anda.</string>
     <string name="n3ds_readiness_mii_optional">Data Mii milik Anda dapat diimpor untuk mengaktifkan fitur tambahan dalam game ini.</string>
-    <string name="n3ds_readiness_device_unqualified">Perangkat ini belum menyelesaikan kualifikasi performa Nintendo 3DS. Game mungkin lambat atau tidak stabil.</string>
     <string name="n3ds_readiness_action_understood">Mengerti</string>
     <string name="n3ds_readiness_action_retry">Coba lagi</string>
     <string name="n3ds_readiness_action_open_storage">Buka penyimpanan</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">Validasi dan impor</string>
     <string name="n3ds_settings_hub_portable_exported">File portabel dibuat: %1$d file, %2$s.</string>
     <string name="n3ds_settings_hub_portable_imported">Data portabel dipulihkan: %1$d file, %2$s.</string>
+    <string name="n3ds_product_recovery_failed">Sesi tidak dapat dilanjutkan. Data simpanan dalam game tidak dihapus.\n\nKembali ke pustaka. Jika masalah berulang, hapus cache 3DS di Pengaturan.</string>
 </resources>

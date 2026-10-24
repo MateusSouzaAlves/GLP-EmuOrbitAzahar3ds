@@ -107,16 +107,16 @@ def generate_notices(manifest: dict) -> str:
         item for item in manifest["distributedUpstreams"] if item["id"] == "azahar"
     )
     audit = manifest["upstreamAudit"]
-    source_record = json.loads((PROJECT_ROOT / "CORRESPONDING_SOURCE.json").read_text(encoding="utf-8"))
+    publication = manifest["publication"]
     lines = [
         "# Nintendo 3DS third-party notice index",
         "",
         "Generated from `config/nintendo3ds-source-scope.json`. This is the pinned",
-        "notice and license-evidence index for the Nintendo 3DS component. Complete",
-        "corresponding source is identified by this immutable source tag:",
-        source_record["publicRemote"],
-        f"Source tag: {source_record['sourceTag']}",
-        "Publishing source does not publish an APK or certify product runtime QA.",
+        "notice and license-evidence index for this pinned Nintendo 3DS",
+        "component source refresh. The omitted private host is not certified; component sources:",
+        publication["publicRepository"],
+        f"Source tag: {publication['publicSourceTag']}",
+        f"Revision: {publication['publicSourceCommit']}",
         "",
         "## Combined component",
         "",

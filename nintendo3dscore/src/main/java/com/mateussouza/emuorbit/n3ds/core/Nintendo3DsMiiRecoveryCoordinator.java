@@ -79,6 +79,7 @@ public final class Nintendo3DsMiiRecoveryCoordinator implements AutoCloseable {
 
     // Guarded by this.
     private Nintendo3DsExperimentalHost.PreparedLaunch latestLaunch;
+    private boolean initialPreflightInFlight;
     private boolean recoveryInFlight;
     private boolean closed;
 
@@ -101,19 +102,33 @@ public final class Nintendo3DsMiiRecoveryCoordinator implements AutoCloseable {
     }
 
     /** Runs the first preflight exactly once and retains its controller identity for recovery. */
-    public synchronized Nintendo3DsExperimentalHost.PreparedLaunch prepareInitialLaunch() {
-        requireOpen();
-        if (latestLaunch != null) {
-            throw new IllegalStateException("O preflight inicial Nintendo 3DS já foi executado.");
+    public Nintendo3DsExperimentalHost.PreparedLaunch prepareInitialLaunch() {
+        synchronized (this) {
+            requireOpen();
+            if (latestLaunch != null || initialPreflightInFlight) {
+                throw new IllegalStateException("O preflight inicial Nintendo 3DS já foi executado.");
+            }
+            initialPreflightInFlight = true;
         }
-        latestLaunch = experimentalHost.prepareLaunch(
-                request.coreLibrary,
-                request.content,
-                request.contentStatus,
-                request.requiredPrivateStorageBytes,
-                request.miiRequirement,
-                request.deviceQualified);
-        return latestLaunch;
+        try {
+            // File inspection must not hold the monitor also used by UI close().
+            var prepared = experimentalHost.prepareLaunch(
+                    request.coreLibrary,
+                    request.content,
+                    request.contentStatus,
+                    request.requiredPrivateStorageBytes,
+                    request.miiRequirement,
+                    request.deviceQualified);
+            synchronized (this) {
+                // A late controller remains owned by experimentalHost. The Activity
+                // queues its final close AFTER this work; never close it on the UI.
+                requireOpen();
+                latestLaunch = prepared;
+                return prepared;
+            }
+        } finally {
+            synchronized (this) { initialPreflightInFlight = false; }
+        }
     }
 
     /** Accepts only a Mii recovery action from the current readiness result. */

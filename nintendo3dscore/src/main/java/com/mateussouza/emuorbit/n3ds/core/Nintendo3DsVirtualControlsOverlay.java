@@ -50,6 +50,7 @@ final class Nintendo3DsVirtualControlsOverlay extends FrameLayout {
     private final Nintendo3DsAnalogStickView cStick;
     @Nullable
     private View.OnLayoutChangeListener profileLayoutListener;
+    private int profileGeneration;
 
     Nintendo3DsVirtualControlsOverlay(@NonNull Context context, @NonNull InputSink sink) {
         this(context, sink, Labels.from(context), true);
@@ -142,13 +143,39 @@ final class Nintendo3DsVirtualControlsOverlay extends FrameLayout {
             throw new IllegalArgumentException("A complete 3DS control profile is required");
         }
         reset();
+        int generation = ++profileGeneration;
         detachProfileLayoutListener();
         profileLayoutListener = (view, left, top, right, bottom,
                 oldLeft, oldTop, oldRight, oldBottom) -> applyLayoutProfileNow(
                         profile,
                         orientation);
         addOnLayoutChangeListener(profileLayoutListener);
-        post(() -> applyLayoutProfileNow(profile, orientation));
+        post(() -> {
+            if (generation == profileGeneration) applyLayoutProfileNow(profile, orientation);
+        });
+    }
+
+    void refreshResponsiveLayout() {
+        reset();
+        boolean landscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+        FrameLayout.LayoutParams dpad = (FrameLayout.LayoutParams)
+                groupViews.get(Nintendo3DsVirtualControlGroup.DIRECTIONAL).getLayoutParams();
+        dpad.setMarginStart(dp(landscape ? 82 : 11));
+        groupViews.get(Nintendo3DsVirtualControlGroup.DIRECTIONAL).setLayoutParams(dpad);
+        FrameLayout.LayoutParams system = (FrameLayout.LayoutParams)
+                groupViews.get(Nintendo3DsVirtualControlGroup.SYSTEM_BUTTONS).getLayoutParams();
+        system.bottomMargin = dp(landscape ? 18 : 142);
+        groupViews.get(Nintendo3DsVirtualControlGroup.SYSTEM_BUTTONS).setLayoutParams(system);
+        for (Nintendo3DsVirtualControlGroup group : new Nintendo3DsVirtualControlGroup[]{
+                Nintendo3DsVirtualControlGroup.LEFT_SHOULDERS,
+                Nintendo3DsVirtualControlGroup.RIGHT_SHOULDERS,
+                Nintendo3DsVirtualControlGroup.SCREEN_SWAP}) {
+            View child = groupViews.get(group);
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) child.getLayoutParams();
+            params.topMargin = dp(landscape ? 70 : 124);
+            child.setLayoutParams(params);
+        }
     }
 
     View getGroupForTesting(Nintendo3DsVirtualControlGroup group) {

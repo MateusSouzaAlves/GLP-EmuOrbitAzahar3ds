@@ -113,6 +113,12 @@ public final class Nintendo3DsMiiDataManager {
     }
 
     private ImportReport importFromStream(InputStream source) throws IOException {
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            return importFromStreamWhileOwned(source);
+        }
+    }
+
+    private ImportReport importFromStreamWhileOwned(InputStream source) throws IOException {
         requireCoreSessionClosed();
         File destination = requireSafeDestination();
         File parent = Objects.requireNonNull(destination.getParentFile());

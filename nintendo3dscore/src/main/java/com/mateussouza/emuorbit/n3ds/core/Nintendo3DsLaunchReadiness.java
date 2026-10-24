@@ -24,8 +24,7 @@ public final class Nintendo3DsLaunchReadiness {
         CONTENT_ENCRYPTED(Severity.BLOCKED),
         STORAGE_LOW(Severity.BLOCKED),
         MII_FALLBACK_ACTIVE(Severity.WARNING),
-        MII_DATA_OPTIONAL(Severity.WARNING),
-        DEVICE_UNQUALIFIED(Severity.WARNING);
+        MII_DATA_OPTIONAL(Severity.WARNING);
 
         private final Severity severity;
 
@@ -168,8 +167,8 @@ public final class Nintendo3DsLaunchReadiness {
                 issues.add(Issue.MII_DATA_OPTIONAL);
             }
         }
-        // Device qualification is advisory evidence, not a per-launch warning. The app presents
-        // its hardware guidance once, using the same durable rule as the Nintendo DS notice.
+        // Device qualification is diagnostic evidence, never a per-launch warning.
+        // Hardware guidance belongs exclusively to the host's initial tips.
 
         Severity severity = Severity.READY;
         for (Issue issue : issues) {

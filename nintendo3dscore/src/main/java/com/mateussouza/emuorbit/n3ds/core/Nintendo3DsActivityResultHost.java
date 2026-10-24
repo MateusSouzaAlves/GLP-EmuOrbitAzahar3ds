@@ -57,6 +57,9 @@ public final class Nintendo3DsActivityResultHost implements AutoCloseable {
 
     private boolean started;
     private boolean closed;
+    private boolean initialPreflightReady;
+    private PendingMiiResult pendingMiiResult;
+    private record PendingMiiResult(int resultCode, Intent data) { }
 
     public Nintendo3DsActivityResultHost(
             ComponentActivity activity,
@@ -135,7 +138,7 @@ public final class Nintendo3DsActivityResultHost implements AutoCloseable {
                             asException(failure));
                     return;
                 }
-                activity.runOnUiThread(() -> present(preparedLaunch));
+                activity.runOnUiThread(() -> presentAfterPreflight(preparedLaunch));
             });
             return true;
         } catch (RuntimeException rejected) {
@@ -157,7 +160,7 @@ public final class Nintendo3DsActivityResultHost implements AutoCloseable {
                     @Override
                     public void onPrepared(
                             Nintendo3DsExperimentalHost.PreparedLaunch preparedLaunch) {
-                        present(preparedLaunch);
+                        presentAfterPreflight(preparedLaunch);
                     }
 
                     @Override
@@ -194,12 +197,20 @@ public final class Nintendo3DsActivityResultHost implements AutoCloseable {
             return;
         }
         closed = true;
+        pendingMiiResult = null;
         dialogController.close();
         recoveryCoordinator.close();
     }
 
     private void onMiiPickerResult(int resultCode, Intent data) {
         if (isClosed()) {
+            return;
+        }
+        if (!initialPreflightReady) {
+            // A restored result can arrive before the worker's initial
+            // inspection. Do not discard its user-selected URI or import
+            // against an unqualified/null readiness result.
+            pendingMiiResult = new PendingMiiResult(resultCode, data == null ? null : new Intent(data));
             return;
         }
         Uri selectedDocument = resultCode == Activity.RESULT_OK && data != null
@@ -228,6 +239,18 @@ public final class Nintendo3DsActivityResultHost implements AutoCloseable {
                 });
         if (!startedImport) {
             present(recoveryCoordinator.getLatestLaunch());
+        }
+    }
+
+    private void presentAfterPreflight(Nintendo3DsExperimentalHost.PreparedLaunch preparedLaunch) {
+        if (isClosed() || activity.isFinishing() || activity.isDestroyed()) return;
+        initialPreflightReady = true;
+        PendingMiiResult pending = pendingMiiResult;
+        pendingMiiResult = null;
+        if (pending != null) {
+            onMiiPickerResult(pending.resultCode(), pending.data());
+        } else {
+            present(preparedLaunch);
         }
     }
 

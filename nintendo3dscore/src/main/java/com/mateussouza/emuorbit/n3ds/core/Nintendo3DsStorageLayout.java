@@ -108,10 +108,24 @@ public final class Nintendo3DsStorageLayout {
         pendingRestoreMarker = child(stagingDirectory, "restore.rollback-required");
         this.usableSpaceSupplier = Objects.requireNonNull(usableSpaceSupplier);
         this.restoreFaultInjector = Objects.requireNonNull(restoreFaultInjector);
-        prepareDirectories();
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            prepareDirectories();
+        }
     }
 
     /* Creates or opens the private v1 storage layout beneath Android files and cache roots. */
+    public static Nintendo3DsStorageLayout openAfterStoppedCopy(
+            File appFilesDirectory, File appCacheDirectory) throws IOException {
+        // Called on the host's preflight worker BEFORE taking the feature data
+        // guard. The old stopped-copy owner retires itself at its next guard;
+        // do not wait under feature/file locks or perform this wait on the UI.
+        try (var stopped = com.mateussouza.emuorbit.advance.data.save.sync.SaveSyncRuntime
+                .acquireDedicatedStoppedSaveSync(30_000)) {
+            return open(appFilesDirectory, appCacheDirectory);
+        }
+    }
+
+    /* Existing callers with an already qualified data owner keep their contract. */
     public static Nintendo3DsStorageLayout open(
             File appFilesDirectory,
             File appCacheDirectory) throws IOException {
@@ -197,6 +211,12 @@ public final class Nintendo3DsStorageLayout {
      */
     public synchronized CheckpointReport checkpointAfterCoreClosed(String coreRevision)
             throws IOException {
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            return checkpointWhileOwned(coreRevision);
+        }
+    }
+
+    private CheckpointReport checkpointWhileOwned(String coreRevision) throws IOException {
         String checkedRevision = requireCoreRevision(coreRevision);
         prepareDirectories();
         requireNoPendingRestoreRollback();
@@ -279,6 +299,12 @@ public final class Nintendo3DsStorageLayout {
      */
     public synchronized RestoreReport restoreLatestAfterCoreClosed(String coreRevision)
             throws IOException {
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            return restoreWhileOwned(coreRevision);
+        }
+    }
+
+    private RestoreReport restoreWhileOwned(String coreRevision) throws IOException {
         String checkedRevision = requireCoreRevision(coreRevision);
         prepareDirectories();
         requireNoPendingRestoreRollback();
@@ -367,6 +393,12 @@ public final class Nintendo3DsStorageLayout {
     public synchronized PortableExportReport exportPortableDataAfterCoreClosed(
             String coreRevision,
             OutputStream destination) throws IOException {
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            return exportWhileOwned(coreRevision, destination);
+        }
+    }
+
+    private PortableExportReport exportWhileOwned(String coreRevision, OutputStream destination) throws IOException {
         String checkedRevision = requireCoreRevision(coreRevision);
         Objects.requireNonNull(destination, "destination");
         CheckpointReport checkpoint = checkpointAfterCoreClosed(checkedRevision);
@@ -417,6 +449,12 @@ public final class Nintendo3DsStorageLayout {
     public synchronized PortableImportReport importPortableDataAfterCoreClosed(
             String coreRevision,
             InputStream source) throws IOException {
+        try (var access = Nintendo3DsDataAccessGuard.beginData()) {
+            return importWhileOwned(coreRevision, source);
+        }
+    }
+
+    private PortableImportReport importWhileOwned(String coreRevision, InputStream source) throws IOException {
         String checkedRevision = requireCoreRevision(coreRevision);
         Objects.requireNonNull(source, "source");
         prepareDirectories();

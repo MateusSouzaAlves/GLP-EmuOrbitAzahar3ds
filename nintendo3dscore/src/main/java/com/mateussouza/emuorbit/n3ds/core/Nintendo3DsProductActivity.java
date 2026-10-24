@@ -28,10 +28,12 @@ import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
+import androidx.annotation.RequiresApi;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -41,7 +43,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.play.core.splitcompat.SplitCompat;
-import com.mateussouza.emuorbit.advance.commercial.CommercialFeatureGate;
+import com.mateussouza.emuorbit.advance.nintendo3ds.delivery.Nintendo3DsAndroidCompatibility;
+import com.mateussouza.emuorbit.advance.nintendo3ds.delivery.Nintendo3DsFeatureContract;
+import com.mateussouza.emuorbit.advance.sharing.SharingFeatureGate;
 import com.mateussouza.emuorbit.advance.data.preferences.GamepadVirtualControlsPreferenceStore;
 import com.mateussouza.emuorbit.advance.databinding.ViewBugReportInputBinding;
 import com.mateussouza.emuorbit.advance.domain.model.EmulatorSystem;
@@ -53,13 +57,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -69,6 +68,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * The install-time feature is launched through
  * {@link Nintendo3DsProductLaunchRequest} after the N3DS-12 packaging decision.</p>
  */
+@RequiresApi(Nintendo3DsAndroidCompatibility.MINIMUM_SDK)
 public final class Nintendo3DsProductActivity extends ComponentActivity
         implements SurfaceHolder.Callback,
         Nintendo3DsActivityResultHost.Listener,
@@ -79,7 +79,6 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     private static final int DEFAULT_FRAME_WIDTH = 400;
     private static final int DEFAULT_FRAME_HEIGHT = 480;
     private static final int FRAME_LOOP_BATCH_SIZE = 2;
-    private static final long FRAME_STOP_TIMEOUT_SECONDS = 15;
     private static final String STATE_AUDIO_ENABLED = "n3ds.product.audio_enabled";
     private static final String STATE_SPEED_MULTIPLIER = "n3ds.product.speed_multiplier";
     private static final String STATE_MANUALLY_PAUSED = "n3ds.product.manually_paused";
@@ -95,6 +94,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             "n3ds.product.control_editor_orientation";
     private static final String STATE_CONTROL_EDITOR_GROUP =
             "n3ds.product.control_editor_group";
+    private static final String STATE_PHONE_ORIENTATION = "n3ds.product.phone_orientation";
     static final int MENU_SETTINGS_ID = 1;
     static final int MENU_RESET_ID = 2;
     static final int MENU_SHARE_ID = 3;
@@ -103,7 +103,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     static final int MENU_AUDIO_ID = 6;
     static final int MENU_GAMEPAD_CONTROLS_ID = 7;
 
-    private final AtomicBoolean frameLoopRunning = new AtomicBoolean();
+    private final Nintendo3DsFrameLoopGate frameLoopGate = new Nintendo3DsFrameLoopGate();
     private final AtomicLong renderedFrames = new AtomicLong();
     private final AtomicLong routedInputEvents = new AtomicLong();
     private final Map<Integer, Button> actionMenuButtons = new LinkedHashMap<>();
@@ -111,10 +111,16 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             daemonThread(runnable, "n3ds-product-preflight"));
     private final ExecutorService frameExecutor = Executors.newSingleThreadExecutor(runnable ->
             displayDaemonThread(runnable, "n3ds-product-frames"));
+    private final Nintendo3DsTransitionQueue transitions =
+            new Nintendo3DsTransitionQueue(workerExecutor, this::runOnUiThread);
 
     private ActivityResultLauncher<String> microphonePermissionLauncher;
+    private ActivityResultLauncher<Intent> miiImportLauncher;
+    private Nintendo3DsActivityResultHost.MiiPickerResultCallback miiPickerResultCallback;
+    private androidx.activity.result.ActivityResult pendingMiiPickerResult;
     private Nintendo3DsProductLaunchRequest launchRequest;
     private Nintendo3DsExperimentalHost experimentalHost;
+    private com.mateussouza.emuorbit.advance.data.save.sync.SaveSyncRuntime.ForegroundPreparationLease protectionLease;
     private Nintendo3DsActivityResultHost activityResultHost;
     private Nintendo3DsExperienceSettingsStore settingsStore;
     private Nintendo3DsVirtualControlProfileStore virtualControlProfileStore;
@@ -127,9 +133,11 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     private GamepadVirtualControlsCoordinator gamepadVirtualControlsCoordinator;
     private Nintendo3DsSurfaceFrameCapture surfaceFrameCapture;
     private Nintendo3DsBaseProductBridge baseProductBridge;
+    private Nintendo3DsUsageBridge usage;
     private SurfaceHolder surfaceHolder;
     private SurfaceView surfaceView;
-    private Surface currentSurface;
+    private volatile Surface currentSurface;
+    private Nintendo3DsOwnedLayer ownedLayer;
     private int currentSurfaceWidth;
     private int currentSurfaceHeight;
     private volatile int currentFrameWidth = DEFAULT_FRAME_WIDTH;
@@ -144,8 +152,15 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     private Button orientationButton;
     private Button menuButton;
     private FrameLayout productShell;
+    private LinearLayout shellIdentity;
+    private LinearLayout shellQuickActions;
+    private boolean shellLandscape;
+    private int phoneOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+    private androidx.core.graphics.Insets shellInsets = androidx.core.graphics.Insets.NONE;
+    private Nintendo3DsScreenLayout preferredScreenLayout = Nintendo3DsScreenLayout.DEFAULT;
     private FrameLayout contentRoot;
     private GridLayout actionsMenuPanel;
+    private ScrollView actionsMenuContainer;
     private PopupMenu activeActionsMenu;
     private AlertDialog activeProductDialog;
     private AlertDialog gamepadVirtualControlsDialog;
@@ -154,8 +169,9 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     private EditText activeReportInput;
     private com.google.android.material.textfield.TextInputLayout activeReportInputLayout;
     private Nintendo3DsVirtualControlsOverlay virtualControls;
-    private Future<?> frameLoop;
-    private boolean hostResumed;
+    private volatile boolean hostResumed;
+    private volatile long lifecycleRevision;
+    private long settingsRevision;
     private boolean controllerResumed;
     private boolean microphonePermissionPending;
     private boolean microphonePermissionInFlight;
@@ -194,10 +210,29 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Defense for restored/direct internal intents, before saves, ROMs or graphics.
+        if (!Nintendo3DsFeatureContract.isDeviceSupported()) {
+            Toast.makeText(this,
+                    com.mateussouza.emuorbit.advance.R.string.n3ds_android_version_required,
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        usage = new Nintendo3DsUsageBridge(this);
+        WindowCompat.enableEdgeToEdge(getWindow());
+        protectionLease = com.mateussouza.emuorbit.advance.data.save.sync.SaveSyncRuntime.beginForegroundPreparation();
         restoreTransientState(savedInstanceState);
+        applyWindowOrientation(getResources().getConfiguration(), isInMultiWindowMode());
         microphonePermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 this::onMicrophonePermissionResult);
+        // Register before STARTED even when storage preparation is asynchronous.
+        // Keep a restored picker result until the actual host is ready.
+        miiImportLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    pendingMiiPickerResult = result;
+                    deliverPendingMiiPickerResult();
+                });
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         hideSystemBars();
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -209,9 +244,6 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
         try {
             launchRequest = Nintendo3DsProductLaunchRequest.fromIntent(getIntent());
-            Nintendo3DsStorageLayout storage = Nintendo3DsStorageLayout.open(
-                    getFilesDir(), getCacheDir());
-            experimentalHost = new Nintendo3DsExperimentalHost(this, storage);
             settingsStore = new Nintendo3DsExperienceSettingsStore(this);
             virtualControlProfileStore = new Nintendo3DsVirtualControlProfileStore(this);
             gamepadVirtualControlsPreferenceStore =
@@ -253,20 +285,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             settingsDialogController = new Nintendo3DsExperienceSettingsDialogController(
                     settingsStore,
                     dialogStyleAdapter);
-            activityResultHost = new Nintendo3DsActivityResultHost(
-                    this,
-                    experimentalHost,
-                    new Nintendo3DsMiiRecoveryCoordinator.LaunchRequest(
-                            launchRequest.getCoreLibrary(),
-                            launchRequest.getContent(),
-                            launchRequest.getContentStatus(),
-                            launchRequest.getRequiredPrivateStorageBytes(),
-                            launchRequest.getMiiRequirement(),
-                            launchRequest.isDeviceQualified()),
-                    workerExecutor,
-                    dialogStyleAdapter,
-                    this);
-        } catch (IOException | IllegalArgumentException failure) {
+        } catch (IllegalArgumentException failure) {
             failAndFinish(failure);
             return;
         }
@@ -304,7 +323,55 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                         showProductFeedback(R.string.n3ds_control_editor_save_failed);
                     }
                 });
-        activityResultHost.start();
+        startStoragePreparation();
+    }
+
+    private void startStoragePreparation() {
+        java.io.File files = getFilesDir(), cache = getCacheDir();
+        // Keep the existing PREPARING shell interactive (including Back).
+        // Only storage setup waits for an admitted background copy to retire.
+        workerExecutor.execute(() -> {
+            try {
+                Nintendo3DsStorageLayout storage = Nintendo3DsStorageLayout
+                        .openAfterStoppedCopy(files, cache);
+                runOnUiThread(() -> finishStoragePreparation(storage));
+            } catch (IOException | RuntimeException failure) {
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) failAndFinish(failure);
+                });
+            }
+        });
+    }
+
+    private void finishStoragePreparation(Nintendo3DsStorageLayout storage) {
+        // A queued callback cannot create a new host after Back/destruction.
+        if (isFinishing() || isDestroyed()) return;
+        try {
+            experimentalHost = new Nintendo3DsExperimentalHost(this, storage,
+                    launchRequest.getPersistentId());
+            activityResultHost = new Nintendo3DsActivityResultHost(
+                    this, experimentalHost,
+                    new Nintendo3DsMiiRecoveryCoordinator.LaunchRequest(
+                            launchRequest.getCoreLibrary(), launchRequest.getContent(),
+                            launchRequest.getContentStatus(), launchRequest.getRequiredPrivateStorageBytes(),
+                            launchRequest.getMiiRequirement(), launchRequest.isDeviceQualified()),
+                    workerExecutor, dialogStyleAdapter, callback -> {
+                        miiPickerResultCallback = callback;
+                        return miiImportLauncher::launch;
+                    }, this);
+            activityResultHost.start();
+            deliverPendingMiiPickerResult();
+        } catch (RuntimeException failure) {
+            failAndFinish(failure);
+        }
+    }
+
+    private void deliverPendingMiiPickerResult() {
+        if (pendingMiiPickerResult == null || miiPickerResultCallback == null
+                || activityResultHost == null || isFinishing() || isDestroyed()) return;
+        var result = pendingMiiPickerResult;
+        pendingMiiPickerResult = null;
+        miiPickerResultCallback.onResult(result.getResultCode(), result.getData());
     }
 
     @Override
@@ -335,12 +402,16 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                         ? reportValidationFailed
                         : restoredReportValidationFailed);
         saveControlEditorState(outState);
+        outState.putInt(STATE_PHONE_ORIENTATION, phoneOrientation);
     }
 
     private void restoreTransientState(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             return;
         }
+        phoneOrientation = Nintendo3DsWindowOrientationPolicy.phoneChoice(
+                savedInstanceState.getInt(STATE_PHONE_ORIENTATION,
+                        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
         boolean audioEnabled = savedInstanceState.getBoolean(STATE_AUDIO_ENABLED, true);
         int speedMultiplier = savedInstanceState.getInt(STATE_SPEED_MULTIPLIER, 1);
         boolean manuallyPaused = savedInstanceState.getBoolean(
@@ -490,9 +561,72 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     }
 
     @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        if (!Nintendo3DsFeatureContract.isDeviceSupported()) return;
+        applyWindowOrientation(configuration, isInMultiWindowMode());
+        if (contentRoot == null || productShell == null || virtualControls == null) return;
+        stopFrameLoop();
+        if (inputRouter != null) inputRouter.reset();
+        virtualControls.refreshResponsiveLayout();
+        Nintendo3DsCoreLifecycleController active = controller;
+        if (active != null && !active.isClosed()) {
+            active.setTouchPosition(0, 0, currentFrameWidth, currentFrameHeight, false);
+            active.setDisplayRotation(getWindowManager().getDefaultDisplay().getRotation());
+        }
+        layoutProductShell(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE);
+        reflowActionsMenuPanel();
+        if (virtualControlEditorController != null && virtualControlEditorController.isShowing()) {
+            // Physical rotation must not change the independently selected profile
+            // orientation/group or commit/replace the unsaved draft.
+            virtualControlEditorController.refreshResponsiveLayout();
+        } else {
+            restoreResolvedVirtualControlProfile();
+        }
+        if (activeProductDialog != null) MateusDialog.refreshResponsiveLayout(activeProductDialog);
+        if (activeReportDialog != null) MateusDialog.refreshResponsiveLayout(activeReportDialog);
+        if (gamepadVirtualControlsDialog != null) MateusDialog.refreshResponsiveLayout(gamepadVirtualControlsDialog);
+        if (settingsDialogController != null) settingsDialogController.refreshResponsiveLayout();
+        androidx.core.view.ViewCompat.requestApplyInsets(contentRoot);
+        hideSystemBars();
+        bindProductUi();
+        if (active != null && !active.isClosed()) {
+            if (active.getRecoveryFailure() != null) {
+                showSessionFailure(active.getRecoveryFailure());
+                return;
+            }
+            // Change only the render layout, not audio, microphone, performance
+            // settings or manual pause. The serialized owner captures recovery
+            // before replacing a session; failed recovery never becomes a reset.
+            queueTransition(() -> active.setScreenLayout(
+                    Nintendo3DsScreenLayoutPolicy.resolve(preferredScreenLayout, configuration.orientation)));
+            bindCurrentSurfaceIfReady();
+        }
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean multiWindow, Configuration configuration) {
+        super.onMultiWindowModeChanged(multiWindow, configuration);
+        if (!Nintendo3DsFeatureContract.isDeviceSupported()) return;
+        applyWindowOrientation(configuration, multiWindow);
+        // Geometry, Surface and input transitions belong to onConfigurationChanged/
+        // Surface callbacks. Do not independently pause or replace the native owner.
+        bindProductUi();
+    }
+
+    private void applyWindowOrientation(Configuration configuration, boolean multiWindow) {
+        int requested = Nintendo3DsWindowOrientationPolicy.resolve(
+                phoneOrientation, configuration.smallestScreenWidthDp, multiWindow);
+        if (getRequestedOrientation() != requested) setRequestedOrientation(requested);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        if (!Nintendo3DsFeatureContract.isDeviceSupported()) return;
+        if (usage != null) usage.foreground(true);
         hostResumed = true;
+        lifecycleRevision++;
         if (externalGamepadMonitor != null) {
             externalGamepadMonitor.start();
         }
@@ -503,7 +637,9 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
     @Override
     protected void onPause() {
+        if (usage != null) usage.foreground(false);
         hostResumed = false;
+        lifecycleRevision++;
         if (externalGamepadMonitor != null) {
             externalGamepadMonitor.stop();
         }
@@ -515,7 +651,9 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             virtualControls.reset();
         }
         if (controller != null && controllerResumed) {
-            closeForTransition(controller::onPauseAndAwait);
+            Nintendo3DsCoreLifecycleController active = controller;
+            active.requestPause();
+            queueTransition(active::onPauseAndAwait);
             controllerResumed = false;
         }
         super.onPause();
@@ -523,7 +661,16 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
     @Override
     protected void onDestroy() {
+        if (usage != null && !isChangingConfigurations()) usage.finish();
+        hostResumed = false;
+        lifecycleRevision++;
         stopFrameLoop();
+        if (controller != null) controller.requestPause();
+        if (ownedLayer != null) {
+            try { ownedLayer.retire(); } catch (RuntimeException failure) { recordFailure(failure); }
+            ownedLayer = null;
+        }
+        currentSurface = null;
         if (externalGamepadMonitor != null) {
             externalGamepadMonitor.close();
         }
@@ -564,11 +711,21 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         if (activityResultHost != null) {
             activityResultHost.close();
         }
-        if (experimentalHost != null) {
-            closeForTransition(experimentalHost::close);
-        }
-        frameExecutor.shutdownNow();
-        workerExecutor.shutdownNow();
+        miiPickerResultCallback = null;
+        pendingMiiPickerResult = null;
+        Nintendo3DsExperimentalHost closingHost = experimentalHost;
+        var closingProtection = protectionLease;
+        transitions.finish(() -> {
+            try {
+                if (closingHost != null) closingHost.close();
+            } finally {
+                // This is only an advisory foreground preparation lease. An
+                // unconfirmed JNI unload retains the separate actual native
+                // lease; a failed checkpoint must not strand this UI lease.
+                if (closingProtection != null) closingProtection.close();
+            }
+        }, this::recordFailure);
+        frameExecutor.shutdown(); // Preserve any already-entered native frame/cleanup.
         super.onDestroy();
     }
 
@@ -618,7 +775,17 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        currentSurface = holder.getSurface();
+        if (isFinishing() || isDestroyed() || width <= 0 || height <= 0) return;
+        if (ownedLayer != null && ownedLayer.width == width && ownedLayer.height == height) {
+            try { ownedLayer.attachTo(surfaceView); }
+            catch (RuntimeException failure) { showSessionFailure(failure); return; }
+            bindCurrentSurfaceIfReady();
+            return;
+        }
+        retireCurrentLayer();
+        try { ownedLayer = new Nintendo3DsOwnedLayer(surfaceView, width, height); }
+        catch (RuntimeException failure) { showSessionFailure(failure); return; }
+        currentSurface = ownedLayer.surface;
         currentSurfaceWidth = width;
         currentSurfaceHeight = height;
         requestNintendo3DsFrameRate(currentSurface);
@@ -628,15 +795,20 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         stopFrameLoop();
-        Surface destroyedSurface = holder.getSurface();
-        if (controller != null) {
-            closeForTransition(() -> controller.onSurfaceDestroyedAndAwait(destroyedSurface));
-        }
-        if (currentSurface == destroyedSurface) {
-            currentSurface = null;
-            currentSurfaceWidth = 0;
-            currentSurfaceHeight = 0;
-        }
+        retireCurrentLayer();
+    }
+
+    private void retireCurrentLayer() {
+        Nintendo3DsOwnedLayer retiring = ownedLayer;
+        ownedLayer = null;
+        currentSurface = null;
+        currentSurfaceWidth = currentSurfaceHeight = 0;
+        if (retiring == null) return;
+        // Only our child is detached. Its native lease survives until actual JNI close.
+        try { retiring.retire(); } catch (RuntimeException failure) { recordFailure(failure); }
+        Nintendo3DsCoreLifecycleController active = controller;
+        if (active != null && !isDestroyed())
+            queueTransition(() -> active.onSurfaceDestroyedAndAwait(retiring.surface));
     }
 
     @Override
@@ -669,8 +841,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 audioEnabled,
                 speedMultiplier,
                 manuallyPaused);
-        prepared.setAudioEnabled(audioEnabled);
-        prepared.setFastForwardSpeed(speedMultiplier);
+        queueTransition(() -> { prepared.setAudioEnabled(audioEnabled); prepared.setFastForwardSpeed(speedMultiplier); });
         hasRestoredSessionState = false;
         bindProductUi();
         if (gamepadVirtualControlsCoordinator != null) {
@@ -857,7 +1028,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     }
 
     void capturePresentedFrameForTesting(Nintendo3DsSurfaceFrameCapture.Callback callback) {
-        surfaceFrameCapture.capture(surfaceView, callback);
+        surfaceFrameCapture.capture(ownedLayer, callback);
     }
 
     private View createContentView() {
@@ -914,6 +1085,22 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
         addProductShell(contentRoot);
 
+        com.mateussouza.emuorbit.advance.ui.EdgeToEdgeInsets.applyStableGameplayPadding(virtualControls);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(contentRoot, (view, insets) -> {
+            androidx.core.graphics.Insets safe = androidx.core.graphics.Insets.max(
+                    insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()),
+                    insets.getInsets(WindowInsetsCompat.Type.mandatorySystemGestures()));
+            // Move the shell/menu, not the surface: touch/native coordinates and
+            // the lifecycle controller continue to own the unchanged viewport.
+            shellInsets = safe;
+            updateShellBounds();
+            return insets;
+        });
+        contentRoot.addOnLayoutChangeListener((view, left, top, right, bottom,
+                oldLeft, oldTop, oldRight, oldBottom) -> updateShellBounds());
+        contentRoot.post(() -> androidx.core.view.ViewCompat.requestApplyInsets(contentRoot));
+
         surfaceView.requestFocus();
         return contentRoot;
     }
@@ -938,12 +1125,14 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 R.string.n3ds_product_more_actions_show,
                 ignored -> toggleActionsMenu());
 
-        LinearLayout identity = new LinearLayout(this);
+        LinearLayout identity = shellIdentity = new LinearLayout(this);
         identity.setOrientation(LinearLayout.VERTICAL);
         identity.setGravity(Gravity.CENTER);
 
         titleView = new TextView(this);
         titleView.setText(displayTitle());
+        // The shell must not obscure the guest image with its filename.
+        titleView.setVisibility(View.GONE);
         titleView.setTextColor(Color.rgb(247, 247, 255));
         titleView.setTextSize(12);
         titleView.setGravity(Gravity.CENTER);
@@ -963,7 +1152,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        LinearLayout quickActions = new LinearLayout(this);
+        LinearLayout quickActions = shellQuickActions = new LinearLayout(this);
         quickActions.setOrientation(LinearLayout.HORIZONTAL);
         quickActions.setGravity(Gravity.CENTER);
 
@@ -985,6 +1174,25 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 R.string.n3ds_product_pause,
                 ignored -> toggleManualPause());
         quickActions.addView(pauseButton, quickActionLayout(6));
+
+        layoutProductShell(landscape);
+        addActionsMenuPanel(root, landscape);
+        applyGameplayActionsOpacity();
+        bindProductUi();
+    }
+
+    private void layoutProductShell(boolean landscape) {
+        // Reuse the actual buttons/listeners. Rebuilding the content view here would
+        // replace the Surface, lose editor drafts and risk a second native owner.
+        for (View child : new View[]{backButton, menuButton, shellIdentity, shellQuickActions}) {
+            if (child.getParent() instanceof ViewGroup) {
+                ((ViewGroup) child.getParent()).removeView(child);
+            }
+        }
+        productShell.removeAllViews();
+        shellLandscape = landscape;
+        LinearLayout identity = shellIdentity;
+        LinearLayout quickActions = shellQuickActions;
 
         if (landscape) {
             LinearLayout row = new LinearLayout(this);
@@ -1030,9 +1238,32 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             productShell.addView(quickActions, quickLayout);
         }
 
-        addActionsMenuPanel(root, landscape);
+        updateShellBounds();
+    }
 
-        bindProductUi();
+    private void updateShellBounds() {
+        if (productShell == null) return;
+        FrameLayout.LayoutParams shell = (FrameLayout.LayoutParams) productShell.getLayoutParams();
+        int height = dp(shellLandscape ? 60 : 116);
+        if (shell.height != height || shell.leftMargin != shellInsets.left
+                || shell.topMargin != shellInsets.top || shell.rightMargin != shellInsets.right) {
+            shell.height = height;
+            shell.setMargins(shellInsets.left, shellInsets.top, shellInsets.right, 0);
+            productShell.setLayoutParams(shell);
+        }
+        if (actionsMenuContainer == null || contentRoot.getHeight() <= 0) return;
+        FrameLayout.LayoutParams menu = (FrameLayout.LayoutParams) actionsMenuContainer.getLayoutParams();
+        int top = shellInsets.top + dp(shellLandscape ? 64 : 58);
+        int boundedHeight = Math.min(dp(8 + 48 * actionsMenuPanel.getRowCount()),
+                Math.max(1, contentRoot.getHeight() - top - shellInsets.bottom - dp(8)));
+        if (menu.height != boundedHeight || menu.topMargin != top
+                || menu.leftMargin != shellInsets.left
+                || menu.rightMargin != shellInsets.right + dp(8)
+                || menu.bottomMargin != shellInsets.bottom) {
+            menu.height = boundedHeight;
+            menu.setMargins(shellInsets.left, top, shellInsets.right + dp(8), shellInsets.bottom);
+            actionsMenuContainer.setLayoutParams(menu);
+        }
     }
 
     private void addActionsMenuPanel(FrameLayout root, boolean landscape) {
@@ -1081,7 +1312,11 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP | Gravity.END);
         menuLayout.setMargins(0, dp(landscape ? 64 : 58), dp(8), 0);
-        root.addView(actionsMenuPanel, menuLayout);
+        actionsMenuContainer = new ScrollView(this);
+        actionsMenuContainer.setVisibility(View.GONE);
+        actionsMenuContainer.addView(actionsMenuPanel, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.addView(actionsMenuContainer, menuLayout);
     }
 
     private Button addActionMenuButton(
@@ -1102,10 +1337,15 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     }
 
     private void reflowActionsMenuPanel() {
+        reflowActionsMenuPanel(shellLandscape ? 2 : 1);
+    }
+
+    private void reflowActionsMenuPanel(int columns) {
         if (actionsMenuPanel == null) {
             return;
         }
-        int columns = Math.max(1, actionsMenuPanel.getColumnCount());
+        // Do not shrink columnCount while old landscape column specs still exist.
+        actionsMenuPanel.setColumnCount(Math.max(columns, actionsMenuPanel.getColumnCount()));
         // Expand for the worst existing auto-placement first. Android validates every
         // intermediate LayoutParams mutation and may still hold a portrait row index here.
         actionsMenuPanel.setRowCount(Math.max(1, actionsMenuPanel.getChildCount()));
@@ -1126,6 +1366,8 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             visibleIndex++;
         }
         actionsMenuPanel.setRowCount(Math.max(1, (visibleIndex + columns - 1) / columns));
+        actionsMenuPanel.setColumnCount(columns);
+        updateShellBounds();
     }
 
     private Button createToolbarButton(
@@ -1187,12 +1429,15 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 break;
         }
         statusView.setText(statusResource);
+        // Keep preparation/failure feedback, but no persistent label over gameplay.
+        statusView.setVisibility(uiState.canControlSession() ? View.GONE : View.VISIBLE);
 
         boolean enabled = uiState.canControlSession() && productFailure == null;
         pauseButton.setEnabled(enabled);
         audioButton.setEnabled(enabled);
         speedButton.setEnabled(enabled);
-        orientationButton.setEnabled(enabled);
+        orientationButton.setEnabled(enabled && Nintendo3DsWindowOrientationPolicy.allowsPhoneChoice(
+                getResources().getConfiguration().smallestScreenWidthDp, isInMultiWindowMode()));
         menuButton.setEnabled(enabled);
         virtualControls.setControlsEnabled(
                 enabled
@@ -1297,6 +1542,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         });
         activeActionsMenu = popup;
         actionsMenuPanel.setVisibility(View.VISIBLE);
+        actionsMenuContainer.setVisibility(View.VISIBLE);
         bindActionsMenuButton();
         Button firstAction = actionMenuButtons.get(MENU_REPORT_ID);
         if (firstAction != null) {
@@ -1336,6 +1582,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         }
         activeActionsMenu = null;
         actionsMenuPanel.setVisibility(View.GONE);
+        actionsMenuContainer.setVisibility(View.GONE);
         popup.dismiss();
         bindActionsMenuButton();
         menuButton.requestFocus();
@@ -1432,11 +1679,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
     private void shareScreenshot() {
         closeActionsMenu();
-        if (CommercialFeatureGate.showComingSoonIfDisabled(this)) {
-            return;
-        }
-        if (!baseProductBridge.isListingPublished()) {
-            showProductFeedback(R.string.n3ds_product_share_unavailable_until_published);
+        if (SharingFeatureGate.showComingSoonIfDisabled(this)) {
             return;
         }
         if (shareInFlight) {
@@ -1450,7 +1693,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
         shareInFlight = true;
         showProductFeedback(R.string.n3ds_product_share_preparing);
-        surfaceFrameCapture.capture(surfaceView, new Nintendo3DsSurfaceFrameCapture.Callback() {
+        surfaceFrameCapture.capture(ownedLayer, new Nintendo3DsSurfaceFrameCapture.Callback() {
             @Override
             public void onCaptured(Bitmap bitmap) {
                 prepareScreenshotShare(bitmap);
@@ -1627,6 +1870,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     }
 
     private void showSessionFailure(Throwable failure) {
+        if (usage != null) usage.failed();
         stopFrameLoop();
         if (virtualControlEditorController != null) {
             virtualControlEditorController.close();
@@ -1658,7 +1902,9 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                         com.mateussouza.emuorbit.advance.R.drawable
                                 .mateus_dialog_emulator_error)
                 .setTitle(R.string.n3ds_product_failed)
-                .setMessage(R.string.n3ds_product_launch_failed)
+                .setMessage(failure instanceof Nintendo3DsCoreLifecycleController.RecoveryException
+                        ? R.string.n3ds_product_recovery_failed
+                        : R.string.n3ds_product_launch_failed)
                 .setPositiveButton(android.R.string.ok, (ignored, which) -> finish())
                 .setCancelable(false)
                 .setOnDismissListener(ignored -> {
@@ -1702,12 +1948,12 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         try {
             if (hostResumed && !controllerResumed) {
                 restartedController.setDisplayRotation(currentDisplayRotation());
-                restartedController.onResume();
-                controllerResumed = true;
+                enqueueControllerResume(restartedController);
             }
             uiState = uiState.sessionReady(uiState.isAudioEnabled());
-            restartedController.setAudioEnabled(uiState.isAudioEnabled());
-            restartedController.setFastForwardSpeed(uiState.getSpeedMultiplier());
+            boolean audio = uiState.isAudioEnabled();
+            int speed = uiState.getSpeedMultiplier();
+            queueTransition(() -> { restartedController.setAudioEnabled(audio); restartedController.setFastForwardSpeed(speed); });
             bindProductUi();
             startFrameLoopIfReady();
         } catch (RuntimeException failure) {
@@ -1748,8 +1994,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         try {
             if (uiState.isPaused()) {
                 if (!controllerResumed) {
-                    active.onResume();
-                    controllerResumed = true;
+                    enqueueControllerResume(active);
                 }
                 uiState = uiState.togglePause();
                 bindProductUi();
@@ -1775,7 +2020,8 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             return;
         }
         uiState = uiState.toggleAudio();
-        active.setAudioEnabled(uiState.isAudioEnabled());
+        boolean enabled = uiState.isAudioEnabled();
+        queueTransition(() -> active.setAudioEnabled(enabled));
         bindProductUi();
     }
 
@@ -1785,19 +2031,24 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             return;
         }
         uiState = uiState.cycleSpeed();
-        active.setFastForwardSpeed(uiState.getSpeedMultiplier());
+        int speed = uiState.getSpeedMultiplier();
+        queueTransition(() -> active.setFastForwardSpeed(speed));
         bindProductUi();
     }
 
     private void toggleOrientation() {
-        if (!uiState.canControlSession()) {
+        Configuration configuration = getResources().getConfiguration();
+        if (!uiState.canControlSession()
+                || !Nintendo3DsWindowOrientationPolicy.allowsPhoneChoice(
+                        configuration.smallestScreenWidthDp, isInMultiWindowMode())) {
             return;
         }
-        boolean portrait = getResources().getConfiguration().orientation
+        boolean portrait = configuration.orientation
                 == Configuration.ORIENTATION_PORTRAIT;
-        setRequestedOrientation(portrait
+        phoneOrientation = portrait
                 ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        applyWindowOrientation(configuration, isInMultiWindowMode());
     }
 
     private void hideSystemBars() {
@@ -2005,6 +2256,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
     }
 
     private void applySettings(Nintendo3DsExperienceSettings settings) {
+        preferredScreenLayout = settings.getScreenLayout();
         virtualControlsEnabledBySettings = settings.areVirtualControlsVisible();
         virtualControlsOpacityPercent = settings.getVirtualControlOpacityPercent();
         applyVirtualControlsPresentation();
@@ -2016,22 +2268,22 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             return;
         }
         stopFrameLoop();
-        try {
-            Nintendo3DsScreenLayout effectiveLayout = Nintendo3DsScreenLayoutPolicy.resolve(
+        long revision = ++settingsRevision;
+        Nintendo3DsScreenLayout effectiveLayout = Nintendo3DsScreenLayoutPolicy.resolve(
                     settings.getScreenLayout(),
                     getResources().getConfiguration().orientation);
-            Nintendo3DsMicrophoneStartResult microphone = settings.applyTo(
-                    active,
-                    effectiveLayout);
-            if (microphone == Nintendo3DsMicrophoneStartResult.PERMISSION_REQUIRED) {
+        var microphone = new java.util.concurrent.atomic.AtomicReference<Nintendo3DsMicrophoneStartResult>();
+        queueTransition(() -> microphone.set(settings.applyTo(active, effectiveLayout)), () -> {
+            if (settingsRevision != revision || controller != active) return;
+            if (microphone.get() == Nintendo3DsMicrophoneStartResult.PERMISSION_REQUIRED
+                    || (settings.isMicrophoneEnabled() && androidx.core.content.ContextCompat.checkSelfPermission(
+                            this, Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED)) {
                 microphonePermissionPending = true;
                 launchPendingMicrophonePermission();
             } else {
                 microphonePermissionPending = false;
             }
-        } catch (IOException | RuntimeException failure) {
-            recordFailure(failure);
-        }
+        });
     }
 
     private void applyVirtualControlsPresentation() {
@@ -2050,6 +2302,16 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                 virtualControlsEnabledBySettings
                         && (gamepadVirtualControlsVisible || editorShowing),
                 virtualControlsOpacityPercent);
+        applyGameplayActionsOpacity();
+    }
+
+    private void applyGameplayActionsOpacity() {
+        float opacity = Nintendo3DsExperienceSettings
+                .normalizeVirtualControlOpacity(virtualControlsOpacityPercent) / 100f;
+        // Do not fade productShell: it also holds status text. The menu is separate.
+        if (backButton != null) backButton.setAlpha(opacity);
+        if (menuButton != null) menuButton.setAlpha(opacity);
+        if (shellQuickActions != null) shellQuickActions.setAlpha(opacity);
     }
 
     private void onMicrophonePermissionResult(boolean granted) {
@@ -2067,8 +2329,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             startFrameLoopIfReady();
             return;
         }
-        active.setMicrophoneEnabled(true);
-        startFrameLoopIfReady();
+        queueTransition(() -> active.setMicrophoneEnabled(true));
     }
 
     private void launchPendingMicrophonePermission() {
@@ -2084,6 +2345,12 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         if (!hostResumed || active == null || active.isClosed()) {
             return;
         }
+        if (transitions.getFailure() != null) { showSessionFailure(transitions.getFailure()); return; }
+        Nintendo3DsCoreLifecycleController.RecoveryException recovery = active.getRecoveryFailure();
+        if (recovery != null) {
+            showSessionFailure(recovery);
+            return;
+        }
         if (uiState.isPaused()) {
             // A recreated paused Activity still owns a new Surface. Bind it now so the first
             // explicit resume can render immediately, while startFrameLoopIfReady() keeps the
@@ -2093,8 +2360,7 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
         }
         if (!controllerResumed) {
             active.setDisplayRotation(currentDisplayRotation());
-            active.onResume();
-            controllerResumed = true;
+            enqueueControllerResume(active);
         }
         bindCurrentSurfaceIfReady();
     }
@@ -2107,11 +2373,21 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
             return;
         }
         stopFrameLoop();
-        closeForTransition(() -> active.onSurfaceAvailable(
-                target,
-                currentSurfaceWidth,
-                currentSurfaceHeight));
-        startFrameLoopIfReady();
+        Nintendo3DsOwnedLayer binding = ownedLayer;
+        if (binding == null) return;
+        queueTransition(() -> {
+            if (currentSurface != target || binding.lifetime.isRetired()) return;
+            active.onOwnedSurfaceAvailable(target, binding.width, binding.height, binding.lifetime);
+        });
+    }
+
+    private void enqueueControllerResume(Nintendo3DsCoreLifecycleController active) {
+        long revision = lifecycleRevision;
+        controllerResumed = true;
+        queueTransition(() -> {
+            if (hostResumed && lifecycleRevision == revision && transitions.getFailure() == null)
+                active.onResume();
+        });
     }
 
     private boolean routeTouch(View view, MotionEvent event) {
@@ -2143,15 +2419,18 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
 
     private void startFrameLoopIfReady() {
         Nintendo3DsCoreLifecycleController active = controller;
-        if (!hostResumed || uiState.isPaused() || !controllerResumed
+        if (!hostResumed || !uiState.canControlSession() || uiState.isPaused() || !controllerResumed
+                || !transitions.isIdle() || transitions.getFailure() != null
                 || active == null || active.isClosed()
-                || settingsDialogController.isShowing() || !active.isReadyForFrames()
-                || !frameLoopRunning.compareAndSet(false, true)) {
+                || settingsDialogController.isShowing() || !active.isReadyForFrames()) {
             return;
         }
-        frameLoop = frameExecutor.submit(() -> {
+        Nintendo3DsFrameLoopGate.Run run = frameLoopGate.start();
+        if (run == null) return;
+        if (usage != null) usage.running(true);
+        frameExecutor.execute(() -> {
             try {
-                while (frameLoopRunning.get()) {
+                while (frameLoopGate.isCurrent(run)) {
                     if (!active.isReadyForFrames()) {
                         SystemClock.sleep(8);
                         continue;
@@ -2159,6 +2438,8 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                     Nintendo3DsCoreFrameReport frame = active.runFrames(
                             FRAME_LOOP_BATCH_SIZE,
                             Nintendo3DsCoreLifecycleController.DEFAULT_TRANSITION_TIMEOUT_MS);
+                    if (!frameLoopGate.isCurrent(run)) break;
+                    if (usage != null && frame.getPresentedFrames() > 0 && frame.getVideoFrames() > 0) usage.frame();
                     if (frame.getWidth() > 0 && frame.getHeight() > 0) {
                         currentFrameWidth = frame.getWidth();
                         currentFrameHeight = frame.getHeight();
@@ -2166,45 +2447,45 @@ public final class Nintendo3DsProductActivity extends ComponentActivity
                     renderedFrames.addAndGet(FRAME_LOOP_BATCH_SIZE);
                 }
             } catch (IOException | RuntimeException failure) {
-                if (frameLoopRunning.get()) {
+                if (frameLoopGate.isCurrent(run)) {
                     runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed() && controller == active) {
+                        if (frameLoopGate.isLatest(run)
+                                && !isFinishing() && !isDestroyed() && controller == active) {
                             showSessionFailure(failure);
                         }
                     });
                 }
             } finally {
-                frameLoopRunning.set(false);
+                frameLoopGate.finish(run);
             }
         });
     }
 
     private void stopFrameLoop() {
-        frameLoopRunning.set(false);
-        Future<?> task = frameLoop;
-        frameLoop = null;
-        if (task == null) {
-            return;
-        }
-        try {
-            task.get(FRAME_STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (InterruptedException failure) {
-            Thread.currentThread().interrupt();
-            recordFailure(failure);
-        } catch (ExecutionException failure) {
-            recordFailure(failure.getCause());
-        } catch (TimeoutException failure) {
-            task.cancel(true);
-            recordFailure(failure);
-        }
+        if (usage != null) usage.running(false);
+        // Invalidate admission without a UI-thread Future.get(). A frame already
+        // in JNI still finishes on the existing serial owner. Surface replacement,
+        // recovery capture and final close keep their controller barriers OFF the UI thread.
+        // A retired run cannot become live again when a new loop starts.
+        frameLoopGate.stop();
     }
 
-    private void closeForTransition(CheckedTransition transition) {
-        try {
-            transition.run();
-        } catch (IOException | RuntimeException failure) {
-            recordFailure(failure);
-        }
+    private void queueTransition(Nintendo3DsTransitionQueue.Work work) {
+        queueTransition(work, () -> {});
+    }
+
+    private void queueTransition(Nintendo3DsTransitionQueue.Work work, Runnable after) {
+        stopFrameLoop();
+        transitions.submit(work, failure -> {
+            if (failure != null) recordFailure(failure);
+            if (isFinishing() || isDestroyed()) return;
+            if (transitions.getFailure() != null) {
+                if (hostResumed) showSessionFailure(transitions.getFailure());
+                return;
+            }
+            after.run();
+            startFrameLoopIfReady();
+        });
     }
 
     private void recordFailure(Throwable failure) {

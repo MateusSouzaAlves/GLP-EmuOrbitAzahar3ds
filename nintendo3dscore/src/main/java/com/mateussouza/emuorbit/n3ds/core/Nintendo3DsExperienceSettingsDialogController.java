@@ -4,6 +4,7 @@ package com.mateussouza.emuorbit.n3ds.core;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Looper;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -81,6 +82,7 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
 
     private AlertDialog activeDialog;
     private Form activeForm;
+    private Scope activeScope;
 
     public Nintendo3DsExperienceSettingsDialogController(
             Nintendo3DsExperienceSettingsStore store) {
@@ -111,6 +113,50 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
 
     public boolean isShowing() {
         return activeDialog != null && activeDialog.isShowing();
+    }
+
+    void refreshResponsiveLayout() {
+        if (isShowing()) {
+            ViewGroup.LayoutParams params = activeForm.root.getLayoutParams();
+            int height = resolveFormHeight((Activity) activeForm.root.getContext());
+            if (params.height != height) {
+                params.height = height;
+                activeForm.root.setLayoutParams(params);
+            }
+            MateusDialog.refreshResponsiveLayout(activeDialog);
+        }
+    }
+
+    /** Ephemeral UI draft only. Never writes the settings store before Save. */
+    Bundle saveGlobalDraft() {
+        requireMainThread();
+        if (!isShowing() || activeScope != Scope.GLOBAL) return null;
+        Form form = activeForm;
+        Bundle draft = new Bundle();
+        draft.putInt("layout", form.layoutSpinner.getSelectedItemPosition());
+        draft.putInt("performance", form.performanceProfileSpinner.getSelectedItemPosition());
+        draft.putBoolean("audio", form.audioEnabled.isChecked());
+        draft.putInt("volume", form.audioVolume.getProgress());
+        draft.putBoolean("microphone", form.microphoneEnabled.isChecked());
+        draft.putBoolean("controls", form.virtualControlsVisible.isChecked());
+        draft.putInt("opacity", form.virtualControlOpacity.getProgress());
+        draft.putInt("scroll", form.root.getScrollY());
+        return draft;
+    }
+
+    void restoreGlobalDraft(Activity activity, Listener listener, Bundle draft) {
+        requireMainThread();
+        if (draft == null || !showGlobal(activity, listener)) return;
+        Form form = activeForm;
+        form.layoutSpinner.setSelection(Math.max(0, Math.min(LAYOUTS.length - 1, draft.getInt("layout"))));
+        form.performanceProfileSpinner.setSelection(Math.max(0,
+                Math.min(PERFORMANCE_PROFILES.length - 1, draft.getInt("performance"))));
+        form.audioEnabled.setChecked(draft.getBoolean("audio", true));
+        form.audioVolume.setProgress(draft.getInt("volume", 100));
+        form.microphoneEnabled.setChecked(draft.getBoolean("microphone", false));
+        form.virtualControlsVisible.setChecked(draft.getBoolean("controls", true));
+        form.virtualControlOpacity.setProgress(draft.getInt("opacity", 1));
+        form.root.post(() -> form.root.scrollTo(0, Math.max(0, draft.getInt("scroll"))));
     }
 
     AlertDialog getActiveDialogForTesting() {
@@ -163,6 +209,7 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
         AlertDialog dialog = activeDialog;
         activeDialog = null;
         activeForm = null;
+        activeScope = null;
         if (dialog != null) {
             dialog.setOnDismissListener(null);
             dialog.dismiss();
@@ -195,6 +242,7 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
         }
         boolean[] settingsChanged = {false};
         activeForm = form;
+        activeScope = scope;
         activeDialog = new MateusDialog.Builder(checkedActivity)
                 .setAvatar(
                         com.mateussouza.emuorbit.advance.R.drawable
@@ -223,6 +271,7 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
                 .setOnDismissListener(ignored -> {
                     activeDialog = null;
                     activeForm = null;
+                    activeScope = null;
                     checkedListener.onDialogDismissed(scope, settingsChanged[0]);
                 })
                 .show();
@@ -232,6 +281,7 @@ public final class Nintendo3DsExperienceSettingsDialogController implements Auto
             AlertDialog dialog = activeDialog;
             activeDialog = null;
             activeForm = null;
+            activeScope = null;
             if (dialog != null) {
                 dialog.dismiss();
             }

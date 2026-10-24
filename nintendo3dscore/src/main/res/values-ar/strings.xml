@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">لا توجد مساحة تخزين خاصة كافية لإعداد هذه اللعبة وتشغيلها.</string>
     <string name="n3ds_readiness_mii_fallback">تستخدم هذه اللعبة ميزات Mii. من دون قاعدة بياناتك، سيواصل Azahar باستخدام شخصية Mii القياسية؛ وقد تكون بعض الوجوه أو الميزات محدودة. لا يزال بإمكانك استيراد ملف CFL_DB.dat الخاص بك.</string>
     <string name="n3ds_readiness_mii_optional">يمكنك استيراد بيانات Mii التي تملكها لتمكين ميزات إضافية في هذه اللعبة.</string>
-    <string name="n3ds_readiness_device_unqualified">لم يكمل هذا الجهاز تأهيل أداء Nintendo 3DS بعد. قد تكون اللعبة بطيئة أو غير مستقرة.</string>
     <string name="n3ds_readiness_action_understood">فهمت</string>
     <string name="n3ds_readiness_action_retry">إعادة المحاولة</string>
     <string name="n3ds_readiness_action_open_storage">فتح التخزين</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">تحقق واستيراد</string>
     <string name="n3ds_settings_hub_portable_exported">تم إنشاء الملف المحمول: %1$d ملف، %2$s.</string>
     <string name="n3ds_settings_hub_portable_imported">تمت استعادة البيانات المحمولة: %1$d ملف، %2$s.</string>
+    <string name="n3ds_product_recovery_failed">تعذّر استئناف الجلسة. لم تُحذف ملفات الحفظ داخل اللعبة.\n\nعُد إلى المكتبة. إذا تكرر الخطأ، امسح ذاكرة التخزين المؤقت لـ 3DS في الإعدادات.</string>
 </resources>

@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -45,6 +46,8 @@ final class Nintendo3DsVirtualControlEditorController {
     private final Listener listener;
     @Nullable
     private FrameLayout layer;
+    @Nullable
+    private ScrollView panel;
     @Nullable
     private Nintendo3DsVirtualControlEditorSession session;
     private TextView selectedGroup;
@@ -102,6 +105,30 @@ final class Nintendo3DsVirtualControlEditorController {
 
     boolean isShowing() {
         return layer != null;
+    }
+
+    void refreshResponsiveLayout() {
+        if (!isShowing()) return;
+        updatePanelBounds();
+        preview();
+    }
+
+    private void updatePanelBounds() {
+        if (layer == null || panel == null || layer.getWidth() <= 0 || layer.getHeight() <= 0) return;
+        boolean landscapeWindow = activity.getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+        int width = Math.max(1, layer.getWidth() - layer.getPaddingLeft() - layer.getPaddingRight() - dp(16));
+        int height = Math.max(1, layer.getHeight() - layer.getPaddingTop() - layer.getPaddingBottom() - dp(16));
+        width = landscapeWindow ? Math.min(dp(420), width) : width;
+        height = landscapeWindow ? height : Math.min(dp(440), height);
+        int gravity = landscapeWindow ? Gravity.END : Gravity.BOTTOM;
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) panel.getLayoutParams();
+        if (params.width != width || params.height != height || params.gravity != gravity) {
+            params.width = width;
+            params.height = height;
+            params.gravity = gravity;
+            panel.setLayoutParams(params);
+        }
     }
 
     boolean cancel() {
@@ -166,11 +193,20 @@ final class Nintendo3DsVirtualControlEditorController {
     }
 
     private FrameLayout createLayer(String persistentId) {
-        FrameLayout editorLayer = new FrameLayout(activity);
+        FrameLayout editorLayer = new FrameLayout(activity) {
+            @Override
+            protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+                super.onLayout(changed, left, top, right, bottom);
+                // Insets can change padding without changing the layer bounds.
+                // Compare parameters before requesting the one corrective layout.
+                updatePanelBounds();
+            }
+        };
         editorLayer.setBackgroundColor(Color.argb(118, 0, 0, 0));
         editorLayer.setClickable(true);
         editorLayer.setContentDescription(activity.getString(R.string.n3ds_control_editor_title));
         editorLayer.setOnClickListener(ignored -> cancel());
+        com.mateussouza.emuorbit.advance.ui.EdgeToEdgeInsets.applyStableGameplayPadding(editorLayer);
 
         LinearLayout content = new LinearLayout(activity);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -180,7 +216,6 @@ final class Nintendo3DsVirtualControlEditorController {
         background.setColor(Color.rgb(31, 34, 43));
         background.setStroke(dp(1), Color.rgb(62, 216, 245));
         background.setCornerRadius(dp(18));
-        content.setBackground(background);
 
         TextView title = label(
                 activity.getString(R.string.n3ds_control_editor_title),
@@ -197,8 +232,8 @@ final class Nintendo3DsVirtualControlEditorController {
         content.addView(hint, hintLayout);
 
         LinearLayout orientationRow = row();
-        portrait = button(R.string.n3ds_control_editor_portrait);
-        landscape = button(R.string.n3ds_control_editor_landscape);
+        portrait = button(R.string.n3ds_control_editor_portrait, orientationRow, true);
+        landscape = button(R.string.n3ds_control_editor_landscape, orientationRow, true);
         orientationRow.addView(portrait, weighted());
         LinearLayout.LayoutParams landscapeLayout = weighted();
         landscapeLayout.setMarginStart(dp(8));
@@ -206,7 +241,7 @@ final class Nintendo3DsVirtualControlEditorController {
         content.addView(orientationRow, topMargin(10));
 
         LinearLayout groupRow = row();
-        Button previous = button(R.string.n3ds_control_editor_previous_group);
+        Button previous = button(R.string.n3ds_control_editor_previous_group, groupRow, true);
         previous.setText(isRtl() ? "›" : "‹");
         previous.setTextSize(26.0f);
         previous.setContentDescription(
@@ -216,7 +251,7 @@ final class Nintendo3DsVirtualControlEditorController {
         selectedGroup = label("", 15.0f, Color.WHITE);
         selectedGroup.setGravity(Gravity.CENTER);
         groupRow.addView(selectedGroup, weighted());
-        Button next = button(R.string.n3ds_control_editor_next_group);
+        Button next = button(R.string.n3ds_control_editor_next_group, groupRow, true);
         next.setText(isRtl() ? "‹" : "›");
         next.setTextSize(26.0f);
         next.setContentDescription(
@@ -252,11 +287,11 @@ final class Nintendo3DsVirtualControlEditorController {
         content.addView(scale, matchWrap());
 
         LinearLayout actions = row();
-        Button reset = button(R.string.n3ds_settings_reset);
+        Button reset = button(R.string.n3ds_settings_reset, actions, false);
         reset.setTag("reset");
-        Button cancel = button(R.string.n3ds_product_cancel);
+        Button cancel = button(R.string.n3ds_product_cancel, actions, false);
         cancel.setTag("cancel");
-        Button save = button(R.string.n3ds_settings_save);
+        Button save = button(R.string.n3ds_settings_save, actions, true);
         save.setTag("save");
         actions.addView(reset, weighted());
         LinearLayout.LayoutParams cancelLayout = weighted();
@@ -267,7 +302,10 @@ final class Nintendo3DsVirtualControlEditorController {
         actions.addView(save, saveLayout);
         content.addView(actions, topMargin(8));
 
-        ScrollView scroll = new ScrollView(activity);
+        ScrollView scroll = panel = new ScrollView(activity);
+        // Keep the frame stationary while its contents scroll at larger fonts.
+        scroll.setBackground(background);
+        scroll.setClipToOutline(true);
         scroll.setFillViewport(true);
         scroll.addView(content, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -427,6 +465,7 @@ final class Nintendo3DsVirtualControlEditorController {
     private void detach() {
         FrameLayout current = layer;
         layer = null;
+        panel = null;
         session = null;
         if (current != null && current.getParent() == host) {
             host.removeView(current);
@@ -449,12 +488,17 @@ final class Nintendo3DsVirtualControlEditorController {
         return view;
     }
 
-    private Button button(int textResource) {
-        Button view = new Button(activity);
+    private Button button(int textResource, ViewGroup parent, boolean primary) {
+        int layout = primary
+                ? com.mateussouza.emuorbit.advance.R.layout.view_gradient_primary_action
+                : com.mateussouza.emuorbit.advance.R.layout.view_settings_secondary_action;
+        Button view = (Button) LayoutInflater.from(activity).inflate(layout, parent, false);
         view.setText(textResource);
         view.setAllCaps(false);
         view.setMinWidth(0);
-        view.setMinHeight(0);
+        view.setMinHeight(dp(48));
+        view.setTextSize(14.0f);
+        view.setPadding(dp(8), 0, dp(8), 0);
         view.setGravity(Gravity.CENTER);
         return view;
     }
@@ -473,7 +517,7 @@ final class Nintendo3DsVirtualControlEditorController {
     }
 
     private LinearLayout.LayoutParams weighted() {
-        return new LinearLayout.LayoutParams(0, dp(48), 1.0f);
+        return new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
     }
 
     private LinearLayout.LayoutParams fixed(int widthDp, int heightDp) {

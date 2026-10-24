@@ -1,5 +1,7 @@
 import java.security.MessageDigest
+import groovy.json.JsonSlurper
 import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.testing.Test
@@ -11,9 +13,23 @@ plugins {
     alias(libs.plugins.android.dynamic.feature)
 }
 
-val expectedCoreBytes = 23_157_736L
-val expectedCoreSha256 =
+val baselineCoreBytes = 23_157_736L
+val baselineCoreSha256 =
     "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c"
+val coreSourceScope = JsonSlurper().parse(
+    rootProject.file("config/nintendo3ds-source-scope.json")
+) as Map<*, *>
+val recoveryCoreBuild = coreSourceScope["playQualityRecoveryCore"] as? Map<*, *>
+val expectedCoreBytes = (recoveryCoreBuild?.get("strippedBytes") as? Number)?.toLong()
+    ?: baselineCoreBytes
+val expectedCoreSha256 = recoveryCoreBuild?.get("strippedSha256") as? String
+    ?: baselineCoreSha256
+check(expectedCoreBytes == baselineCoreBytes && expectedCoreSha256.matches(Regex("[0-9a-f]{64}"))) {
+    "Invalid pinned Nintendo 3DS recovery core identity"
+}
+check(recoveryCoreBuild == null || recoveryCoreBuild["status"] == "PINNED_RELEASE_CANDIDATE") {
+    "Nintendo 3DS recovery core must have explicit validation state"
+}
 val protectedBuildSeed = rootProject.extra["emuorbitProtectedBuildSeed"] as String
 val protectedCoreContext = "n3ds-arm64-v8a"
 val configuredCorePath = providers
@@ -81,6 +97,23 @@ fun sha256Hex(file: File): String = file.inputStream().buffered().use { input ->
     digest.digest().joinToString("") { "%02x".format(it) }
 }
 
+fun validatedNintendo3DsCore(): File {
+    val source = rootProject.file(configuredCorePath.get())
+    if (!source.isFile) {
+        throw GradleException("Nintendo 3DS core does not exist: $source")
+    }
+    val observedBytes = source.length()
+    val observedSha256 = sha256Hex(source)
+    if (observedBytes != expectedCoreBytes || observedSha256 != expectedCoreSha256) {
+        throw GradleException(
+            "Nintendo 3DS core identity mismatch: expected " +
+                "$expectedCoreBytes bytes/$expectedCoreSha256, observed " +
+                "$observedBytes bytes/$observedSha256"
+        )
+    }
+    return source
+}
+
 val prepareNintendo3DsCore by tasks.registering(Exec::class) {
     group = "build"
     description = "Validates and seals the pinned Azahar core in a protected asset"
@@ -89,23 +122,13 @@ val prepareNintendo3DsCore by tasks.registering(Exec::class) {
     inputs.property("protectedBuildSeed", protectedBuildSeed)
     inputs.property("protectedCoreContext", protectedCoreContext)
     inputs.property("protectedCoreAssetName", protectedCoreAssetName)
+    inputs.file(configuredCorePath.map { rootProject.file(it) })
+        .withPathSensitivity(PathSensitivity.NONE)
     outputs.file(generatedCoreAssets.map { it.file(protectedCoreAssetName) })
 
     doFirst {
-        val configuredPath = configuredCorePath.get()
-        val source = rootProject.file(configuredPath)
-        if (!source.isFile) {
-            throw GradleException("Nintendo 3DS core does not exist: $source")
-        }
-        val observedBytes = source.length()
-        val observedSha256 = sha256Hex(source)
-        if (observedBytes != expectedCoreBytes || observedSha256 != expectedCoreSha256) {
-            throw GradleException(
-                "Nintendo 3DS core identity mismatch: expected " +
-                    "$expectedCoreBytes bytes/$expectedCoreSha256, observed " +
-                    "$observedBytes bytes/$observedSha256"
-            )
-        }
+        // Recheck at use time as well as before execution of the task graph.
+        val source = validatedNintendo3DsCore()
         // The asset name changes with the seed. Remove only this task-owned
         // staging directory so an incremental build cannot package an older container too.
         project.delete(generatedCoreAssets.get().asFile)
@@ -127,6 +150,15 @@ val prepareNintendo3DsCore by tasks.registering(Exec::class) {
                 "--context", protectedCoreContext
             )
         )
+    }
+}
+
+// Only packaging graphs need the binary: IDE sync, model checks and Java/unit
+// compilation remain usable without it. Refuse missing/stale cores before any
+// expensive native work (even when the sealed asset was previously up to date).
+gradle.taskGraph.whenReady {
+    if (hasTask(prepareNintendo3DsCore.get())) {
+        validatedNintendo3DsCore()
     }
 }
 
@@ -188,6 +220,17 @@ android {
         release {
             isMinifyEnabled = false
         }
+        // A dynamic feature must resolve the *same* base variant. Falling back
+        // to release binds its manifest to the normal applicationId, producing
+        // an invalid bundle when the private base carries an applicationIdSuffix.
+        // R8 remains owned by the base module; no separate signing/ID is set here.
+        if (providers.gradleProperty("EMUORBIT_PS2_PRODUCT_DELIVERY_QA")
+                .orNull?.trim()?.lowercase() == "true") {
+            create("ps2ProductQaRelease") {
+                initWith(getByName("release"))
+                matchingFallbacks += listOf("release")
+            }
+        }
     }
 
     compileOptions {
@@ -234,7 +277,76 @@ val nintendo3DsSelfContainedBaseClassIncludes = listOf(
     "com/mateussouza/emuorbit/advance/ui/emulation/input/" +
         "ExternalGamepadMonitor*.class",
     "com/mateussouza/emuorbit/advance/ui/emulation/input/" +
-        "GamepadVirtualControlsCoordinator*.class"
+        "GamepadVirtualControlsCoordinator*.class",
+    "com/mateussouza/emuorbit/advance/data/save/sync/SaveSyncRuntime*.class",
+    // Complete dependency closure for the owner's observed-mapping journal,
+    // without importing the whole base app/ads/Firebase into this QA UID.
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupStreamingCodec\$Guard.class",
+    // Bounded private payload preparation is shared with the feature harness.
+    // This is not transport activation and does not include base workers/UI.
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupArtifact.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupArtifact\$*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupStreamingCodec*.class",
+    // The real local capture adapter needs the immutable artifact store, not
+    // just the E3S decoder. No worker, Google service, UI or transport is added.
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupArtifactStore*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/Nintendo3DsSaveBackupBridge*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/Nintendo3DsCaptureStatus.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/Nintendo3DsBackupDispatch.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/Nintendo3DsRestoreSelectionBridge*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/Nintendo3DsRestorePreview.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/SaveProtectionCoverage.class",
+    // Fake-connection ART transport contracts in the disposable UID only.
+    // No OAuth client, base worker/UI or actual cloud connection is included.
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/DriveArtifact*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/DriveDownloadJournalCodec*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupDocumentInputStream*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupConsent.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupConsentRepository*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupMetadataLease*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupMetadataDigest*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveApplicationReceipt*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupRetention.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupRetention\$*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupRetentionAdmission*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupRetentionPermit.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/CommonStateLibraryCapture*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/RestoreLaunchPlan*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/RestoreLaunchJournal*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/RestoreLaunchJournalCodec*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/RestoreLaunchJournalFile*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveProtectionProcess.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveResumeFence*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/CommonSaveResumeFenceFile*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/SaveBackupConsentFile*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/DriveBackupBinding*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/EssentialSaveCodec*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/EssentialSaveSnapshot*.class",
+    // Typed Android delivery contracts use fresh private roots in the same
+    // disposable UID. Only their filesystem/codec dependency closure is added;
+    // no BackupAgent, Worker, Google client, Room, ads or app UI is imported.
+    "com/mateussouza/emuorbit/advance/data/save/protection/v2/AndroidSavePackage*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/ProtectedSaveStore*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/EssentialSaveRetention*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/EssentialSaveReconciler*.class",
+    "com/mateussouza/emuorbit/advance/data/save/protection/DriveSaveTransfer*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/AtomicFileIo*.class",
+    "com/mateussouza/emuorbit/advance/domain/save/SaveStateSlots.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsLoadedSaveMapping*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveCapture*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSavePreview*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveRestoreStaging*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveRestoreTransaction*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveSource*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveCensus*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsSaveDescriptor*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsDataSource*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsFormat*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsHeaderMetadata*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsHeaderParser*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsIdentity*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsArchiveIdentity*.class",
+    "com/mateussouza/emuorbit/advance/data/storage/Nintendo3DsRejectedException*.class"
 )
 val prepareNintendo3DsSelfContainedBaseClasses by tasks.registering(Jar::class) {
     group = "verification"
@@ -295,6 +407,7 @@ dependencies {
     add(nintendo3DsSelfContainedTestRuntime.name,
         "androidx.tracing:tracing:1.1.0")
     add(nintendo3DsSelfContainedTestRuntime.name, libs.androidx.activity)
+    add(nintendo3DsSelfContainedTestRuntime.name, libs.androidx.lifecycle.livedata)
     add(nintendo3DsSelfContainedTestRuntime.name,
         "androidx.lifecycle:lifecycle-common:2.11.0")
     add(nintendo3DsSelfContainedTestRuntime.name,
@@ -344,7 +457,9 @@ tasks.matching { it.name == "processDebugAndroidTestManifest" }.configureEach {
         ).get().asFile
         val baseTargets = listOf(
             "com.mateussouza.emuorbit.advance",
-            "com.mateussouza.emuorbit.advance.n3ds.uxtest"
+            "com.mateussouza.emuorbit.advance.n3ds.uxtest",
+            // UI QA can exercise all eight systems from the isolated library package.
+            "com.mateussouza.emuorbit.advance.n64.librarytest"
         )
         val isolatedTarget = if (adrenoCloudTestEnabled) {
             "com.mateussouza.emuorbit.n3ds.adreno.target"
@@ -391,12 +506,14 @@ val testNintendo3DsDebugUnit by tasks.registering(Exec::class) {
     description = "Runs Nintendo 3DS debug unit tests without AGP's Unicode-path worker"
     dependsOn(
         "compileDebugUnitTestJavaWithJavac",
-        "bundleDebugClassesToRuntimeJar"
+        "bundleDebugClassesToRuntimeJar",
+        ":app:bundleDebugClassesToRuntimeJar"
     )
     val testSources = fileTree("src/test/java") { include("**/*Test.java") }
     inputs.files(testSources)
     inputs.dir(nintendo3DsDebugUnitTestClasses)
     inputs.file(nintendo3DsDebugRuntimeClasses)
+    inputs.file(baseDebugRuntimeClasses)
     inputs.files(nintendo3DsUnitTestRunner)
 
     doFirst {
@@ -435,11 +552,14 @@ val testNintendo3DsDebugUnit by tasks.registering(Exec::class) {
         )
         commandLine(
             javaExecutable,
+            "-Xmx256m",
+            "-XX:ActiveProcessorCount=2",
             "-Dfile.encoding=UTF-8",
             "-cp",
             files(
                 nintendo3DsDebugUnitTestClasses,
                 nintendo3DsDebugRuntimeClasses,
+                baseDebugRuntimeClasses,
                 nintendo3DsUnitTestRunner,
                 androidJar
             ).asPath,

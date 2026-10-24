@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">私有存储空间不足，无法准备并运行此游戏。</string>
     <string name="n3ds_readiness_mii_fallback">此游戏使用 Mii 功能。没有您自己的数据库时，Azahar 将使用其标准 Mii 继续运行；部分面孔或功能可能受限。您仍可导入自己的 CFL_DB.dat。</string>
     <string name="n3ds_readiness_mii_optional">您可以导入属于自己的 Mii 数据，以启用此游戏的其他功能。</string>
-    <string name="n3ds_readiness_device_unqualified">此设备尚未完成 Nintendo 3DS 性能认证。游戏可能运行缓慢或不稳定。</string>
     <string name="n3ds_readiness_action_understood">知道了</string>
     <string name="n3ds_readiness_action_retry">重试</string>
     <string name="n3ds_readiness_action_open_storage">打开存储设置</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">验证并导入</string>
     <string name="n3ds_settings_hub_portable_exported">已创建便携文件：%1$d 个文件，%2$s。</string>
     <string name="n3ds_settings_hub_portable_imported">已恢复便携数据：%1$d 个文件，%2$s。</string>
+    <string name="n3ds_product_recovery_failed">无法恢复会话。游戏内存档未被删除。\n\n请返回游戏库。如果问题再次出现，请在设置中清除 3DS 缓存。</string>
 </resources>

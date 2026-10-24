@@ -80,9 +80,9 @@ final class Nintendo3DsAudioOutput {
         if (!enabled) {
             synchronized (transferLock) {
                 dropPendingFrames();
+                fastForwardProcessor.reset();
+                audioProcessor.reset();
             }
-            fastForwardProcessor.reset();
-            audioProcessor.reset();
         }
     }
 
@@ -116,9 +116,9 @@ final class Nintendo3DsAudioOutput {
         releaseTrack(detached);
         synchronized (transferLock) {
             dropPendingFrames();
+            fastForwardProcessor.reset();
+            audioProcessor.reset();
         }
-        fastForwardProcessor.reset();
-        audioProcessor.reset();
     }
 
     void consume(Nintendo3DsCoreSession session, int sampleRate, long queuedInputFrames) {
@@ -223,9 +223,9 @@ final class Nintendo3DsAudioOutput {
         releaseTrack(detached);
         synchronized (transferLock) {
             dropPendingFrames();
+            fastForwardProcessor.reset();
+            audioProcessor.reset();
         }
-        fastForwardProcessor.reset();
-        audioProcessor.reset();
     }
 
     Nintendo3DsAudioOutputReport report() {

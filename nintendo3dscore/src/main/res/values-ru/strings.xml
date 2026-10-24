@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">Недостаточно закрытого хранилища для подготовки и запуска этой игры.</string>
     <string name="n3ds_readiness_mii_fallback">В этой игре используются функции Mii. Без вашей базы Azahar продолжит работу со стандартным Mii; некоторые лица или функции могут быть ограничены. Вы по-прежнему можете импортировать свой CFL_DB.dat.</string>
     <string name="n3ds_readiness_mii_optional">Можно импортировать принадлежащие вам данные Mii, чтобы включить дополнительные функции этой игры.</string>
-    <string name="n3ds_readiness_device_unqualified">Это устройство ещё не прошло проверку производительности Nintendo 3DS. Игра может работать медленно или нестабильно.</string>
     <string name="n3ds_readiness_action_understood">Понятно</string>
     <string name="n3ds_readiness_action_retry">Повторить</string>
     <string name="n3ds_readiness_action_open_storage">Открыть хранилище</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">Проверить и импортировать</string>
     <string name="n3ds_settings_hub_portable_exported">Переносимый файл создан: %1$d файл(ов), %2$s.</string>
     <string name="n3ds_settings_hub_portable_imported">Переносимые данные восстановлены: %1$d файл(ов), %2$s.</string>
+    <string name="n3ds_product_recovery_failed">Не удалось возобновить сеанс. Сохранения в игре не удалены.\n\nВернитесь в библиотеку. Если ошибка повторится, очистите кэш 3DS в настройках.</string>
 </resources>

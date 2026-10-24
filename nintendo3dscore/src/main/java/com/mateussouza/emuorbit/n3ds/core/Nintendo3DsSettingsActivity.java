@@ -3,15 +3,20 @@ package com.mateussouza.emuorbit.n3ds.core;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.text.format.Formatter;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -20,35 +25,30 @@ import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.play.core.splitcompat.SplitCompat;
+import com.mateussouza.emuorbit.advance.ui.GradientMaterialCardView;
 import com.mateussouza.emuorbit.advance.ui.MateusDialog;
+import com.mateussouza.emuorbit.advance.ui.LoopingVideoBackgroundView;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /** Feature-owned hub for supported Nintendo 3DS settings and durable user data. */
 public class Nintendo3DsSettingsActivity extends ComponentActivity
         implements Nintendo3DsExperienceSettingsDialogController.Listener {
     private static final int COLOR_BACKGROUND = Color.rgb(7, 15, 36);
-    private static final int COLOR_PANEL = Color.rgb(18, 31, 58);
     private static final int COLOR_TEXT = Color.rgb(245, 248, 255);
     private static final int COLOR_TEXT_SECONDARY = Color.rgb(185, 199, 224);
     private static final int COLOR_ACCENT = Color.rgb(70, 213, 232);
-    private static final Object DATA_OPERATION_LOCK = new Object();
-
-    private final ExecutorService dataExecutor = Executors.newSingleThreadExecutor();
     private Nintendo3DsExperienceSettingsDialogController settingsController;
-    private Nintendo3DsStorageLayout storageLayout;
-    private Nintendo3DsMiiDataManager miiDataManager;
+    private Nintendo3DsDataOperationsModel dataModel;
     private TextView miiStatus;
     private TextView backupStatus;
     private Button importMiiButton;
@@ -56,7 +56,11 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
     private Button restoreBackupButton;
     private Button exportPortableButton;
     private Button importPortableButton;
-    private boolean operationInFlight;
+    private LinearLayout dataActions;
+    private LinearLayout portableActions;
+    private AlertDialog confirmationDialog;
+    private Uri pendingPortableImport;
+    private boolean pendingRestore;
     private boolean destroyed;
 
     private final ActivityResultLauncher<Intent> miiDocumentPicker =
@@ -68,7 +72,7 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
                         }
                         Uri document = result.getData().getData();
                         if (document != null) {
-                            importMii(document);
+                            dataModel.start(Nintendo3DsDataOperationsModel.Operation.IMPORT_MII, document);
                         }
                     });
 
@@ -77,7 +81,7 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
                     new ActivityResultContracts.CreateDocument("application/zip"),
                     document -> {
                         if (document != null) {
-                            exportPortableData(document);
+                            dataModel.start(Nintendo3DsDataOperationsModel.Operation.EXPORT_PORTABLE, document);
                         }
                     });
 
@@ -101,43 +105,100 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(COLOR_BACKGROUND);
-        getWindow().setNavigationBarColor(COLOR_BACKGROUND);
+        applyWindowOrientation(getResources().getConfiguration(), isInMultiWindowMode());
+        WindowCompat.enableEdgeToEdge(getWindow());
+        WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(
+                getWindow(), getWindow().getDecorView());
+        bars.setAppearanceLightStatusBars(false);
+        bars.setAppearanceLightNavigationBars(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // The existing dark scroll background protects navigation icons.
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
         settingsController = new Nintendo3DsExperienceSettingsDialogController(
                 new Nintendo3DsExperienceSettingsStore(this),
                 new Nintendo3DsProductDialogStyleAdapter());
-        try {
-            storageLayout = Nintendo3DsStorageLayout.open(getFilesDir(), getCacheDir());
-            miiDataManager = new Nintendo3DsMiiDataManager(storageLayout);
-        } catch (IOException exception) {
-            storageLayout = null;
-            miiDataManager = null;
-        }
+        dataModel = new ViewModelProvider(this).get(Nintendo3DsDataOperationsModel.class);
         setContentView(createContent());
-        refreshSummaries();
+        dataModel.state().observe(this, this::renderDataState);
+        if (savedInstanceState != null) {
+            settingsController.restoreGlobalDraft(this, this, savedInstanceState.getBundle("n3ds.hub.settings"));
+            String document = savedInstanceState.getString("n3ds.hub.import");
+            pendingPortableImport = document == null ? null : Uri.parse(document);
+            pendingRestore = savedInstanceState.getBoolean("n3ds.hub.restore");
+        }
+    }
+
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        applyWindowOrientation(configuration, isInMultiWindowMode());
+        reflowDataActions();
+        settingsController.refreshResponsiveLayout();
+        MateusDialog.refreshResponsiveLayout(confirmationDialog);
+        ViewCompat.requestApplyInsets(getWindow().getDecorView());
+    }
+
+    @Override public void onMultiWindowModeChanged(boolean multiWindow, Configuration configuration) {
+        super.onMultiWindowModeChanged(multiWindow, configuration);
+        applyWindowOrientation(configuration, multiWindow);
+        reflowDataActions();
+        settingsController.refreshResponsiveLayout();
+        MateusDialog.refreshResponsiveLayout(confirmationDialog);
+    }
+
+    private void applyWindowOrientation(Configuration configuration, boolean multiWindow) {
+        int requested = !multiWindow && configuration.smallestScreenWidthDp < 600
+                ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (getRequestedOrientation() != requested) setRequestedOrientation(requested);
+    }
+
+    @Override protected void onSaveInstanceState(Bundle state) {
+        state.putBundle("n3ds.hub.settings", settingsController.saveGlobalDraft());
+        if (pendingPortableImport != null) state.putString("n3ds.hub.import", pendingPortableImport.toString());
+        state.putBoolean("n3ds.hub.restore", pendingRestore);
+        super.onSaveInstanceState(state);
     }
 
     private View createContent() {
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
-        scroll.setBackgroundColor(COLOR_BACKGROUND);
+        // This hub is also reached from Saves. Keep its scroll layer transparent
+        // over the same silent video as the library, not an opaque navy page.
+        scroll.setBackgroundColor(Color.TRANSPARENT);
         ViewCompat.setOnApplyWindowInsetsListener(scroll, (view, windowInsets) -> {
-            Insets systemBars = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars());
+            Insets safeArea = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout());
             view.setPadding(
-                    systemBars.left,
-                    systemBars.top,
-                    systemBars.right,
-                    systemBars.bottom);
+                    safeArea.left,
+                    safeArea.top,
+                    safeArea.right,
+                    safeArea.bottom);
             return windowInsets;
+        });
+        scroll.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                view.removeOnAttachStateChangeListener(this);
+                ViewCompat.requestApplyInsets(view);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+                // No detached-window action; listener is removed on attachment.
+            }
         });
 
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(20), dp(16), dp(20), dp(32));
+        content.setPadding(dp(20), dp(20), dp(20), dp(32));
         scroll.addView(content, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT,
                 ScrollView.LayoutParams.WRAP_CONTENT));
+
+        content.addView(LayoutInflater.from(this).inflate(
+                com.mateussouza.emuorbit.advance.R.layout.view_app_navigation_header,
+                content, false));
 
         Button back = new Button(this);
         back.setId(R.id.n3ds_settings_hub_back);
@@ -161,12 +222,25 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         introParams.bottomMargin = dp(20);
         content.addView(intro, introParams);
 
-        content.addView(settingsPanel(), panelParams());
-        content.addView(miiPanel(), panelParams());
-        content.addView(dataPanel(), panelParams());
-        content.addView(helpPanel(), panelParams());
+        content.addView(cardPanel(settingsPanel()), panelParams());
+        content.addView(cardPanel(miiPanel()), panelParams());
+        content.addView(cardPanel(dataPanel()), panelParams());
+        content.addView(cardPanel(helpPanel()), panelParams());
         configureSequentialActionFocus(content);
-        return scroll;
+        FrameLayout layers = new FrameLayout(this);
+        layers.setBackgroundColor(COLOR_BACKGROUND);
+        LoopingVideoBackgroundView background = new LoopingVideoBackgroundView(this);
+        background.setId(com.mateussouza.emuorbit.advance.R.id.standalone_video_background);
+        background.bindToHostLifecycle(getLifecycle());
+        layers.addView(background, new FrameLayout.LayoutParams(-1, -1));
+        View scrim = new View(this);
+        scrim.setBackgroundResource(com.mateussouza.emuorbit.advance.R.drawable.bg_library_scrim);
+        scrim.setClickable(false);
+        scrim.setFocusable(false);
+        scrim.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        layers.addView(scrim, new FrameLayout.LayoutParams(-1, -1));
+        layers.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
+        return layers;
     }
 
     private void configureSequentialActionFocus(View root) {
@@ -199,7 +273,7 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         LinearLayout panel = panel();
         panel.addView(sectionTitle(R.string.n3ds_settings_hub_emulation_title), matchWrap());
         panel.addView(sectionBody(R.string.n3ds_settings_hub_emulation_description), bodyParams());
-        Button open = actionButton(R.string.n3ds_settings_hub_open_settings);
+        Button open = actionButton(R.string.n3ds_settings_hub_open_settings, panel);
         open.setId(R.id.n3ds_settings_hub_open_settings);
         open.setOnClickListener(view -> {
             Nintendo3DsExperienceSettingsDialogController controller = settingsController;
@@ -218,7 +292,7 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         miiStatus = sectionBody(R.string.n3ds_settings_hub_checking);
         miiStatus.setId(R.id.n3ds_settings_hub_mii_status);
         panel.addView(miiStatus, bodyParams());
-        importMiiButton = actionButton(R.string.n3ds_settings_hub_import_mii);
+        importMiiButton = actionButton(R.string.n3ds_settings_hub_import_mii, panel);
         importMiiButton.setId(R.id.n3ds_settings_hub_import_mii);
         importMiiButton.setOnClickListener(
                 view -> miiDocumentPicker.launch(Nintendo3DsMiiDataManager.createSafImportIntent()));
@@ -237,15 +311,17 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         boolean stackActions = shouldStackDataActions(
                 getResources().getConfiguration().screenWidthDp);
         LinearLayout actions = new LinearLayout(this);
+        dataActions = actions;
         actions.setOrientation(stackActions
                 ? LinearLayout.VERTICAL
                 : LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.START);
-        createBackupButton = actionButton(R.string.n3ds_settings_hub_create_backup);
+        createBackupButton = actionButton(R.string.n3ds_settings_hub_create_backup, actions);
         createBackupButton.setId(R.id.n3ds_settings_hub_create_backup);
-        createBackupButton.setOnClickListener(view -> createCheckpoint());
+        createBackupButton.setOnClickListener(view ->
+                dataModel.start(Nintendo3DsDataOperationsModel.Operation.CREATE_CHECKPOINT, null));
         actions.addView(createBackupButton, dataActionParams(stackActions, false));
-        restoreBackupButton = actionButton(R.string.n3ds_settings_hub_restore_backup);
+        restoreBackupButton = actionButton(R.string.n3ds_settings_hub_restore_backup, actions);
         restoreBackupButton.setId(R.id.n3ds_settings_hub_restore_backup);
         restoreBackupButton.setEnabled(false);
         restoreBackupButton.setOnClickListener(view -> confirmRestore());
@@ -253,18 +329,19 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         panel.addView(actions, matchWrap());
 
         LinearLayout portableActions = new LinearLayout(this);
+        this.portableActions = portableActions;
         portableActions.setOrientation(stackActions
                 ? LinearLayout.VERTICAL
                 : LinearLayout.HORIZONTAL);
         portableActions.setGravity(Gravity.START);
-        exportPortableButton = actionButton(R.string.n3ds_settings_hub_export_portable);
+        exportPortableButton = actionButton(R.string.n3ds_settings_hub_export_portable, portableActions);
         exportPortableButton.setId(R.id.n3ds_settings_hub_export_portable);
         exportPortableButton.setOnClickListener(view -> portableExportPicker.launch(
                 "EmuOrbit-Nintendo-3DS-data.zip"));
         portableActions.addView(
                 exportPortableButton,
                 dataActionParams(stackActions, false));
-        importPortableButton = actionButton(R.string.n3ds_settings_hub_import_portable);
+        importPortableButton = actionButton(R.string.n3ds_settings_hub_import_portable, portableActions);
         importPortableButton.setId(R.id.n3ds_settings_hub_import_portable);
         importPortableButton.setOnClickListener(view -> portableImportPicker.launch(
                 new String[]{"application/zip", "application/octet-stream"}));
@@ -290,12 +367,20 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(18), dp(18), dp(18), dp(18));
-        GradientDrawable background = new GradientDrawable();
-        background.setColor(COLOR_PANEL);
-        background.setCornerRadius(dp(18));
-        background.setStroke(dp(1), Color.rgb(42, 65, 101));
-        panel.setBackground(background);
         return panel;
+    }
+
+    private View cardPanel(View content) {
+        // Reuse the same surface as the base Saves cards. Keep the inner layer
+        // transparent so a solid panel cannot hide the shared brand gradient.
+        GradientMaterialCardView card = new GradientMaterialCardView(this);
+        card.setRadius(dp(18));
+        card.setCardElevation(0f);
+        card.setStrokeWidth(0);
+        card.addView(content, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT));
+        return card;
     }
 
     private TextView sectionTitle(int stringId) {
@@ -318,8 +403,10 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         return view;
     }
 
-    private Button actionButton(int stringId) {
-        Button button = new Button(this);
+    private Button actionButton(int stringId, ViewGroup parent) {
+        Button button = (Button) LayoutInflater.from(this).inflate(
+                com.mateussouza.emuorbit.advance.R.layout.view_gradient_primary_action,
+                parent, false);
         button.setText(stringId);
         button.setAllCaps(false);
         button.setMinHeight(dp(48));
@@ -370,33 +457,46 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         return screenWidthDp < 600;
     }
 
+    private void reflowDataActions() {
+        if (dataActions == null || portableActions == null) return;
+        boolean stack = shouldStackDataActions(getResources().getConfiguration().screenWidthDp);
+        for (LinearLayout row : new LinearLayout[]{dataActions, portableActions}) {
+            int orientation = stack ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL;
+            if (row.getOrientation() == orientation) continue;
+            row.setOrientation(orientation);
+            for (int i = 0; i < row.getChildCount(); i++) {
+                row.getChildAt(i).setLayoutParams(dataActionParams(stack, i > 0));
+            }
+        }
+    }
+
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private void refreshSummaries() {
-        Nintendo3DsStorageLayout layout = storageLayout;
-        Nintendo3DsMiiDataManager manager = miiDataManager;
-        if (layout == null || manager == null) {
-            renderUnavailable();
-            return;
+    private void renderDataState(Nintendo3DsDataOperationsModel.State state) {
+        if (destroyed) return;
+        if (state.inspection != null) renderSummaries(state.inspection, state.hasBackup, state.backupDate);
+        else if (!state.busy) {
+            miiStatus.setText(R.string.n3ds_settings_hub_data_unavailable);
+            backupStatus.setText(R.string.n3ds_settings_hub_data_unavailable);
         }
-        dataExecutor.execute(() -> {
-            try {
-                Nintendo3DsMiiDataManager.Inspection inspection;
-                boolean hasBackup;
-                long backupDate;
-                synchronized (DATA_OPERATION_LOCK) {
-                    inspection = manager.inspect();
-                    File manifest = layout.getLatestManifest();
-                    hasBackup = manifest.isFile();
-                    backupDate = hasBackup ? manifest.lastModified() : 0L;
-                }
-                runOnUiThread(() -> renderSummaries(inspection, hasBackup, backupDate));
-            } catch (IOException | RuntimeException exception) {
-                runOnUiThread(this::renderUnavailable);
-            }
-        });
+        boolean enabled = state.available && !state.busy;
+        importMiiButton.setEnabled(enabled);
+        createBackupButton.setEnabled(enabled);
+        exportPortableButton.setEnabled(enabled);
+        importPortableButton.setEnabled(enabled);
+        restoreBackupButton.setEnabled(enabled && state.hasBackup);
+        if (dataModel.consumeMessage(state.messageId)) {
+            Toast.makeText(this, getString(state.messageResource, state.messageArgs), Toast.LENGTH_LONG).show();
+        }
+        // A process-recreated model may still be inspecting storage in onCreate.
+        // Restore a confirmation only after availability is known; never replay
+        // the operation merely because the old dialog was visible.
+        if (enabled && confirmationDialog == null && !settingsController.isShowing()) {
+            if (pendingPortableImport != null) confirmPortableImport(pendingPortableImport);
+            else if (pendingRestore) confirmRestore();
+        }
     }
 
     private void renderSummaries(
@@ -433,87 +533,14 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         } else {
             backupStatus.setText(R.string.n3ds_settings_hub_backup_missing);
         }
-        restoreBackupButton.setEnabled(hasBackup && !operationInFlight);
-        renderOperationState();
-    }
-
-    private void renderUnavailable() {
-        if (destroyed || miiStatus == null) {
-            return;
-        }
-        miiStatus.setText(R.string.n3ds_settings_hub_data_unavailable);
-        backupStatus.setText(R.string.n3ds_settings_hub_data_unavailable);
-        importMiiButton.setEnabled(false);
-        createBackupButton.setEnabled(false);
-        restoreBackupButton.setEnabled(false);
-        exportPortableButton.setEnabled(false);
-        importPortableButton.setEnabled(false);
-    }
-
-    private void renderOperationState() {
-        if (importMiiButton == null) {
-            return;
-        }
-        importMiiButton.setEnabled(!operationInFlight && miiDataManager != null);
-        createBackupButton.setEnabled(!operationInFlight && storageLayout != null);
-        exportPortableButton.setEnabled(!operationInFlight && storageLayout != null);
-        importPortableButton.setEnabled(!operationInFlight && storageLayout != null);
-        if (operationInFlight) {
-            restoreBackupButton.setEnabled(false);
-        }
-    }
-
-    private void importMii(Uri document) {
-        Nintendo3DsMiiDataManager manager = miiDataManager;
-        Nintendo3DsStorageLayout layout = storageLayout;
-        if (manager == null || layout == null || !beginOperation()) {
-            return;
-        }
-        dataExecutor.execute(() -> {
-            try {
-                Nintendo3DsMiiDataManager.ImportReport report;
-                synchronized (DATA_OPERATION_LOCK) {
-                    report = manager.importFromSafAfterCoreClosed(
-                            getContentResolver(), document);
-                    layout.checkpointAfterCoreClosed(
-                            Nintendo3DsStorageLayout.CURRENT_CORE_REVISION);
-                }
-                completeOperation(getString(
-                        R.string.n3ds_settings_hub_mii_imported,
-                        report.getVisibleMiiCount()));
-            } catch (IOException | RuntimeException exception) {
-                failOperation();
-            }
-        });
-    }
-
-    private void createCheckpoint() {
-        Nintendo3DsStorageLayout layout = storageLayout;
-        if (layout == null || !beginOperation()) {
-            return;
-        }
-        dataExecutor.execute(() -> {
-            try {
-                Nintendo3DsStorageLayout.CheckpointReport report;
-                synchronized (DATA_OPERATION_LOCK) {
-                    report = layout.checkpointAfterCoreClosed(
-                            Nintendo3DsStorageLayout.CURRENT_CORE_REVISION);
-                }
-                completeOperation(getString(
-                        R.string.n3ds_settings_hub_backup_created,
-                        report.getFileCount(),
-                        Formatter.formatShortFileSize(this, report.getLogicalBytes())));
-            } catch (IOException | RuntimeException exception) {
-                failOperation();
-            }
-        });
     }
 
     private void confirmRestore() {
-        if (operationInFlight || storageLayout == null) {
+        if (!dataModel.isAvailableAndIdle() || confirmationDialog != null) {
             return;
         }
-        new MateusDialog.Builder(this)
+        pendingRestore = true;
+        confirmationDialog = new MateusDialog.Builder(this)
                 .setAvatar(
                         com.mateussouza.emuorbit.advance.R.drawable
                                 .mateus_dialog_restore_save)
@@ -522,133 +549,34 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(
                         R.string.n3ds_settings_hub_restore_confirm,
-                        (dialog, which) -> restoreCheckpoint())
+                        (dialog, which) -> dataModel.start(
+                                Nintendo3DsDataOperationsModel.Operation.RESTORE_CHECKPOINT, null))
+                .setOnDismissListener(dialog -> clearConfirmation())
                 .show();
     }
 
-    private void restoreCheckpoint() {
-        Nintendo3DsStorageLayout layout = storageLayout;
-        if (layout == null || !beginOperation()) {
-            return;
-        }
-        dataExecutor.execute(() -> {
-            try {
-                Nintendo3DsStorageLayout.RestoreReport report;
-                synchronized (DATA_OPERATION_LOCK) {
-                    report = layout.restoreLatestAfterCoreClosed(
-                            Nintendo3DsStorageLayout.CURRENT_CORE_REVISION);
-                }
-                completeOperation(getString(
-                        R.string.n3ds_settings_hub_backup_restored,
-                        report.getFileCount(),
-                        Formatter.formatShortFileSize(this, report.getRestoredBytes())));
-            } catch (IOException | RuntimeException exception) {
-                failOperation();
-            }
-        });
-    }
-
-    private void exportPortableData(Uri document) {
-        Nintendo3DsStorageLayout layout = storageLayout;
-        if (layout == null || !beginOperation()) {
-            return;
-        }
-        dataExecutor.execute(() -> {
-            try (OutputStream destination = getContentResolver().openOutputStream(document, "w")) {
-                if (destination == null) {
-                    throw new IOException("The selected document is unavailable");
-                }
-                Nintendo3DsStorageLayout.PortableExportReport report;
-                synchronized (DATA_OPERATION_LOCK) {
-                    report = layout.exportPortableDataAfterCoreClosed(
-                            Nintendo3DsStorageLayout.CURRENT_CORE_REVISION,
-                            destination);
-                }
-                completeOperation(getString(
-                        R.string.n3ds_settings_hub_portable_exported,
-                        report.getFileCount(),
-                        Formatter.formatShortFileSize(this, report.getLogicalBytes())));
-            } catch (IOException | RuntimeException exception) {
-                failOperation();
-            }
-        });
-    }
-
     private void confirmPortableImport(Uri document) {
-        if (operationInFlight || storageLayout == null) {
+        if (!dataModel.isAvailableAndIdle() || confirmationDialog != null) {
             return;
         }
-        new MateusDialog.Builder(this)
+        pendingPortableImport = document;
+        confirmationDialog = new MateusDialog.Builder(this)
                 .setAvatar(com.mateussouza.emuorbit.advance.R.drawable.mateus_dialog_import)
                 .setTitle(R.string.n3ds_settings_hub_import_portable_title)
                 .setMessage(R.string.n3ds_settings_hub_import_portable_message)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(
                         R.string.n3ds_settings_hub_import_portable_confirm,
-                        (dialog, which) -> importPortableData(document))
+                        (dialog, which) -> dataModel.start(
+                                Nintendo3DsDataOperationsModel.Operation.IMPORT_PORTABLE, document))
+                .setOnDismissListener(dialog -> clearConfirmation())
                 .show();
     }
 
-    private void importPortableData(Uri document) {
-        Nintendo3DsStorageLayout layout = storageLayout;
-        if (layout == null || !beginOperation()) {
-            return;
-        }
-        dataExecutor.execute(() -> {
-            try (InputStream source = getContentResolver().openInputStream(document)) {
-                if (source == null) {
-                    throw new IOException("The selected document is unavailable");
-                }
-                Nintendo3DsStorageLayout.PortableImportReport report;
-                synchronized (DATA_OPERATION_LOCK) {
-                    report = layout.importPortableDataAfterCoreClosed(
-                            Nintendo3DsStorageLayout.CURRENT_CORE_REVISION,
-                            source);
-                }
-                completeOperation(getString(
-                        R.string.n3ds_settings_hub_portable_imported,
-                        report.getFileCount(),
-                        Formatter.formatShortFileSize(this, report.getRestoredBytes())));
-            } catch (IOException | RuntimeException exception) {
-                failOperation();
-            }
-        });
-    }
-
-    private boolean beginOperation() {
-        if (operationInFlight || destroyed) {
-            return false;
-        }
-        operationInFlight = true;
-        renderOperationState();
-        return true;
-    }
-
-    private void completeOperation(String message) {
-        runOnUiThread(() -> {
-            if (destroyed) {
-                return;
-            }
-            operationInFlight = false;
-            renderOperationState();
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            refreshSummaries();
-        });
-    }
-
-    private void failOperation() {
-        runOnUiThread(() -> {
-            if (destroyed) {
-                return;
-            }
-            operationInFlight = false;
-            renderOperationState();
-            Toast.makeText(
-                    this,
-                    R.string.n3ds_settings_hub_operation_failed,
-                    Toast.LENGTH_LONG).show();
-            refreshSummaries();
-        });
+    private void clearConfirmation() {
+        confirmationDialog = null;
+        pendingRestore = false;
+        pendingPortableImport = null;
     }
 
     @Override
@@ -683,7 +611,11 @@ public class Nintendo3DsSettingsActivity extends ComponentActivity
         if (active != null) {
             active.close();
         }
-        dataExecutor.shutdownNow();
+        if (confirmationDialog != null) {
+            confirmationDialog.setOnDismissListener(null);
+            confirmationDialog.dismiss();
+            clearConfirmation();
+        }
         super.onDestroy();
     }
 }

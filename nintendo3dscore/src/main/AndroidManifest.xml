@@ -21,13 +21,12 @@
     <application>
         <activity
             android:name=".Nintendo3DsSettingsActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize"
+            android:exported="false" />
         <activity
             android:name=".Nintendo3DsProductActivity"
-            android:configChanges="keyboard|keyboardHidden|navigation"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="false"
-            android:hardwareAccelerated="true"
-            android:screenOrientation="landscape" />
+            android:hardwareAccelerated="true" />
     </application>
 </manifest>

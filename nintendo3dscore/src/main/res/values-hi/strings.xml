@@ -13,7 +13,6 @@
     <string name="n3ds_readiness_storage_low">इस गेम को तैयार और चलाने के लिए पर्याप्त निजी स्टोरेज नहीं है।</string>
     <string name="n3ds_readiness_mii_fallback">यह गेम Mii सुविधाओं का उपयोग करता है। आपकी अपनी डेटाबेस के बिना Azahar अपने मानक Mii के साथ जारी रहेगा; कुछ चेहरे या सुविधाएँ सीमित हो सकती हैं। आप अभी भी अपनी CFL_DB.dat आयात कर सकते हैं।</string>
     <string name="n3ds_readiness_mii_optional">इस गेम की अतिरिक्त सुविधाएँ चालू करने के लिए आप अपने स्वामित्व वाला Mii डेटा आयात कर सकते हैं।</string>
-    <string name="n3ds_readiness_device_unqualified">इस डिवाइस ने अभी Nintendo 3DS प्रदर्शन योग्यता पूरी नहीं की है। गेम धीमा या अस्थिर हो सकता है।</string>
     <string name="n3ds_readiness_action_understood">समझ गया</string>
     <string name="n3ds_readiness_action_retry">फिर से कोशिश करें</string>
     <string name="n3ds_readiness_action_open_storage">स्टोरेज खोलें</string>
@@ -165,4 +164,5 @@
     <string name="n3ds_settings_hub_import_portable_confirm">जाँचें और आयात करें</string>
     <string name="n3ds_settings_hub_portable_exported">पोर्टेबल फ़ाइल बनी: %1$d फ़ाइल, %2$s।</string>
     <string name="n3ds_settings_hub_portable_imported">पोर्टेबल डेटा पुनर्स्थापित: %1$d फ़ाइल, %2$s।</string>
+    <string name="n3ds_product_recovery_failed">सत्र फिर से शुरू नहीं हो सका। गेम के सेव नहीं हटाए गए हैं।\n\nलाइब्रेरी पर वापस जाएँ। त्रुटि फिर हो तो सेटिंग में 3DS कैश साफ़ करें।</string>
 </resources>

@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 /** Fixed-center analog control shared by the virtual circle pad and C-stick. */
 final class Nintendo3DsAnalogStickView extends View {
     private static final int NO_POINTER = -1;
+    private static final float VISUAL_SCALE = 1.10f;
 
     private final Paint basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -32,8 +33,8 @@ final class Nintendo3DsAnalogStickView extends View {
         ringPaint.setStrokeWidth(dp(2.0f));
         ringPaint.setColor(withAlpha(Color.WHITE, 180));
         guidePaint.setStyle(Paint.Style.STROKE);
-        guidePaint.setStrokeWidth(dp(1.25f));
-        guidePaint.setColor(withAlpha(Color.WHITE, 95));
+        guidePaint.setStrokeCap(Paint.Cap.ROUND);
+        guidePaint.setColor(withAlpha(Color.WHITE, 210));
         knobPaint.setColor(withAlpha(Color.rgb(48, 48, 48), 220));
         setClickable(true);
         setFocusable(true);
@@ -45,6 +46,7 @@ final class Nintendo3DsAnalogStickView extends View {
 
     void reset() {
         activePointerId = NO_POINTER;
+        setPressed(false);
         updateAxes(0.0f, 0.0f);
     }
 
@@ -54,20 +56,33 @@ final class Nintendo3DsAnalogStickView extends View {
         float size = Math.min(getWidth(), getHeight());
         float centerX = getWidth() / 2.0f;
         float centerY = getHeight() / 2.0f;
-        float baseRadius = size * 0.36f;
-        float knobRadius = size * 0.17f;
-        float travel = Math.max(1.0f, baseRadius - knobRadius - dp(2.0f));
+        // Grow only the artwork within the existing hit area: input normalization and
+        // the lower-screen touch region must not change for Circle Pad or C-stick.
+        float baseRadius = size * 0.36f * VISUAL_SCALE;
+        float knobRadius = size * 0.17f * VISUAL_SCALE;
+        float travel = Math.max(1.0f, size * (0.36f - 0.17f) - dp(2.0f));
         float knobX = centerX + horizontal * travel;
         float knobY = centerY + vertical * travel;
 
         canvas.drawCircle(centerX, centerY, baseRadius, basePaint);
         canvas.drawCircle(centerX, centerY, baseRadius - dp(1.0f), ringPaint);
-        canvas.drawLine(centerX - baseRadius * 0.62f, centerY,
-                centerX + baseRadius * 0.62f, centerY, guidePaint);
-        canvas.drawLine(centerX, centerY - baseRadius * 0.62f,
-                centerX, centerY + baseRadius * 0.62f, guidePaint);
+        drawDirectionArrows(canvas, centerX, centerY, baseRadius);
         canvas.drawCircle(knobX, knobY, knobRadius, knobPaint);
         canvas.drawCircle(knobX, knobY, knobRadius, ringPaint);
+    }
+
+    private void drawDirectionArrows(Canvas canvas, float centerX, float centerY, float radius) {
+        guidePaint.setStrokeWidth(radius * 0.035f);
+        int checkpoint = canvas.save();
+        canvas.translate(centerX, centerY);
+        for (int direction = 0; direction < 4; direction++) {
+            canvas.drawLine(-radius * 0.10f, -radius * 0.67f,
+                    0, -radius * 0.82f, guidePaint);
+            canvas.drawLine(0, -radius * 0.82f,
+                    radius * 0.10f, -radius * 0.67f, guidePaint);
+            canvas.rotate(90);
+        }
+        canvas.restoreToCount(checkpoint);
     }
 
     @Override

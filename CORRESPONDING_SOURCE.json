@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "CURRENT_DISTRIBUTABLE_COMPONENT_SOURCE",
+  "status": "UPDATED_COMPONENT_SOURCE_HOST_BOUNDARY_UNRESOLVED",
   "publicRemote": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
   "sourceTag": "gpl-source-2026-10-07-cache-recovery",
   "hostApplication": {
@@ -12,7 +12,8 @@
       "app/src/main/cpp/bridge/protected_core_container.h",
       "app/src/main/cpp/bridge/protected_ds_symbols.h.in",
       "cmake/protected_symbols.cmake"
-    ]
+    ],
+    "availability": "Private application is not included; the full Android feature cannot be certified standalone from this component refresh."
   },
   "component": "EmuOrbit Nintendo 3DS",
   "combinedLicense": "GPL-3.0-or-later",
@@ -21,16 +22,21 @@
     "commit": "fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a",
     "recursiveSubmodules": 52
   },
-  "expectedBinary": {
-    "path": "azahar_libretro.so",
-    "bytes": 23157736,
-    "sha256": "2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061"
-  },
   "excluded": [
     "precompiled binaries",
     "ROMs and homebrew binaries",
     "BIOS, firmware and keys",
     "saves and user data",
     "credentials and signing keys"
-  ]
+  ],
+  "upstreamLicenseClarification": "Azahar GPL-2.0-or-later; this published integration retains its GPL-3.0-or-later statement and dependency notices.",
+  "sourceRefresh": {
+    "tag": "component-source-2026-10-24",
+    "scope": "Current component source inventory; unresolved private host boundary; not prior Play artifact parity."
+  },
+  "historicalExpectedBinary": {
+    "path": "azahar_libretro.so",
+    "bytes": 23157736,
+    "sha256": "2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061"
+  }
 }

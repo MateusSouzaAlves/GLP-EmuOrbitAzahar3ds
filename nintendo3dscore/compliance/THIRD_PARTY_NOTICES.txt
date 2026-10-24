@@ -1,11 +1,11 @@
 # Nintendo 3DS third-party notice index
 
 Generated from `config/nintendo3ds-source-scope.json`. This is the pinned
-notice and license-evidence index for the Nintendo 3DS component. Complete
-corresponding source is identified by this immutable source tag:
+notice and license-evidence index for this pinned Nintendo 3DS
+component source refresh. The omitted private host is not certified; component sources:
 https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds
-Source tag: gpl-source-2026-10-07-cache-recovery
-Publishing source does not publish an APK or certify product runtime QA.
+Source tag: component-source-2026-10-24
+Revision: Resolve immutable snapshot tag; no private host completeness claim
 
 ## Combined component
 

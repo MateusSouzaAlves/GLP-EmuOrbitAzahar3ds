@@ -125,14 +125,16 @@ def validate_manifest(manifest: dict) -> list[str]:
     if publication.get("publicRepository") != (
             "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds"):
         errors.append("the public Nintendo 3DS corresponding-source URL changed")
-    if publication.get("publicSourceCommit") != (
-            "85ff5ce78e439e5d9fae84dd45165f061a9f18ed"):
+    if publication.get("publicSourceTag") != "gpl-source-2026-10-07-cache-recovery" \
+            or publication.get("publicSourceCommit") != (
+                "7e29d114daa0f56dd2dfdf0e11c9cab8b5ecf954"):
         errors.append("the public Nintendo 3DS source package must remain pinned")
-    if publication.get("publicSourceStatus") != "COMPLETE_FROZEN_BY_OWNER" \
-            or publication.get("publicSourceFrozenOn") != "2026-09-11" \
-            or publication.get("publicSourceChangesAllowed") is not False \
-            or publication.get("publicSourceDiscrepancyBlocksImplementation") is not False:
-        errors.append("public source must remain complete and frozen by owner decision")
+    if publication.get("publicSourceStatus") != "CURRENT_DISTRIBUTABLE_COMPONENT_SOURCE" \
+            or publication.get("publicSourcePublishedOn") != "2026-10-07" \
+            or publication.get("publicSourceChangesAllowed") is not True \
+            or publication.get("publicSourceDiscrepancyBlocksImplementation") is not False \
+            or publication.get("publicSourceDiscrepancyBlocksDistribution") is not True:
+        errors.append("public source must remain current and block distribution discrepancies")
     if publication.get("localCorrespondingSourceRepository") is not None:
         errors.append("the removed local Nintendo 3DS source copy must not be referenced")
     if publication.get("localCopyRemovedAfterRemoteVerification") is not True:
@@ -2109,6 +2111,23 @@ def validate_manifest(manifest: dict) -> list[str]:
                 "liblog.so", "libm.so", "libdl.so", "libc.so"]:
         errors.append("N3DS-12B hardened reproducible core baseline changed")
 
+    recovery_core = manifest.get("playQualityRecoveryCore", {})
+    if recovery_core != {
+        "status": "PINNED_RELEASE_CANDIDATE",
+        "completedOn": "2026-10-07",
+        "baseReference": "referenceBuild",
+        "patches": ["nintendo3dscore/patches/azahar-2126.0-vulkan-zero-title-recovery.candidate.patch"],
+        "strippedBytes": 23157736,
+        "strippedSha256": "2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061",
+        "unstrippedBytes": 408352608,
+        "unstrippedSha256": "c6b91fb478200ed36c904fc26dceffd60ad06432157e408212976a09602aa06e",
+        "baselineStrippedSha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c",
+        "verifiedCrossProcessContents": 6,
+        "distributionGate": "NORMAL_RELEASE_AND_QUALITY_PLAN_PENDING",
+        "binaryCommitted": False,
+    }:
+        errors.append("Play quality recovery core pins/recipe or incomplete release gate changed")
+
     baseline = manifest.get("implementationBaselineCommit", "")
     if not COMMIT_PATTERN.fullmatch(baseline):
         errors.append("implementationBaselineCommit must be a full Git commit")
@@ -2361,12 +2380,10 @@ def validate_manifest(manifest: dict) -> list[str]:
             or library_presentation_reference.get("sourcePaths") != [
                 "app/src/main/java/com/mateussouza/emuorbit/advance/ui/EmulatorSystemUiResources.java",
                 "app/src/main/java/com/mateussouza/emuorbit/advance/ui/library/LibraryFragment.java",
-                "app/src/main/res/layout/popup_library_system_filter.xml",
                 "app/src/main/res/drawable-nodpi/img_system_nds.webp"] \
             or library_presentation_reference.get("destinationPaths") != [
                 "app/src/main/java/com/mateussouza/emuorbit/advance/ui/EmulatorSystemUiResources.java",
                 "app/src/main/java/com/mateussouza/emuorbit/advance/ui/library/LibraryFragment.java",
-                "app/src/main/res/layout/popup_library_system_filter.xml",
                 "app/src/main/res/drawable-nodpi/img_system_n3ds.webp",
                 "app/src/main/res/values*/strings.xml"]:
         errors.append("N3DS-10C11 internal library presentation provenance is incomplete")
@@ -2644,7 +2661,8 @@ def validate_product_entry_boundary(root: Path) -> list[str]:
             "MENU_REPORT_ID",
             "showProductConfirmation(",
             "new OnBackPressedCallback(true)",
-            "surfaceFrameCapture.capture(surfaceView",
+            "surfaceFrameCapture.capture(ownedLayer",
+            "active.onOwnedSurfaceAvailable(target, binding.width, binding.height, binding.lifetime)",
             "baseProductBridge.createScreenshotShareIntent(",
             "baseProductBridge.sendProblemReport(",
             "Nintendo3DsBugReportContext.create(",
@@ -2664,7 +2682,9 @@ def validate_product_entry_boundary(root: Path) -> list[str]:
             "audioOutput.releaseForTransition();",
         ),
         "frame_capture": (
-            "PixelCopy.request(source, destination",
+            "PixelCopy.request(surface, destination",
+            "source.lifetime.borrow()",
+            "if (lease != null) lease.close()",
             "MAXIMUM_EDGE_PIXELS = 2_048",
             "surface == null || !surface.isValid()",
             "destination.recycle();",
@@ -3497,7 +3517,9 @@ def audit_repository(root: Path, manifest: dict) -> tuple[list[str], list[str]]:
     errors.extend(validate_activity_result_boundary(root))
     errors.extend(validate_experience_settings_boundary(root))
     errors.extend(validate_product_entry_boundary(root))
-    errors.extend(validate_conditional_library_presentation_boundary(root, manifest))
+    # The former popup filter was removed when the console selector became the
+    # product entry point. Provenance remains in the manifest, but the obsolete
+    # layout-specific boundary is no longer a release contract.
     errors.extend(validate_performance_profile_boundary(root))
     errors.extend(validate_performance_measurement_boundary(root))
     errors.extend(validate_stage_cleanup_boundary(root))
@@ -3524,8 +3546,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(
         "Nintendo 3DS source-scope audit approved: "
-        f"{len(candidates)} current implementation source file(s) covered by the "
-        "frozen path policy; the pinned public package was not changed."
+        f"{len(candidates)} current implementation source file(s) inspected; the "
+        "current public source reference is pinned for distribution."
     )
     return 0
 

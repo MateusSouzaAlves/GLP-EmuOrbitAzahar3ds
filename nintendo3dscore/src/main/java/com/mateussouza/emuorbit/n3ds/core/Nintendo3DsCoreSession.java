@@ -15,11 +15,14 @@ public final class Nintendo3DsCoreSession implements AutoCloseable {
     }
 
     private final Thread ownerThread;
+    private final Nintendo3DsDataAccessGuard.Lease dataAccess;
     private long nativeHandle;
+    private Throwable nativeCloseFailure;
 
-    private Nintendo3DsCoreSession(long nativeHandle) {
+    private Nintendo3DsCoreSession(long nativeHandle, Nintendo3DsDataAccessGuard.Lease dataAccess) {
         ownerThread = Thread.currentThread();
         this.nativeHandle = nativeHandle;
+        this.dataAccess = dataAccess;
     }
 
     public static Nintendo3DsCoreSession open(
@@ -80,27 +83,39 @@ public final class Nintendo3DsCoreSession implements AutoCloseable {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("As dimensões 3DS devem ser positivas.");
         }
-        long handle = o(
-                checkedSurface,
-                width,
-                height,
-                Objects.requireNonNull(libraryPath),
-                Objects.requireNonNull(contentPath),
-                Objects.requireNonNull(systemDirectory),
-                Objects.requireNonNull(saveDirectory),
-                Objects.requireNonNull(screenLayout).getCoreValue(),
-                screenLayout.getCoreSwapValue(),
-                Objects.requireNonNull(performanceProfile).getCoreValue());
-        if (handle == 0) {
-            throw new IOException("A sessão Vulkan 3DS não pôde ser criada.");
+        Nintendo3DsDataAccessGuard.Lease access = Nintendo3DsDataAccessGuard.beginNative();
+        boolean opened = false;
+        try {
+            long handle = o(
+                    checkedSurface,
+                    width,
+                    height,
+                    Objects.requireNonNull(libraryPath),
+                    Objects.requireNonNull(contentPath),
+                    Objects.requireNonNull(systemDirectory),
+                    Objects.requireNonNull(saveDirectory),
+                    Objects.requireNonNull(screenLayout).getCoreValue(),
+                    screenLayout.getCoreSwapValue(),
+                    Objects.requireNonNull(performanceProfile).getCoreValue());
+            if (handle == 0) {
+                throw new IOException("A sessão Vulkan 3DS não pôde ser criada.");
+            }
+            Nintendo3DsCoreSession session = new Nintendo3DsCoreSession(handle, access);
+            opened = true;
+            return session;
+        } finally {
+            if (!opened) access.close();
         }
-        return new Nintendo3DsCoreSession(handle);
     }
 
     public Nintendo3DsCoreFrameReport runFrame() throws IOException {
         requireOwnerThread();
         requireOpen();
         return new Nintendo3DsCoreFrameReport(r(nativeHandle));
+    }
+    /** Controller invokes this only on the real owner before delivering frames. */
+    void checkRestoreBoundary() throws IOException {
+        requireOwnerThread();requireOpen();dataAccess.checkNativeOwner();
     }
 
     long saveRecoveryState(String destinationPath, long maximumBytes) throws IOException {
@@ -173,10 +188,23 @@ public final class Nintendo3DsCoreSession implements AutoCloseable {
     @Override
     public void close() {
         requireOwnerThread();
+        if (nativeCloseFailure != null) {
+            // Do not retry a possibly freed handle or turn a repeated close
+            // into proof of unload after the first JNI teardown failed.
+            throw new IllegalStateException("O encerramento nativo 3DS não foi confirmado.", nativeCloseFailure);
+        }
         if (nativeHandle != 0) {
             long handle = nativeHandle;
             nativeHandle = 0;
-            x(handle);
+            try {
+                x(handle);
+            } catch (RuntimeException | Error failure) {
+                nativeCloseFailure = failure;
+                throw failure;
+            }
+            // Fail closed if native unload throws: do not allow data mutation
+            // against an unconfirmed native writer after a teardown failure.
+            dataAccess.close();
         }
     }
 

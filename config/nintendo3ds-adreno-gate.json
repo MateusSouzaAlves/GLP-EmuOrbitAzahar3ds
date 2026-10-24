@@ -18,7 +18,8 @@
     "sha256": "64221f5ca8e731846523669dab3ca569f796ccee57f5e4f78b29b4e0330a734c",
     "licenseSpdx": "GPL-3.0-or-later",
     "correspondingSourceRepository": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
-    "correspondingSourceCommit": "85ff5ce78e439e5d9fae84dd45165f061a9f18ed"
+    "correspondingSourceTag": "gpl-source-2026-09-26",
+    "correspondingSourceCommit": "3983140d972fed21c45b442902b4d4b52e1e3fe8"
   },
   "content": {
     "slotId": "OPEN_HOMEBREW_7",

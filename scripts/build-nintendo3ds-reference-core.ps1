@@ -114,6 +114,10 @@ $actualCommit = (& git -C $sourceRoot rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $actualCommit -ne $expectedCommit) {
     throw "Checkout Azahar inesperado: $actualCommit"
 }
+$shallowRepository = (& git -C $sourceRoot rev-parse --is-shallow-repository).Trim()
+if ($LASTEXITCODE -ne 0 -or $shallowRepository -ne 'false') {
+    throw 'A reprodução exige histórico Git completo; use acquire-nintendo3ds-source.ps1, não um clone raso.'
+}
 $sourceDateEpoch = (& git -C $sourceRoot show -s --format=%ct $expectedCommit).Trim()
 if ($LASTEXITCODE -ne 0 -or $sourceDateEpoch -notmatch '^[0-9]+$') {
     throw 'Não foi possível fixar SOURCE_DATE_EPOCH pelo commit do Azahar.'
