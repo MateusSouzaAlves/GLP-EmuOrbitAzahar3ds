@@ -68,7 +68,7 @@ def verify(root, manifest_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--manifest', default='releases/component-source-2026-10-24/manifest.json')
+    parser.add_argument('--manifest', default='releases/component-source-0.3.27-2026-10-24/manifest.json')
     args = parser.parse_args()
     root = args.root.resolve()
     path = root / args.manifest

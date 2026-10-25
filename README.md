@@ -83,3 +83,10 @@ Play release, and does not certify the closed combined app or publish its
 remaining private host. References above to older artifact hashes or private
 application tags retain historical scope; they are not publicly available
 host-source substitutes. See SOURCE_REFRESH.md and releases/component-source-2026-10-24/manifest.json.
+
+
+## Hotfix source candidate 0.3.27 / 32
+
+The `component-source-0.3.27-2026-10-24` snapshot accepts the existing `n3ds-archive-v1` game identity in settings/launch and virtual control profiles. It preserves the earlier source snapshots and the pinned native core. It is a component-source publication, not confirmation of Play availability or a legal conclusion for the combined application.
+
+Verify this checkout with `python -B scripts/verify-source-snapshot.py`. To verify an older source snapshot, first check out its preserved tag.

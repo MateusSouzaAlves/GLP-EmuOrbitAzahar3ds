@@ -16,7 +16,7 @@ public final class Nintendo3DsVirtualControlProfileStore {
     private static final String GLOBAL_KEY = "global";
     private static final String GAME_PREFIX = "game.";
     private static final Pattern PERSISTENT_ID_PATTERN = Pattern.compile(
-            "n3ds-v1:[0-9a-f]{64}:[0-9a-f]{64}(?::[0-9a-f]{64})?");
+            "(?:n3ds-v1:[0-9a-f]{64}:[0-9a-f]{64}(?::[0-9a-f]{64})?|n3ds-archive-v1:[0-9a-f]{64})");
 
     private final SharedPreferences preferences;
 

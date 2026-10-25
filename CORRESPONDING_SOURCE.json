@@ -38,5 +38,12 @@
     "path": "azahar_libretro.so",
     "bytes": 23157736,
     "sha256": "2ac57376fb096e7e35614eee8cd073bca99804efbe8d7306e49e2de005b57061"
+  },
+  "hotfix_source_snapshot": {
+    "version": "0.3.27",
+    "version_code": 32,
+    "snapshot": "component-source-0.3.27-2026-10-24",
+    "scope": "Accept existing archive game IDs in feature launch/settings and control profiles. Native core unchanged. Candidate source publication, not Play publication.",
+    "aab_sha256": "92dc677b668386e60f09dd6dfb73223bbcb026772dc753ce1f9a91b93aea4942"
   }
 }

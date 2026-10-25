@@ -25,7 +25,7 @@ public final class Nintendo3DsExperienceSettingsStore {
     private static final String VIRTUAL_CONTROLS_VISIBLE = "virtual_controls_visible";
     private static final String VIRTUAL_CONTROL_OPACITY = "virtual_control_opacity";
     private static final Pattern PERSISTENT_ID_PATTERN = Pattern.compile(
-            "n3ds-v1:[0-9a-f]{64}:[0-9a-f]{64}(?::[0-9a-f]{64})?");
+            "(?:n3ds-v1:[0-9a-f]{64}:[0-9a-f]{64}(?::[0-9a-f]{64})?|n3ds-archive-v1:[0-9a-f]{64})");
 
     private final SharedPreferences preferences;
 
@@ -325,7 +325,7 @@ public final class Nintendo3DsExperienceSettingsStore {
                 : persistentId.trim().toLowerCase(Locale.ROOT);
         if (!PERSISTENT_ID_PATTERN.matcher(normalized).matches()) {
             throw new IllegalArgumentException(
-                    "O ID persistente 3DS deve seguir o formato n3ds-v1 e hashes SHA-256.");
+                    "O ID persistente 3DS deve seguir um formato versionado válido com hashes SHA-256.");
         }
         return normalized;
     }

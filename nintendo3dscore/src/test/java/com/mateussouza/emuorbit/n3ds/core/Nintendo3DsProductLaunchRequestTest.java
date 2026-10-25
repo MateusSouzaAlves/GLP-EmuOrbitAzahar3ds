@@ -16,6 +16,28 @@ public final class Nintendo3DsProductLaunchRequestTest {
             "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
 
     @Test
+    public void archiveIdentitySurvivesLaunchSettingsAndControlsWithoutMigration() throws Exception {
+        String id = "n3ds-archive-v1:" + HASH_A;
+        assertEquals(id, Nintendo3DsExperienceSettingsStore.normalizePersistentId(id.toUpperCase()));
+        var key = Nintendo3DsVirtualControlProfileStore.class
+                .getDeclaredMethod("gameKey", String.class);
+        key.setAccessible(true);
+        assertEquals("game." + id, key.invoke(null, id));
+        File content = new File(System.getProperty("java.io.tmpdir"), "game.3ds").getAbsoluteFile();
+        var request = new Nintendo3DsProductLaunchRequest(
+                new File(Nintendo3DsCoreBootstrap.PACKAGED_CORE_LIBRARY_PATH), content, id,
+                Nintendo3DsLaunchReadiness.ContentStatus.READY, 0L,
+                Nintendo3DsLaunchReadiness.MiiRequirement.UNKNOWN, false);
+        assertEquals(id, request.getPersistentId());
+        assertEquals("n3ds-v1:" + HASH_A + ":" + HASH_B,
+                Nintendo3DsExperienceSettingsStore.normalizePersistentId("n3ds-v1:" + HASH_A + ":" + HASH_B));
+        assertThrows(IllegalArgumentException.class, () ->
+                Nintendo3DsExperienceSettingsStore.normalizePersistentId("n3ds-archive-v1:game-name"));
+        assertThrows(IllegalArgumentException.class, () ->
+                Nintendo3DsExperienceSettingsStore.normalizePersistentId(id + ":extra"));
+    }
+
+    @Test
     public void acceptsOnlyExplicitAbsoluteAndPrivacyPreservingLaunchData() {
         File root = new File(System.getProperty("java.io.tmpdir")).getAbsoluteFile();
         File core = new File(root, "core.so");

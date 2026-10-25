@@ -1,0 +1,1803 @@
+{
+  "schema": 1,
+  "snapshot": "component-source-0.3.27-2026-10-24",
+  "date": "2026-10-24",
+  "repository": "https://github.com/MateusSouzaAlves/GLP-EmuOrbitAzahar3ds",
+  "scope": "Reviewed component-source refresh, not all sources of the combined closed application or a legal compliance certificate.",
+  "supersedes_public_commit": "250afa799928a446e12169aa017c0cae24c22b61",
+  "private_source_base_reference": "cd57bd0e3f2eadac4011795ce9d9c0a231f58940",
+  "artifact_binding": {
+    "version": "0.3.27",
+    "version_code": 32,
+    "snapshot": "component-source-0.3.27-2026-10-24",
+    "scope": "Accept existing archive game IDs in feature launch/settings and control profiles. Native core unchanged. Candidate source publication, not Play publication.",
+    "aab_sha256": "92dc677b668386e60f09dd6dfb73223bbcb026772dc753ce1f9a91b93aea4942"
+  },
+  "verification": {
+    "checks": [
+      "PASS_NATIVE_ANDROID_JNI_VULKAN_BOOTSTRAP_TARGET",
+      "PASS_COMPLIANCE_GENERATION_AND_CHECK"
+    ],
+    "full_app_build_or_gameplay": false,
+    "save_update_test": false,
+    "legal_combined_work_certificate": false
+  },
+  "upstream_gitlinks": [
+    {
+      "path": "third_party/azahar",
+      "commit": "fbd3fb02f71e5f9ed5134037fd59bad96c7d2b8a"
+    }
+  ],
+  "files": [
+    {
+      "path": ".gitignore",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 219,
+      "sha256": "e49ac821345445dffd745fe709c4cfb060a6ecca9ccd8df08d17dbe72546be2f"
+    },
+    {
+      "path": ".gitmodules",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 96,
+      "sha256": "9975495cb93583741578cc5004e1bc0751af732ee48c02a7dd1b5a9fdf380d65"
+    },
+    {
+      "path": "CORRESPONDING_SOURCE.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2079,
+      "sha256": "8034e4e96fa0aa492eef58916452f802d58965c4693f560ba905503374691f24"
+    },
+    {
+      "path": "LICENSE",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "README.md",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4592,
+      "sha256": "dfbac29ac43f60e7377e56143c459e819ab03732f8a98ef479b8afdad114bb01"
+    },
+    {
+      "path": "SOURCE_REFRESH.md",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1011,
+      "sha256": "a34944e139843e0e86340ddc4dca28d99b67c2dc6b05cad0412f4dffbb631a7f"
+    },
+    {
+      "path": "app/src/main/cpp/bridge/protected_core_container.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 23780,
+      "sha256": "bfde4234c54f049f8fa178b7b48176e27ce995b80fc4d35c3c4732a63ac72306"
+    },
+    {
+      "path": "app/src/main/cpp/bridge/protected_core_container.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 201,
+      "sha256": "ab6701c7975499c20ddb7eb022c81223f0dd8a035e2050778d74d6bd95bfafec"
+    },
+    {
+      "path": "app/src/main/cpp/bridge/protected_ds_symbols.h.in",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5138,
+      "sha256": "73c8a4e2763a0cd78929e1d6708c26edd583b2852636518f88cb5f6810089058"
+    },
+    {
+      "path": "build.gradle.kts",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 70,
+      "sha256": "820853a2ed42d3a294bcc101183b35144bc75dc0ee15cf6af0e6d0237ee794c0"
+    },
+    {
+      "path": "cmake/protected_symbols.cmake",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 22722,
+      "sha256": "51385edfc8eae8525e9f216431ff62c8e813cfd09421a9f078ce336a6e45f2dc"
+    },
+    {
+      "path": "config/nintendo3ds-adreno-gate.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5493,
+      "sha256": "b444745fca76f8c0219872dc861410a5a24d82a54ac2a77e4494cb430cee36de"
+    },
+    {
+      "path": "config/nintendo3ds-open-homebrew-corpus.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4647,
+      "sha256": "155cbfc6c11d001af74276ad7febc7fd7e8ea1d1513aae66ddbf55e428b02b69"
+    },
+    {
+      "path": "config/nintendo3ds-regression-matrix.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2151,
+      "sha256": "e6d1428cdb6e4d8804db908cf64150f9f7fffd20784edab0bf02bd605b8aab1e"
+    },
+    {
+      "path": "config/nintendo3ds-regression-report.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3833,
+      "sha256": "4bd3758044c5efc252543353b2eb7b3acd90e6bd48626354242ad9df4ae61f88"
+    },
+    {
+      "path": "config/nintendo3ds-source-scope.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 51425,
+      "sha256": "6d37a37174668b2ee8f669dea87122461fc99dbc9a72e106dcfde689e6290d89"
+    },
+    {
+      "path": "gradle.properties",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 162,
+      "sha256": "d2b098efd0ff079fdada0469316d5260767c0be4b142e52f57d82ef84f968a42"
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.jar",
+      "normalization": "raw",
+      "normalized_bytes": 48462,
+      "sha256": "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7"
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 368,
+      "sha256": "c4b9669284de8eb1bbf2801c8e705b278651a0d48693a829fc39c1d2739249cb"
+    },
+    {
+      "path": "gradlew",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8654,
+      "sha256": "ab5c0cad16305af2e619c159c1f58dd68d07fab9c11e36701e109c0277407f7a"
+    },
+    {
+      "path": "gradlew.bat",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2764,
+      "sha256": "5c0a21ecd6b3a6292e0746bff3b75fd2d8f47b9ff226ce53dc22b30184ef3bec"
+    },
+    {
+      "path": "nintendo3dscore/DELIVERY_ARCHITECTURE.md",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9369,
+      "sha256": "0dd3aa620ca4a6ffac7e2e2c032f5d9afc091c4eed5df9fac5b04962f7ef0674"
+    },
+    {
+      "path": "nintendo3dscore/adreno-target/build.gradle.kts",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5591,
+      "sha256": "d0467698a56354eaf56abcbf71f062d47dd44af42c567fc6f4bcc4e55e8e158a"
+    },
+    {
+      "path": "nintendo3dscore/adreno-target/src/main/AndroidManifest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1080,
+      "sha256": "a0892df8e2cd8840f5500196b9b57976142ea6e0512b044b15e924740075deb9"
+    },
+    {
+      "path": "nintendo3dscore/adreno-target/src/main/java/com/mateussouza/emuorbit/n3ds/adreno/target/Nintendo3DsAdrenoSurfaceActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1905,
+      "sha256": "ee474dbe5867b495ab6a7e90f297a0b92f838a16bdef555f2a6e977bd883c4bf"
+    },
+    {
+      "path": "nintendo3dscore/adreno-target/src/main/java/com/mateussouza/emuorbit/n3ds/adreno/target/Nintendo3DsAdrenoTargetApplication.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4642,
+      "sha256": "e9eaecefb7b2e53686583b92f15771b6f5aebb6915093bea6de527c833fd274c"
+    },
+    {
+      "path": "nintendo3dscore/build.gradle.kts",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 27038,
+      "sha256": "585d01ab051cf4f4315a9bc89998ef89e8a549376fffc50695bf6db0e5288b77"
+    },
+    {
+      "path": "nintendo3dscore/compliance/THIRD_PARTY_NOTICES.txt",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4866,
+      "sha256": "a0eb27ff020cfe73e0c5fac815f6cc2aefe8846c61d929604c339fce0455e1da"
+    },
+    {
+      "path": "nintendo3dscore/compliance/assets/img_system_n3ds.prompt.txt",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1538,
+      "sha256": "34a1db3cbd1ae8d06011746bf6cb7d53f7e6daea0e64ce47f0beff2587bcb659"
+    },
+    {
+      "path": "nintendo3dscore/compliance/assets/img_system_n3ds_source.png",
+      "normalization": "raw",
+      "normalized_bytes": 1358179,
+      "sha256": "c58c755f7156b2bfc0f02e39358db384f5afa242492ab1f900bd6c0c4f334df1"
+    },
+    {
+      "path": "nintendo3dscore/compliance/nintendo3ds-sbom.cdx.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14772,
+      "sha256": "91d89d841b68a023208f68820cdc89d7de1188e61f2438ade0500ad24e3881b7"
+    },
+    {
+      "path": "nintendo3dscore/harness/n3ds_backend_bootstrap_probe.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1799,
+      "sha256": "a617ca485392f750cf0d47458f8c369e338177965dd1ddf35afeee604d87093e"
+    },
+    {
+      "path": "nintendo3dscore/harness/n3ds_core_probe.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 48447,
+      "sha256": "7f978f7af9834e0300dcbe77f33b82d05826392737bdb1fca91e73d07b5c18f8"
+    },
+    {
+      "path": "nintendo3dscore/harness/n3ds_mock_bootstrap_core.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1497,
+      "sha256": "49be73b3c914a4174fe861343003943c5b55091ed6f9ef28fcc39418f7a28ddc"
+    },
+    {
+      "path": "nintendo3dscore/patches/azahar-2126.0-libretro-software-android.patch",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 842,
+      "sha256": "a70e4d2f5ed50f4cbcfc49d8ebf39bb52a93dda52c36e7f18192334573ed406c"
+    },
+    {
+      "path": "nintendo3dscore/patches/azahar-2126.0-libretro-vfs-seek-semantics.patch",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1441,
+      "sha256": "17e83892defff729ba032a4762d9865bfb27332b4db9241670674b9d3600127f"
+    },
+    {
+      "path": "nintendo3dscore/patches/azahar-2126.0-offline-no-legacy-tls.patch",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5680,
+      "sha256": "5354f028f9415305ae05684ff5aeb2760ca7b5ac890ac61f51f0d345f1c2f3f8"
+    },
+    {
+      "path": "nintendo3dscore/patches/azahar-2126.0-vulkan-zero-title-recovery.candidate.patch",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1018,
+      "sha256": "5cd82ce135b531799a16d2a7c57f471cf26012cf57f8a82b39c595dcfceede9e"
+    },
+    {
+      "path": "nintendo3dscore/patches/azahar-build-worktree-hooks.patch",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1613,
+      "sha256": "9da9edc2df7ffd7af23f52ab168f7a7fcd18f8c2bb69ea1f78683203a02b55c8"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/AndroidManifest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3324,
+      "sha256": "65c7df8f06511b354b2deaee9cc032b8f12dde954632c026110f4d762482ef2f"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/androidx/appcompat/app/AlertDialog.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 424,
+      "sha256": "def6827c97af168f43513ede70aeed724c09b265c20a8e33ec48422704238172"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/advance/R.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 634,
+      "sha256": "71de11f35670513563887c2e30c0e52de21b62191353a83f8c8720e0b25af54c"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/advance/ui/MateusDialog.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14525,
+      "sha256": "338b2adc678501ca0ac4854d7783b0360706b8da1088524a709f4301ce14a7d5"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAccessibilityFrameworkInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7135,
+      "sha256": "e33f65787530a71e7535ea8ca319fcfc4cbf517adf913f31001d1d4e0cb068eb"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAccessibilityInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13385,
+      "sha256": "39045a3be833f8ae051cd5fc9fe1c32905adc2d096a58b71b09f21c9c2ec8f06"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsActivityResultHostInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6099,
+      "sha256": "ce3445aaa3cbfddc9285a31fc5ecd9eed866edd38f6c1a57f8db5af90d0403ad"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreLifecycleInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 19063,
+      "sha256": "dc4b8d7381245179e1d7b223dfd1c737d946ba982cd6da22ec77da0bad03780c"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreSessionInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 124031,
+      "sha256": "ad307dd6dc20fa8974449b92c830c976c4b4dc0318a6c01da52352bfc1bcb5b4"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 20776,
+      "sha256": "a9c242e14d3f8940b543a504e4fe14faf10b0f6724a8a8f43ed3e4eb763b5548"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsRecoveryInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1454,
+      "sha256": "704c31022b98775b74ed2a2fce085980a410049565886e7d3ee87cf84f92e178"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperimentalHostInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8715,
+      "sha256": "c22eca4276a4e5b743f0a4a537e1f0230467952707a4f6d09438be0513e84295"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsHardwareRenderHostInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2935,
+      "sha256": "8098d6249c003acafe988abad6714fcfe299473d7ed1f4225cee6e880d77d296"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLandscapeSettingsInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6587,
+      "sha256": "eb448fed08c1a0f7be6ef81548018b84e9f9336c3839eae9b50559dd839ceb53"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLaunchReadinessInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3833,
+      "sha256": "00583a6d5f51058d2b205e5b613b25750e887cf11acfb2fb37552da1460e6467"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLocalTestApplication.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1931,
+      "sha256": "460a77b37b5d4415f4d0b86843d5a93857f439f9e7b975d5bdb3f43fd9400e1b"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMateusDialogTestActions.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3570,
+      "sha256": "fd06ea3ca166c5d37e5ebf80ccc32b9d67e00996648a6eb923393a6d99d39237"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiDataManagerInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3234,
+      "sha256": "d5c4abb7589b1d90f95bc5d41b0556d6ca4ae5ae448abd45c77d4de2b315aade"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiImportWorkflowInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6340,
+      "sha256": "76e74f79f9ea7026d7eb2c96c5c7b4724dd04fbe04e7f823045936e956118694"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiRecoveryCoordinatorInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13812,
+      "sha256": "7a72c9a1ddb025a6664587e844e04d51b91de09d89c4b240c74da95abf6833ba"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductActivityInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 41165,
+      "sha256": "8cf666e7a67c9fad2afdd1bca61efb7676cdf62acaefdf85a3f711cacf8d0eb6"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductShellInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 31736,
+      "sha256": "1277683e1c39dda466b43fe84757d3195aa25c93aa5b02da7d34a487425836e8"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProtectedCoreInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 11884,
+      "sha256": "ab52f3122ad4970dece81c887b3f0b690fb427c7f2c0d91dff2bada0d647bb6e"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessDialogInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9278,
+      "sha256": "55120f62620501f718baaa218f3615b99e49f8512e44501f2ce790a20aee492b"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessLocalizationInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3025,
+      "sha256": "c03b5d4220e766beef42b89fbd2ce8f0f791dd4df26d09c66cdbbdd4be301dab"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSettingsHubAccessibilityInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 11866,
+      "sha256": "7c600e426e3c6ff4c0f12dd69adb367af05b58c1fb35376feb081d21ca782df6"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSettingsHubInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6545,
+      "sha256": "06798336ad30c9335ee37e65249fc1489a64e9858d400913aaa26297e5b03987"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsShareIntentLauncherInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1550,
+      "sha256": "2bcb67bdb00184252c3a33677c36d9e5913a30d19eaabe0808c2c3b0c725fc08"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsTestSurfaceOwner.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4218,
+      "sha256": "def49be25174198ff0f8a0c2fff2e4198a959e81548c49a2f5302ea65ba5114b"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlProfileInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3156,
+      "sha256": "a333ef952d8edc3af2e7f0df8a943c8b83ae723aae566c547c294eebce63de1d"
+    },
+    {
+      "path": "nintendo3dscore/src/androidTest/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlsInstrumentedTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 11853,
+      "sha256": "8e46404567bc2df82324aa0ecb74d27670ba94f44d91929469662ffcf13b06ed"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/AndroidManifest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 485,
+      "sha256": "bf0273193e666d6ccfa0c6935fe96855585a3fea3cc2db2ccb7ce8e70bda3608"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsActivityResultTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8055,
+      "sha256": "8430d25b872a54a1df98a503154b4046aee9363a39af069302c92f79a9c01f5b"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsDeliveryProbeActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6380,
+      "sha256": "c0b01c095d0984f9124eac2d192514a5be4f7cc561b7ac71561b773b13c303ef"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsInteractiveInputPlan.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9468,
+      "sha256": "654a7f5d84bfe96eb2afd72405825aa9b69c66a76054567e6a6c60cf17fc14c7"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLifecycleTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13049,
+      "sha256": "733c4fc969649527c8f178a86d81bd69a878dba930c88c7635a67e0da1242b71"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiTestProvider.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2768,
+      "sha256": "27f271feaf94e1cc193d800126436a40c581983ffe3e9c5412779244edaa6877"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7888,
+      "sha256": "eeb3c842f310b155a9a88eeb54bd92b889b7261cef9da4a74e33b1dfa86c0545"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSettingsAccessibilityTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 473,
+      "sha256": "e38d6bb9d46e50e7e4f5f1e0a9d29450f4fa7d364d640587f9abf9daaacc1959"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSettingsTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4921,
+      "sha256": "4d5bdd6017ed8549ec357c5b43c63dc7951d403ff68824562b9bd76cb3218012"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsUiTestConfiguration.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1580,
+      "sha256": "19bdef74da900588ef06fc330be9590cd265f0fa60f55e11b1f5038ab14978e7"
+    },
+    {
+      "path": "nintendo3dscore/src/debug/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlsTestActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2615,
+      "sha256": "ece1c4f076bf8a662067cdd5cbcbdbd54f7859e8426504c36f1315d4f5c7823e"
+    },
+    {
+      "path": "nintendo3dscore/src/main/AndroidManifest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1257,
+      "sha256": "21ae0eaaba8d50d937e831f73e48a42bc9c17455a62ae28e73f9ee00703c84b9"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/CMakeLists.txt",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3523,
+      "sha256": "665d59f105ca1512e8af596b245265f4f31de5d7503e210cbdc74583589b7cae"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/azahar_hardening.cmake",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2407,
+      "sha256": "47e6aea430db4c4bfcb38115be4527f1fb406c143e62d91e174b8e3fc3f036cb"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/azahar_libretro.exports.map",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 778,
+      "sha256": "be10eac70deb691f4c1430dca0ee4a5e021a78c99c143e923c96164e05a222fa"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_bootstrap.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6981,
+      "sha256": "fc0877155b5c9fea421f2e44bab440da4914c08d18262ea5ac8a62fd4c098995"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_bootstrap.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1227,
+      "sha256": "597116fe95453722fec3f551c19936cfb8d2db243ac32618ddad0c15890185f1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_gameplay_session.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 56301,
+      "sha256": "8ce79bbeb6bd454103242c71febe2dfb7219919cc4186af75e0b87809d7dcd55"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_gameplay_session.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10351,
+      "sha256": "909adf5c826a6d1477c0af71dc15a3c49b5b705d11c0c1b17755ab58aa51bf3b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_session_registry.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 694,
+      "sha256": "2dba72f94ebc650d6929556eeb06b4090ad636eddb768f4e16ae78f6b58f3d27"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/core_session_registry.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 205,
+      "sha256": "6dd79a3aac41abdcfe63943fcbf5cbc3186b4f8d5b39614ee93077c3287f4d73"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/jni_bootstrap.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3795,
+      "sha256": "b554ced49c3f0b3e3e8bb6a2aae3039cf0515a8a100544b7461e038d0e0bc651"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/jni_core_gameplay_session.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 16338,
+      "sha256": "254debdd6aed7f917816881da7b77c1163ebdc1fdc6b0396dcd8e6ce46f3c33d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/jni_core_gameplay_session.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 184,
+      "sha256": "045c256541f4cd6b1f2f74f07045e2bf83327273cd6e8ab769efde69f6d6b394"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/jni_hardware_render_host.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4836,
+      "sha256": "1cbf127bd6cfb5ac9cf01e90f1f996279929b59f2dbe6659c9c545f43b9eb7ae"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/jni_hardware_render_host.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 183,
+      "sha256": "589cff296a686358a90c1478c426483cb254819cfb465a451475043935725adc"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/libretro_bootstrap_abi.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1292,
+      "sha256": "fc99debf298097788be09cd7c828aeee5a71bfce1b4690b3b11446d91d4132d7"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/libretro_gameplay_abi.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7909,
+      "sha256": "f8eb0a6a8815811fd5f6dbf7cbd0a3b38688a09ceda60c78afbc0ecd0c333ff1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/libretro_vulkan_abi.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4159,
+      "sha256": "9bc85df7a5ab6ce0e9b11b81ded8c45d48c760bae9ec31bbbb80808467600f06"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/nintendo3ds_bootstrap.exports.map",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 85,
+      "sha256": "9916d9875e74278a74e176033ec215aae4ebffa33a79063fa8e8902efe4fca97"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/protected_nintendo3ds_core.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 985,
+      "sha256": "9e23940bc5f84eb41a9caf87a2bd0c6a5a6f16d301add8fd4d41ac35c8650a1b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/protected_nintendo3ds_core.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 315,
+      "sha256": "75c20c6b607dd28d43b0d557fa67b5d947a0cc4acec69d6c46cc669873d6fffe"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/vulkan_render_host.cpp",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 47205,
+      "sha256": "1de359c1dd51dea5e1e9b67cd49d87de715bd9e25e87ec51b39db063e0b3a31d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/cpp/vulkan_render_host.h",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4642,
+      "sha256": "a171f260e355f53a7168a64ffc23c09449b44e8d834fefacd2787c7e99454882"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsActivityResultHost.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13167,
+      "sha256": "dae5536370fe0ee803065650026c98f63686d7ec91084e1fe0734c173ee4e5e0"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAnalogStickMath.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1470,
+      "sha256": "03459cefc1cabebe1a4739b847681ce31c07d2a4e16d0173aba148c38576bbb1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAnalogStickView.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6149,
+      "sha256": "418efbb53c5765df853f2fb56386c35fa15d7c4cd1a26af3a831ca1bb347fe4f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAndroidLaunchReadinessInspector.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4638,
+      "sha256": "b8876009ac18c4782ce4044f17b20aa12ff0f2b8b520ffc937394c96bebdfae4"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAndroidMicrophoneSource.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9494,
+      "sha256": "d920b4937b75813aeaf7e5be9372d608f5853d18e186800f7d756f7408915b9f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAndroidMotionSource.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8395,
+      "sha256": "e6faa80a3ba62c400bede8999301b7c463d21f93cdc902c37053cf95542d9184"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioDrainPolicy.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 688,
+      "sha256": "98d652bd2ee469889b90c829fa67913d0023bbd768587601b3d07eb894d8fe85"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioOutput.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 19790,
+      "sha256": "379405271cb15b607395047980f844006cf6f8f1b394ca313eac4d446ebe595c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioOutputReport.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3692,
+      "sha256": "f25df36bb75ae21a63967c8eb07638576250b09aad64eb1d868086f9282fee2d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioProcessor.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2650,
+      "sha256": "7dbb89f80aa74624756b8460e368b1d818625a6e4a721a3f533cbdfbcf09e2d8"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsBaseProductBridge.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4817,
+      "sha256": "91fbbe07cb5a309af6992aba9b1786b72b380d3f60f55d72e3ab43e357439f10"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsBugReportContext.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1470,
+      "sha256": "05293bb42986c115e19674d1a45e558946754136d3bd96fdb16bbdd06e92ccad"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsButton.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 551,
+      "sha256": "4b2f7967dac634a741e049b07b690516ce64cce7b6008a64a0743a1ca0d73e8b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreBootstrap.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1536,
+      "sha256": "1fa0bf88f5d36fb81afd588b7c8643fe962a8749dec44df126e4c9ac03747e46"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreFrameReport.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13400,
+      "sha256": "92b25582fb1d5be3dc4c65f98aa6e75942a01b57f81e2b2f2bed865c3752721a"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreInfo.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3812,
+      "sha256": "9bca8db5064956b4457a7431bcc007025e961bd94d58d2e5d8ad9fe18a7057ae"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreLifecycleController.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 52666,
+      "sha256": "8c818cd1e5942fcf619a720f15453d8f026a0ce2e9821935385ce2feae8e2157"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreSession.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9740,
+      "sha256": "81f8d3285d7d1dfcd8c666493f3536aee45ccc2157e1ee8ffbd2dd7cb3106730"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsDataAccessGuard.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4802,
+      "sha256": "43c703da57d876b515c9e2e6bbd06114a7ef1fe601efa4841f7b81c036b89f8c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsDataOperationsModel.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9440,
+      "sha256": "20ca3af85edaf54dfd3dd033730a16abc11e1c3f54ed7035c9e3d06dd1607f0b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsDevicePerformanceState.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1732,
+      "sha256": "b5a13ca532d2fa0bf72fb87891d6a22cd1cfd85603e566ee2e7c4458e3de1af6"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsDirectoryDurability.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3169,
+      "sha256": "ffa0430fc9b3eee122d611d944a14b32366e0de68d3064daddfc5684fc020fe8"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettings.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6690,
+      "sha256": "b14f5fa99416de665d6e1e5cd91fb773afb3008188afd1548b47d985a414ce65"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsDialogController.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 26247,
+      "sha256": "39c161f1b1b99ff7395f6544cfe93ece9c61c0609699b5598e5b34fa626a312d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsOverrides.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7327,
+      "sha256": "ad443b85999ca2eea2019605d9e919912c0792da84a56a7018d5a6deea0e8f05"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsStore.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13974,
+      "sha256": "d30e9d4d734b4036630093959f0ee15dcfc018080d92f7a19415a607ea34b27f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperimentalHost.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10504,
+      "sha256": "7b94c0ab633c7acbcc16af013c975aa3d0394fd8b003e0ccfe65e2c4e3ccfc1b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsFastForwardAudioProcessor.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4001,
+      "sha256": "0b1f7368780dd9a43b879dbefee25142475852ed3dbc6ff1a5ca6952d2a8d0f2"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsFrameLoopGate.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1008,
+      "sha256": "aeb95e066dfd98b32c0aa630f22ffa00a1c789a9d68f70839ae0334bb6c38e92"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsFramePacer.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3817,
+      "sha256": "cf3fb3c10e2b0b2d780d56e3360e99f5944510eed8cbb28b69411d30864d0efc"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsHardwareRenderHost.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2442,
+      "sha256": "c7ff3975b7771a6d3191a5306f4a1270199374393d2c3ea1db1c038efef91d3c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsHardwareRenderReport.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3210,
+      "sha256": "be674c111eab7d2e09a85cdd84b973d488810bd8b5f80dc373bac496133361d3"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsInputState.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7077,
+      "sha256": "b437c34f169511ece7c3e78b7da5332cbb4b40069131d9160680eff29120594c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLaunchReadiness.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6462,
+      "sha256": "dda1896e3c0e7ac1e20be48c7952ed0cc590b30cdf51b32b3891ed16deed75d0"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMicrophoneReport.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1876,
+      "sha256": "d8851bf8525b0f59f73c9c526fc13d12a7ae8edf627f0731699839d39aead569"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMicrophoneStartResult.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 323,
+      "sha256": "24bcaef460193e40a9d57e14d5b542574d05d862884a6587c0bbee63729c3d4c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiDataManager.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14263,
+      "sha256": "6d7818482b0670b60c896094e7525d212224f4d2f5aeb7bca2f9d09911f6c17f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiImportWorkflow.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4494,
+      "sha256": "3f047efd3fdcf56ba2f69be5b335b506098d7f8f081726a5f3efdf02a5237a5e"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiRecoveryCoordinator.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14776,
+      "sha256": "8712e5849f4e8b11916bf78101f2e8edf3d479558ecf8fe81d02ca4e82530815"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMotionReport.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1559,
+      "sha256": "be6531277fc83783678caca11b8e0d641f55f67eadbf56a271a7ef547f21dcd6"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsOwnedLayer.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3909,
+      "sha256": "05774a07509d7c60c801e2b6157b9902cd7d738c5b4b45667ea23d74694e8c6a"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPerformanceCollector.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3382,
+      "sha256": "99663f10bdffef8b57d8928e010c0d55bb7653b72818c15829e6b8d53f7882f0"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPerformanceProfile.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2295,
+      "sha256": "30fe9ea6d7f7f97446584bb7b4175bf2c5f5275889e467da69bec6288269f601"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPerformanceSnapshot.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3318,
+      "sha256": "5e2df6ab0e599c551ddb484c37363da4bcdb7336ae4c9124fd4244d2e0caf1a9"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPhysicalControllerRouter.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10919,
+      "sha256": "c0a991ad2dda0e215e9210c4f0ac91ecd92425efa54363a5ee3eb6af46d935e8"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 108180,
+      "sha256": "25763d6f3eacbdd6ca370a7d8cdfabdce5961bf61f4f72d5b9f683e9c687c9f5"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductDialogStyleAdapter.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1495,
+      "sha256": "6b26c70967cb2ecf014f115a23ed5ffb8714b390524cb1134ac6d86e84f1a38b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductLaunchRequest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5917,
+      "sha256": "439d6dafea31bcdf1ded59c024405319cff0c83fca005534facdf151a0a47d82"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductRuntimePolicy.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 643,
+      "sha256": "4e3644d009694afa37ce7ac2858a65ae206aa6e2f170fbd05b97203bd3524727"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductUiState.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4046,
+      "sha256": "039a832e188ff56ce18e19a1cfa3c58ed46191af47bc731f40a27e78f3a8a3bf"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessActionCoordinator.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4393,
+      "sha256": "743614ca84069b3e708153916432d5463c5afe6644256af55f87c76a47670790"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessDialogController.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6134,
+      "sha256": "3f771effeb2503f84e4c2c444641a5d988f8288a13d9a985a2a962950391d368"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessPresentation.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5180,
+      "sha256": "5a1d87404e07beaf0e39fa8315339be1c4f6e03631f754e8b0b88476ef01452c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsRegenerableCachePolicy.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6272,
+      "sha256": "d535bcc1590a876662a83b564022e4ab075c9422252cb1719fbd449dc4734bf8"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsRestoreIntent.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9516,
+      "sha256": "df7418a7d9c5bc156ad342eb55382fb891b51f5a4a2a18e6c3f5fb3745aa2973"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsRestoreSelection.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 11383,
+      "sha256": "177b424049ca40e9ecf6fdd98ce4ee3c9b95ee71244b6665adc2b530b86e2d2f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSaveBackupCapture.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9724,
+      "sha256": "4a88e342acf88163f3c7fc99b7314e907b78488e8d1eb0a5b77b1413fb4f0312"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSaveRestoreOwner.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 28539,
+      "sha256": "6b6fc8a0b82f55db1bdc07b6d855194c6f0c322781e4c67f377f49df3bbfc205"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsScreenLayout.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 860,
+      "sha256": "e012031dba230fd6b80119029b2e89066b35d3d9a47130c63b80feb838604d29"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsScreenLayoutPolicy.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 773,
+      "sha256": "85eb93f72bb925b5b3b80ff5028e0c5528102ba2846137a1a838f64b158a4546"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSettingsActivity.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 27773,
+      "sha256": "fb4ac66689d1e3b356d8aae991f97d647137ad227e6506ef7cb1ea765b2f7f20"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsShareIntentLauncher.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 969,
+      "sha256": "b04cc9ded0c5bc071e21f915286d6fdc5e8de122452699f5f8c757dde12a878c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsStorageLayout.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 60001,
+      "sha256": "985f6587837397f10692e5071832d0843acb37695b2ebf4ec1393523b0706f57"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSurfaceFrameCapture.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3879,
+      "sha256": "d920241dbb89e6f55a257d6811dfd67d15d8934fc0eb89a56ef4ed04f3be2274"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSurfaceLifetime.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2957,
+      "sha256": "45b689bd7f3c043cfbdb223fe6a8a6c0f5ea4ddc0dc2d242077a58598d04600a"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsTouchMapper.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3988,
+      "sha256": "bd1088ec3a1ca9c25087c951e068b7c4ed479aaa46ae667487c5ee46a95eb378"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsTransitionQueue.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2672,
+      "sha256": "0b4736bf23b16749f38ed7fa49e284b566abaa497cffa929272f31b963a88a93"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsUsageBridge.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1390,
+      "sha256": "871efc0098a5e850a4ab9db91ee011ea18c9e6b5a014e77dc207a0a937b3c46d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlEditorController.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 20618,
+      "sha256": "3f553e2e27512564f432e0936efd34360de09e957e9e7e78011d73731d6c7f2e"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlEditorSession.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3566,
+      "sha256": "895defb59e829543f8687d87d6d11151da74867401230623f72da51f9294ed81"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlGeometry.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3632,
+      "sha256": "c21a56ad767250a5251e76284dfd0739f5a4bda4aa3e5d640f1b43393ecf17e1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlGroup.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 352,
+      "sha256": "8565b593c9676f04fe101d431c2b1216e02185bbbe1b8964a6b5173821c2fe69"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlOrientation.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 518,
+      "sha256": "2b953bfe8d63c97c0abb604b3fa0bb77f07672182fbf673909efc7d069644687"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlProfile.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6855,
+      "sha256": "94d46a4fa701c01ce18f499451c29a215da0bea6f7f7a803c4f9250ad2295925"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlProfileCodec.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4662,
+      "sha256": "565b2befdba55d2b44f41cf70644b836c164154ce5575ac7fb5afb68b0829143"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlProfileStore.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5237,
+      "sha256": "fd417c84507f84211f55c3f54dc780abb4582b7cdd4ebbe00ecd30cb68cd128d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlTransform.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3334,
+      "sha256": "f68ad04fac23f93a72e322a41a05943d0f111b384fff3117b80b3a11c91129b1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlsOverlay.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 21363,
+      "sha256": "d563a07c20dcea7de05bfc7812bbd8094f526fa2fea45376da9573a9a612587d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsWindowOrientationPolicy.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1086,
+      "sha256": "05b154c162ae3b7588ffbeaeaefb48926a59c9c27f5e6d076ce9c420b6986567"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/animator/n3ds_control_elevation.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 749,
+      "sha256": "d7bbeacd846ee2e66bd78bc0dfb96abf8738e2ae7d2083bf8b7a8f063567a369"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_action_menu_background.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 351,
+      "sha256": "f423887f06f590b48d7aca30e259c5930fc7270e7848ae7a51b38e715383443d"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_control_background.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 418,
+      "sha256": "c9b23ae95d8014c7fa778f235acef06c208e437fc74b1f7bfb8dd1d4f8916e84"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_control_disabled.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 332,
+      "sha256": "d6375b3027c977f6bb7e6661c906559f0442aa4dd6241635261bf8b3a9f027d9"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_control_pressed.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 899,
+      "sha256": "6760db9ef08b41086667db2f28b7dee4dd88843f6584ea1c1cd6596d4e7f1145"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_control_rest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1333,
+      "sha256": "2be73fdfd21bc2479d6104fcbc1808734abbdda634b6429d9bf9b5227a9cd97b"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_arrow_back.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 415,
+      "sha256": "6161f4f5d812964b30a20e8cbfd49e92c8d8e423823b9d5e946ba06fc29ba5d5"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_bug_report.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 658,
+      "sha256": "f77247159a1de47f0162ffb12efb609cf388062a78f8d88e87ba5846c82f1f2a"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_close.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 483,
+      "sha256": "1a322459ef56d1a5c6cdaf9255716bb8ec8a81a25d7a78d6942cbf26829fece1"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_edit_controls.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 754,
+      "sha256": "ea15bbe78d3ba6f1bdd3ce2a7be7ecfc0278318e4316912e4743c3a83db8d201"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_emulator_reset.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 589,
+      "sha256": "00b4c471b044fb72bf92a9576271716ffd8a5525ff603b58445f7031ac67f682"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_game_settings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1331,
+      "sha256": "afb963bef51544f114357dace9daa4aeaa0b24924872c44e8f84277a9aeac8fd"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_more_vert.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 629,
+      "sha256": "8cc0945e8070ac91089ab68a5a7c6ce7c015372760d76a449d20a5931bcaebbe"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_pause.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 391,
+      "sha256": "c2e6451707d1846fdbbe42055130dbdc56fd9e020cb5868e8f2afbb798ded025"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_play.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 377,
+      "sha256": "1a044dfb1c8a28c41cbf92d4ce7e73e01d7f05864d027bc972650eb87336a130"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_screen_rotation.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 810,
+      "sha256": "f0254b9e1f585cc96cdce493fd46bb679751de44e878702d37bbf5ddd7bb44c2"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_settings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1331,
+      "sha256": "afb963bef51544f114357dace9daa4aeaa0b24924872c44e8f84277a9aeac8fd"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_share.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 621,
+      "sha256": "6c1a47f81397877fc84d4589ab88e2472f56a775fe9c0d9c6721cbc2e766cd87"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_visibility.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 596,
+      "sha256": "75633e54c207122b9daea6ad90cb0b30025a7cf87e7259b990e0ef41692d7916"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_visibility_off.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 882,
+      "sha256": "696513d8c893d790c18f412fbe9fffd0e1ed2e48d606bd02af3d82215c6d3f39"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_volume_off.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 765,
+      "sha256": "622154429345a5a6fd45b45174d19a9a35785809f7cac65ce39f84c87620e5cc"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_ic_volume_up.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 586,
+      "sha256": "5d9094f7cf360bac88978de50e3f2d1f9fb70b94788929a0c1760d4d9c35f22c"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_toolbar_background.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 410,
+      "sha256": "e014db4b137089127eb6f22f06bff9cd8500b70414bb4dc6a5e3d79e88045c85"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_toolbar_button_background.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 587,
+      "sha256": "bbb611b93b6adcf40a3dde83f31686f5670e79e2f06460ac5958e6774f9e5bc8"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_toolbar_button_disabled.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 351,
+      "sha256": "32f88c819a6520b184b8dfb721230b6a4c7f292590dc995befa7a5834c47eb88"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_toolbar_button_pressed.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 351,
+      "sha256": "fd30762c30494b4026855c303999a758eee043a071c62c5b10d22695ffac6c54"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/drawable/n3ds_toolbar_button_rest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 351,
+      "sha256": "5cfe7251822528fb3bce4b95456800b891a119ef5445164ace96ba60eece4772"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-ar/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 18841,
+      "sha256": "15b526a3ca5967cca3dd78f94421252ade667f16979c8114a4bf25b5b47ffdf3"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-bn/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 24074,
+      "sha256": "7d207fa25ddaf72870de9baa340e990ace6a1b215c242d7f7480f5e77487434f"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-en/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 15623,
+      "sha256": "4331fa1c75f3748e797d7069dd3536b84223af797fcca30a879b43bd5a0ae7d5"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-es/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 16344,
+      "sha256": "68ff1d64d32c30f4aedec4762f1915a6f07f62ff6e65c59c9644e0958670a047"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-fr/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 16889,
+      "sha256": "116a06cb13ce9b9e19d83914c5d992ae3cc351170760cac2cf737f90b8952dfc"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-hi/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 23649,
+      "sha256": "139a76b8349ac91f10f952e90afc4bdbe1e3dfcee20c910496f687eef07d0111"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-in/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 15734,
+      "sha256": "3fef6a794d4a62f231a4cc0450837adb4adb762ff89fb1e2f5317bf6c6059fa7"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-land/dimens.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 129,
+      "sha256": "95c24f4107277661b08328f77589dd3b07219e0a419f3c2bf3bc5fefc3f87afc"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-ru/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 20830,
+      "sha256": "c4fd57248f836d3c4865f1a6f56d911d2487c399df5800f4e27ea0f317cb7965"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values-zh-rCN/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 15067,
+      "sha256": "041e06917f275132890b8cf711e9090414e13eb9114d06a6022ae58db517ce22"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values/dimens.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 129,
+      "sha256": "73daba84f57bf79b67836e2605805748447f3c013aa3833991146148bc8a5e97"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values/ids.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 724,
+      "sha256": "7134b4f364d9a7cf7ef5a7b3b44ee26a25f9e90101d5f83d6641fa40f9f1aef4"
+    },
+    {
+      "path": "nintendo3dscore/src/main/res/values/strings.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 16247,
+      "sha256": "fee8f6bf6c4f5af8317f207247b35b82e1c13134ad1f0b941def8e7762eb2dcb"
+    },
+    {
+      "path": "nintendo3dscore/src/standalone/AndroidManifest.xml",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 566,
+      "sha256": "17368d5834cd317f6d640d1830c3184a7fc6158962c4c9276b80bb30ef5e8fcc"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAnalogStickMathTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1776,
+      "sha256": "81dee1fe28a27276b6e9961194fee215ad631071d228a784a9d3b3c69efe0125"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAndroidMotionSourceTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1937,
+      "sha256": "94fee4f57c5e6cd7d66662e0c1fc23339d8c0d14d4bbbe4e349b557e58b09bbe"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioDrainPolicyTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 956,
+      "sha256": "1a4425e3a47a32ee887d38e1176e4ff1e3f7cff07ed57e72d1b4a8e564d0de95"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsAudioProcessorTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3828,
+      "sha256": "4018dd4d05f23721281b86e56f08403036e063ff83e4c34d24edd99603498840"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsBugReportContextTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2335,
+      "sha256": "e282992c6c91953a47029987c3de6ec44aecd8d30a22f398817ffcedfa47a6a2"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreFrameReportTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5226,
+      "sha256": "0fbbd7cc1d15aeb5eb23522dd06ab054fd658c45956b7be33fe8b12c8e0f146c"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsCoreInfoTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1991,
+      "sha256": "2a097f3bebc4ad92469f93c83fa3c7bfa5461c878608ef89e74e07a2ff2a35e1"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsExperienceSettingsTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4414,
+      "sha256": "4213d1bbb3fdbfc0266a597b0fc928a2c837a25bf73a428c3f06be088fa50f97"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsFastForwardAudioProcessorTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3802,
+      "sha256": "2872d110112e0378bdd5a5749f6f6dba1755ed7bb02489dd5bf6b72e09a93860"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsFramePacerTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3569,
+      "sha256": "78811ccc86e74333939824ac451e02a956fcc32a247a7b5da8616fd8f7833419"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsHardwareRenderReportTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1518,
+      "sha256": "f9094c81042de152a98447fea2cd1abe7c8517ab73ccde78b1640d0477d0343f"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsInputStateTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4871,
+      "sha256": "de1982d8a779c53fe4098322777957279375c025d17a9c548ae2bd487428c9b8"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsInteractiveInputPlanTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4350,
+      "sha256": "7651455104a0de9ad9d455904a160e4db4e8bb384ef6d5bd358b5f66aabb6cc1"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsLaunchReadinessTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9791,
+      "sha256": "6930c3d5674cca8ba760bb3a10cb8b255344567e25b45208c230edcc73a828de"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsMiiDataManagerTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9744,
+      "sha256": "81f7ca1a0136f8a700017057088997d04519953dd6b4655d43f9631debb97e3c"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPerformanceCollectorTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3080,
+      "sha256": "c9bb25014dce6378fba0edc290379e86647554929f65fd59a9ec4f15afc15f88"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPerformanceProfileTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2713,
+      "sha256": "343dcfff8847509448ab1621d5c54bb60118d4bea3c89c6f975c01962e114686"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsPhysicalControllerRouterTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5047,
+      "sha256": "f90f3b48af4337be8b75bd61b4facf7ab96649cfbe4f6797da11f5a0f9286811"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductLaunchRequestTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5379,
+      "sha256": "87251441694486d5160402a5e13d5ee2242723af459733e74e2c773c0469e49a"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsProductUiStateTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3412,
+      "sha256": "7cdf529555a914cf52a59a32b0a4c05a954c9f3fd3821fec1a7592ec23c79c13"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsReadinessPresentationTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6615,
+      "sha256": "d8b252059f2399ff02e7c3b82f7a5855796b796f2a9d4954a7cd8f77819fe3a0"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsRegenerableCachePolicyTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2511,
+      "sha256": "890c10623a855f2365e2b293a34c42932743e46c76842308dbc99cbfa0fee493"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsScreenLayoutPolicyTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1249,
+      "sha256": "8daaf9e8aca7db21adbb826b2666f21954fec9d32997f9930238673fed4e9158"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsStorageLayoutTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 24259,
+      "sha256": "1e5c918487ce0effe7d24e48af762a74a0b7e1d71595fa3c05cf886494418c10"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsSurfaceFrameCaptureTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1325,
+      "sha256": "934ac840326dfbc441ace016d8b3a21e63c0232116832f18fed00e058e34f8d6"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsTouchMapperTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3084,
+      "sha256": "6895b613d41d5d682f18b70bbda5341c5c045445bc7dffadf87b58224cc626ed"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlEditorSessionTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2899,
+      "sha256": "4d725f3581ebd21d6c1635614a0fa73ab3ade3638166c2f61db66d3e3c6ad0be"
+    },
+    {
+      "path": "nintendo3dscore/src/test/java/com/mateussouza/emuorbit/n3ds/core/Nintendo3DsVirtualControlProfileTest.java",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 5392,
+      "sha256": "69a31b5f1bc86463b2b30d6891e3dd40a15e7fbc0e199aa5e00020258eb3aee3"
+    },
+    {
+      "path": "releases/component-source-2026-10-24/manifest.json",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 78888,
+      "sha256": "06f2380b65ea7843b7ef8f50edd553e2277d57e2728cf76974653ba3a8861b00"
+    },
+    {
+      "path": "scripts/acquire-nintendo3ds-source.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4242,
+      "sha256": "74333fa0761299179053a9415ca987e43de8a5913cf963ccf80e2a817dabb9b1"
+    },
+    {
+      "path": "scripts/audit-nintendo3ds-bundle.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 12453,
+      "sha256": "dfe556dffaf7dd3fc16bf562c9a4ee146ad18cf2c750dae9b979788e8b516e65"
+    },
+    {
+      "path": "scripts/audit-nintendo3ds-native-artifacts.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8198,
+      "sha256": "ae7c3571b4b603c38e4c623ab5c712e8df27e0db8526b7a343dcdc27b025214d"
+    },
+    {
+      "path": "scripts/audit-nintendo3ds-packaged-artifacts.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13313,
+      "sha256": "bdedd2298ab362def1583729396043c83f58d5a68345c71750fa9156d3791a4d"
+    },
+    {
+      "path": "scripts/audit-nintendo3ds-upstream.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7454,
+      "sha256": "fde202162361ba0e3c254555acdae1883e6c054ba28a029a6c8bc35a01b04661"
+    },
+    {
+      "path": "scripts/build-nintendo3ds-backend-probe.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2258,
+      "sha256": "4c47845cc1e6ef44db0995c2d44c3380994d9eac680007212215c8638c0e5bf0"
+    },
+    {
+      "path": "scripts/build-nintendo3ds-core-probe.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2140,
+      "sha256": "002142669759c9bcd9a7522b80f1f70366b47573206992e5fc9e91551d6f4ed6"
+    },
+    {
+      "path": "scripts/build-nintendo3ds-reference-core.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9823,
+      "sha256": "c3b1d55cae5ce8f2cea637e359aba493c826f6f4b3147e40e7d7d9643d47c638"
+    },
+    {
+      "path": "scripts/generate-nintendo3ds-compliance.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7596,
+      "sha256": "688015a24fd28cd71c7596a2c673c8a6d93ffb4e256b883b1f43d8b0c263e193"
+    },
+    {
+      "path": "scripts/prepare-nintendo3ds-adreno-gate.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13670,
+      "sha256": "041f9af69d29ec9ed8e025ea5e547ef9f13a05c33047f85835172e6d725658bf"
+    },
+    {
+      "path": "scripts/run-nintendo3ds-adreno-gate.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14790,
+      "sha256": "0f0a0cc18a3c1021387b677b0122838e1f851ce802d82cf131ec9931664b6df4"
+    },
+    {
+      "path": "scripts/run-nintendo3ds-backend-probe.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2936,
+      "sha256": "ea24ea1ac7c2b181e9b641bf8c28ed977efbdb9125b8311fbceb7e42a0cec8b3"
+    },
+    {
+      "path": "scripts/run-nintendo3ds-core-probe.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3329,
+      "sha256": "2fbbad1f9bd02b76f0d4a1eb25b7a9032e28075f211aa894e4c842f527862b21"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-artifact-gate.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 7051,
+      "sha256": "f7000febb980ba2d30b1db7d2335ff9e2e6735478ea96df9dc977daada213a6b"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-core-suite.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10564,
+      "sha256": "f79838d0e05c3c68692ea8e43712509cf256875b3b1dff877d72689027e3bc84"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-core-update.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3429,
+      "sha256": "fc01d5495850f3b2910e11b944cedd09ed0e2e75722096296fa5049709dc4a7b"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-delivery.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 15540,
+      "sha256": "1fbabc0c83db5c4276d73b574818e58eb0f688139de0ef399c91a1c6f7dfdb58"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-expanded-corpus.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 18581,
+      "sha256": "ff29df0b39f15aa0c56b508de613afb02c51e9f560f34a2ef298affef915e05d"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-process-recovery.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 1820,
+      "sha256": "aa8cd751ea9cfbbfd1259220802410ff572ab26d1888fca242960ab1f144f2a7"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-protected-corpus.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 14551,
+      "sha256": "83069d07a76b32c2cd0b5d5af9c009005b236af3c9f3f69dea2c4fe796878166"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-regression-slice.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13973,
+      "sha256": "cd8a2ae7fc78f1b3f3ebf598a86e96107f9ddc8437f7fb3609d5010e0a5f1653"
+    },
+    {
+      "path": "scripts/test-nintendo3ds-state-regression.ps1",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 15366,
+      "sha256": "5ed58888c977f654e244a6e06049dfd5867c73d2e9f7867fac773450434c2c8d"
+    },
+    {
+      "path": "scripts/tests/test_audit_nintendo3ds_bundle.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 9598,
+      "sha256": "63136db3ce829892ec672cf8e9b614ae0c067b1d264a5a301d830a950649f68a"
+    },
+    {
+      "path": "scripts/tests/test_audit_nintendo3ds_native_artifacts.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4121,
+      "sha256": "9f5e6965c7a8c4e67fa910cb305605420f03036d0a04e8357778d554c05e5dde"
+    },
+    {
+      "path": "scripts/tests/test_audit_nintendo3ds_packaged_artifacts.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 8183,
+      "sha256": "144cf72e182037a557764cdd3e44b3910986e886e97e5d949af98e16d4bfc7df"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_adreno_gate.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6585,
+      "sha256": "8d5628935d6cb5b6e8f5cfa22b52e3d6984b23023de0179bfbd31eed8e942fa2"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_compliance.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4067,
+      "sha256": "011b04bd16211cf98cc31311784f9bcb2a09d448342bd92dc0d0f38701039801"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_core_probe.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 13934,
+      "sha256": "092e179924e8b72dc774ae0621e476cbb1b4740d4d267c03d76e1e1a54e3e47b"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_core_suite.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6290,
+      "sha256": "5650198bd7c52b83e17e933b804712c447d8a689e5636a206bbf98c3b004a37a"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_expanded_corpus.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 4039,
+      "sha256": "e30e78bbb17181ba24b7a96e89b17be2fc3cad5963e2928d863b6b8496c799e0"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_regression_slice.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3148,
+      "sha256": "4147b9fa9683ea90a4b8d141b7b4ff354f2ae40f561a205a282c62f54c509b3e"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_state_regression.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3581,
+      "sha256": "4038297369cab9a505156dfe8276bf0bbe45405d2d2b556c7492e46ffb6daf2c"
+    },
+    {
+      "path": "scripts/tests/test_nintendo3ds_upstream_audit.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2839,
+      "sha256": "5cba1f2fb60b6d7644826e8d45147df78dc248011158f837ac353ff2703db50c"
+    },
+    {
+      "path": "scripts/tests/test_validate_nintendo3ds_open_homebrew_corpus.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 2223,
+      "sha256": "18df8a6aa6a678371c40865c24fbb0928a49d4e1453a58d0d58e6e46fa7c00ba"
+    },
+    {
+      "path": "scripts/tests/test_validate_nintendo3ds_regression_matrix.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3028,
+      "sha256": "cd523b1c763d5ca94634ff03423709b7a99ac008b52ec3dee997ac2d16ca5483"
+    },
+    {
+      "path": "scripts/tests/test_verify_nintendo3ds_source_scope.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 26108,
+      "sha256": "55288acd82b96577c04929935b0ac0e3315ff4fd0ceed4e7feec22e9f9983274"
+    },
+    {
+      "path": "scripts/validate-nintendo3ds-adreno-gate.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10798,
+      "sha256": "6c43ccd1c7a946f65cd6a621c381e984db8a4da33ee161e451757d1dc4bc5edf"
+    },
+    {
+      "path": "scripts/validate-nintendo3ds-open-homebrew-corpus.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 6365,
+      "sha256": "d9121e0f85cba228d35db9a114b2b60540b47a4a8c99e3f51ea1f4405545f01f"
+    },
+    {
+      "path": "scripts/validate-nintendo3ds-regression-matrix.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 10014,
+      "sha256": "1396437b8e72ab7cb94e0e9a70468ae35a2239a0de662f05c262274876943166"
+    },
+    {
+      "path": "scripts/verify-nintendo3ds-source-scope.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 212365,
+      "sha256": "e499f3476827a1c645b672654fdad69ca44afa236335f499d8942347cb0d1edd"
+    },
+    {
+      "path": "scripts/verify-source-snapshot.py",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 3438,
+      "sha256": "8199ba875f65a5ccd19dca3577a3300ccf207510bf04f92b90c6ecbd6172ac25"
+    },
+    {
+      "path": "settings.gradle.kts",
+      "normalization": "text-crlf-to-lf",
+      "normalized_bytes": 357,
+      "sha256": "7328fea111a86933e71e6f3195b7c1df9a8780e8b252fe47af98dd84d76f26fd"
+    }
+  ]
+}
